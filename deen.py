@@ -4,18 +4,20 @@ import base64
 import codecs
 import binascii
 import zlib
-import urllib.parse
 import hashlib
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction, QToolButton,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
                              QButtonGroup, QCheckBox)
-from PyQt5.QtCore import Qt
+try:
+    import urllib.parse as urllibparse
+except ImportError:
+    import urllib as urllibparse
 
 ENCODINGS = ['Base64',
              'Hex',
              'URL',
-             'Rot13',
-             'Punycode']
+             'Rot13']
 
 COMPRESSIONS = ['Gzip',
                 'Bz2',]
@@ -197,13 +199,11 @@ class EncoderWidget(QWidget):
         elif enc == 'Hex':
             output = codecs.encode(i, 'hex')
         elif enc == 'URL':
-            output = urllib.parse.quote(i.decode())
+            output = urllibparse.quote_plus(i.decode())
         elif enc == 'Gzip':
             output = codecs.encode(i, 'zlib')
         elif enc == 'Bz2':
             output = codecs.encode(i, 'bz2')
-        elif enc == 'Punycode':
-            output = codecs.encode(i, 'punycode')
         elif enc == 'Rot13':
             output = codecs.encode(codecs.decode(i), 'rot_13')
         else:
@@ -234,7 +234,7 @@ class EncoderWidget(QWidget):
                 output = i
         elif enc == 'URL':
             try:
-                output = urllib.parse.unquote(i)
+                output = urllibparse.unquote_plus(i)
             except TypeError as e:
                 decode_error = e
                 output = i
@@ -250,8 +250,6 @@ class EncoderWidget(QWidget):
             except OSError as e:
                 decode_error = e
                 output = i
-        elif enc == 'Punycode':
-            output = codecs.decode(i, 'punycode')
         elif enc == 'Rot13':
             output = codecs.decode(i, 'rot_13')
         else:
