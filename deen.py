@@ -8,7 +8,7 @@ import hashlib
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction, QToolButton,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
-                             QButtonGroup, QCheckBox)
+                             QButtonGroup, QCheckBox, QPushButton)
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -78,10 +78,11 @@ class DeenWidget(QWidget):
     def __init__(self, parent, readonly=False, enable_actions=True):
         super(DeenWidget, self).__init__(parent)
         self.parent = parent
+        self.current_pick = None
+        self.current_combo = None
         self.field = QTextEdit(self)
         self.field.setReadOnly(readonly)
         self.field.textChanged.connect(self.field_content_changed)
-        self.field.keyPressEvent.connect(self.keypress)
         self.content = None
         self.view_panel = self.create_view_panel()
         self.action_panel = self.create_action_panel(enable_actions)
@@ -115,9 +116,8 @@ class DeenWidget(QWidget):
     def field_content_changed(self):
         if self.action_panel.isHidden():
             self.action_panel.show()
-
-    def keypress(self):
-        self.next().field.setText(self.field.)
+        if self.field.hasFocus():
+            self.action()
 
     def create_view_panel(self):
         text = QCheckBox('Text')
@@ -126,12 +126,16 @@ class DeenWidget(QWidget):
         hex = QCheckBox('Hex')
         hex.setChecked(False)
         hex.stateChanged.connect(self.view_hex)
+        clear = QPushButton('Clear')
+        clear.clicked.connect(self.clear_content)
         view_group = QButtonGroup(self)
         view_group.addButton(text, 1)
         view_group.addButton(hex, 2)
+        view_group.addButton(clear, 3)
         panel = QHBoxLayout()
         panel.addWidget(text)
         panel.addWidget(hex)
+        panel.addWidget(clear)
         panel.addStretch()
         widget = QWidget()
         widget.setLayout(panel)
@@ -143,28 +147,28 @@ class DeenWidget(QWidget):
         self.encoding_combo.model().item(0).setEnabled(False)
         for encoding in ENCODINGS:
             self.encoding_combo.addItem(encoding)
-        self.encoding_combo.currentIndexChanged.connect(self.encode)
+        self.encoding_combo.currentIndexChanged.connect(lambda: self.action(self.encoding_combo))
 
         self.decoding_combo = QComboBox(self)
         self.decoding_combo.addItem('Decode')
         self.decoding_combo.model().item(0).setEnabled(False)
         for encoding in ENCODINGS:
             self.decoding_combo.addItem(encoding)
-        self.decoding_combo.currentIndexChanged.connect(self.decode)
+        self.decoding_combo.currentIndexChanged.connect(lambda: self.action(self.decoding_combo))
 
         self.compress_combo = QComboBox(self)
         self.compress_combo.addItem('Compress')
         self.compress_combo.model().item(0).setEnabled(False)
         for compression in COMPRESSIONS:
             self.compress_combo.addItem(compression)
-        self.compress_combo.currentIndexChanged.connect(self.compress)
+        self.compress_combo.currentIndexChanged.connect(lambda: self.action(self.compress_combo))
 
         self.uncompress_combo = QComboBox(self)
         self.uncompress_combo.addItem('Uncompress')
         self.uncompress_combo.model().item(0).setEnabled(False)
         for compression in COMPRESSIONS:
             self.uncompress_combo.addItem(compression)
-        self.uncompress_combo.currentIndexChanged.connect(self.uncompress)
+        self.uncompress_combo.currentIndexChanged.connect(lambda: self.action(self.uncompress_combo))
 
         self.hash_combo = QComboBox(self)
         self.hash_combo.addItem('Hash')
@@ -172,7 +176,7 @@ class DeenWidget(QWidget):
         for hash in HASHS:
             self.hash_combo.addItem(hash)
         self.hash_combo.addItem('ALL')
-        self.hash_combo.currentIndexChanged.connect(self.hash)
+        self.hash_combo.currentIndexChanged.connect(lambda: self.action(self.hash_combo))
 
         action_panel = QVBoxLayout()
         action_panel.addWidget(self.encoding_combo)
@@ -194,10 +198,40 @@ class DeenWidget(QWidget):
             self.content = self.field.toPlainText()
         self.field.setText(self.hexdump(self.field.toPlainText()))
 
-    def encode(self):
+    def clear_content(self):
+        if self.parent.widgets[0] == self:
+            self.field.clear()
+        index = self.parent.widgets.index(self)
+        while len(self.parent.widgets) != index:
+            if len(self.parent.widgets) == 1:
+                break
+            self.parent.encoder_layout.removeWidget(self.parent.widgets[-1])
+            self.parent.widgets[-1].deleteLater()
+            self.parent.widgets[-1] = None
+            self.parent.widgets.pop()
+
+    def action(self, combo=None):
+        if combo and combo.currentText() != combo.model().item(0).text():
+            self.current_combo = combo
+            self.current_pick = combo.currentText()
+        if self.current_pick in ENCODINGS:
+            if self.current_combo.model().item(0).text() == 'Encode':
+                self.encode(self.current_pick)
+            else:
+                self.decode(self.current_pick)
+        elif self.current_pick in COMPRESSIONS:
+            if self.current_combo.model().item(0).text() == 'Compress':
+                self.compress(self.current_pick)
+            else:
+                self.uncompress(self.current_pick)
+        elif self.current_pick in HASHS:
+            self.hash(self.current_pick)
+        if self.current_combo:
+            self.current_combo.setCurrentIndex(0)
+
+    def encode(self, enc):
         if not self.content:
             self.content = self.field.toPlainText()
-        enc = self.encoding_combo.currentText()
         i = self.field.toPlainText().encode('utf8')
         if enc == 'Base64':
             output = base64.b64encode(i)
@@ -219,10 +253,9 @@ class DeenWidget(QWidget):
         self.next().field.clear()
         self.next().field.setText(output)
 
-    def decode(self):
+    def decode(self, enc):
         if not self.content:
             self.content = self.field.toPlainText()
-        enc = self.decoding_combo.currentText()
         i = self.field.toPlainText().encode('utf8')
         decode_error = None
         if enc == 'Base64':
@@ -263,14 +296,13 @@ class DeenWidget(QWidget):
         if isinstance(output, bytes):
             output = output.decode()
         if decode_error:
-            self.outgoing.setStyleSheet("color: rgb(255, 0, 0);")
+            self.next().field.setStyleSheet("color: rgb(255, 0, 0);")
         self.next().field.clear()
         self.next().field.setText(output)
 
-    def compress(self):
+    def compress(self, comp):
         if not self.content:
             self.content = self.field.toPlainText()
-        comp = self.compress_combo.currentText()
         i = self.field.toPlainText().encode('utf8')
         if comp == 'Gzip':
             output = codecs.encode(i, 'zlib')
@@ -278,25 +310,21 @@ class DeenWidget(QWidget):
             output = codecs.encode(i, 'bz2')
         else:
             output = i
-
-        #if isinstance(output, bytes):
-        #    output = output.decode()
         self.next().field.clear()
         self.next().field.setText(output.decode())
 
-    def uncompress(self):
+    def uncompress(self, comp):
         if not self.content:
             self.content = self.field.toPlainText()
-        enc = self.uncompress_combo.currentText()
         i = self.field.toPlainText().encode('utf8')
         decode_error = None
-        if enc == 'Gzip':
+        if comp == 'Gzip':
             try:
                 output = codecs.decode(i, 'zlib')
             except zlib.error as e:
                 decode_error = e
                 output = i
-        elif enc == 'Bz2':
+        elif comp == 'Bz2':
             try:
                 output = codecs.decode(i, 'bz2')
             except OSError as e:
@@ -312,10 +340,9 @@ class DeenWidget(QWidget):
         self.next().field.clear()
         self.next().field.setText(output)
 
-    def hash(self):
+    def hash(self, hash):
         if not self.content:
             self.content = self.field.toPlainText()
-        hash = self.hash_combo.currentText()
         src = self.field.toPlainText().encode('utf8')
         if hash == 'ALL':
             output = ''
