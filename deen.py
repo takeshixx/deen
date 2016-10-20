@@ -66,62 +66,78 @@ class Deen(QMainWindow):
 class EncoderWidget(QWidget):
     def __init__(self, parent):
         super(EncoderWidget, self).__init__(parent)
-        self.incoming = QTextEdit(self)
-        self.outgoing = QTextEdit(self)
-        self.top1_content = None
-        self.top2_content = None
-        self.create_incoming()
-        self.create_outgoing()
-        self.create_panel()
-        textfields = QVBoxLayout()
-        textfields.addLayout(self.view_panel_top1)
-        textfields.addWidget(self.incoming)
-        textfields.addLayout(self.view_panel_top2)
-        textfields.addWidget(self.outgoing)
-        hbox = QHBoxLayout(self)
-        hbox.addLayout(textfields)
-        hbox.addLayout(self.button_panel)
-        self.setLayout(hbox)
+        self.widgets = list()
+        self.widgets.append(DeenWidget(self))
+        self.encoder_layout = QVBoxLayout(self)
+        for widget in self.widgets:
+            self.encoder_layout.addWidget(widget)
+        self.setLayout(self.encoder_layout)
 
-    def create_incoming(self):
-        top1_text = QCheckBox('Text')
-        top1_text.setChecked(True)
-        top1_text.stateChanged.connect(self.view_top1_text)
-        top1_hex = QCheckBox('Hex')
-        top1_hex.setChecked(False)
-        top1_hex.stateChanged.connect(self.view_top1_hex)
-        view_check_top1 = QButtonGroup(self)
-        view_check_top1.addButton(top1_text, 1)
-        view_check_top1.addButton(top1_hex, 2)
 
-        self.view_panel_top1 = QHBoxLayout()
-        self.view_panel_top1.addWidget(top1_text)
-        self.view_panel_top1.addWidget(top1_hex)
-        self.view_panel_top1.addStretch()
+class DeenWidget(QWidget):
+    def __init__(self, parent, readonly=False, enable_actions=True):
+        super(DeenWidget, self).__init__(parent)
+        self.parent = parent
+        self.field = QTextEdit(self)
+        self.field.setReadOnly(readonly)
+        self.field.textChanged.connect(self.field_content_changed)
+        self.field.keyPressEvent.connect(self.keypress)
+        self.content = None
+        self.view_panel = self.create_view_panel()
+        self.action_panel = self.create_action_panel(enable_actions)
+        if not enable_actions:
+            self.action_panel.hide()
+        self.h_layout = QHBoxLayout()
+        self.h_layout.addWidget(self.field)
+        self.h_layout.addWidget(self.action_panel)
+        self.v_layout = QVBoxLayout()
+        self.v_layout.addWidget(self.view_panel)
+        self.v_layout.addLayout(self.h_layout)
+        self.setLayout(self.v_layout)
 
-    def create_outgoing(self):
-        top2_text = QCheckBox('Text')
-        top2_text.setChecked(True)
-        top2_text.stateChanged.connect(self.view_top2_text)
-        top2_hex = QCheckBox('Hex')
-        top2_hex.setChecked(False)
-        top2_hex.stateChanged.connect(self.view_top2_hex)
-        view_check_top2 = QButtonGroup(self)
-        view_check_top2.addButton(top2_text, 1)
-        view_check_top2.addButton(top2_hex, 2)
+    def previous(self):
+        if self.parent.widgets[0] == self:
+            return self
+        for i, w in enumerate(self.parent.widgets):
+            if w == self:
+                return self.parent.widgets[i - 1]
 
-        flip_button = QToolButton()
-        flip_button.setArrowType(Qt.UpArrow)
-        flip_button.show()
-        flip_button.clicked.connect(self.flip_content)
+    def next(self):
+        if self.parent.widgets[-1] == self:
+            w = DeenWidget(self.parent, readonly=True, enable_actions=False)
+            self.parent.widgets.append(w)
+            self.parent.encoder_layout.addWidget(w)
+            return w
+        for i, w in enumerate(self.parent.widgets):
+            if w == self:
+                return self.parent.widgets[i + 1]
 
-        self.view_panel_top2 = QHBoxLayout()
-        self.view_panel_top2.addWidget(top2_text)
-        self.view_panel_top2.addWidget(top2_hex)
-        self.view_panel_top2.addStretch()
-        self.view_panel_top2.addWidget(flip_button)
+    def field_content_changed(self):
+        if self.action_panel.isHidden():
+            self.action_panel.show()
 
-    def create_panel(self):
+    def keypress(self):
+        self.next().field.setText(self.field.)
+
+    def create_view_panel(self):
+        text = QCheckBox('Text')
+        text.setChecked(True)
+        text.stateChanged.connect(self.view_text)
+        hex = QCheckBox('Hex')
+        hex.setChecked(False)
+        hex.stateChanged.connect(self.view_hex)
+        view_group = QButtonGroup(self)
+        view_group.addButton(text, 1)
+        view_group.addButton(hex, 2)
+        panel = QHBoxLayout()
+        panel.addWidget(text)
+        panel.addWidget(hex)
+        panel.addStretch()
+        widget = QWidget()
+        widget.setLayout(panel)
+        return widget
+
+    def create_action_panel(self, enable_actions=True):
         self.encoding_combo = QComboBox(self)
         self.encoding_combo.addItem('Encode')
         self.encoding_combo.model().item(0).setEnabled(False)
@@ -158,42 +174,31 @@ class EncoderWidget(QWidget):
         self.hash_combo.addItem('ALL')
         self.hash_combo.currentIndexChanged.connect(self.hash)
 
-        self.button_panel = QVBoxLayout()
-        self.button_panel.addWidget(self.encoding_combo)
-        self.button_panel.addWidget(self.decoding_combo)
-        self.button_panel.addWidget(self.compress_combo)
-        self.button_panel.addWidget(self.uncompress_combo)
-        self.button_panel.addWidget(self.hash_combo)
-        self.button_panel.addStretch()
+        action_panel = QVBoxLayout()
+        action_panel.addWidget(self.encoding_combo)
+        action_panel.addWidget(self.decoding_combo)
+        action_panel.addWidget(self.compress_combo)
+        action_panel.addWidget(self.uncompress_combo)
+        action_panel.addWidget(self.hash_combo)
+        action_panel.addStretch()
+        widget = QWidget()
+        widget.setLayout(action_panel)
+        return widget
 
-    def flip_content(self):
-        self.top1_content = self.outgoing.toPlainText()
-        self.incoming.setText(self.top1_content)
-        self.outgoing.clear()
+    def view_text(self):
+        if self.content:
+            self.field.setText(self.content)
 
-    def view_top1_text(self):
-        if self.top1_content:
-            self.incoming.setText(self.top1_content)
-
-    def view_top1_hex(self):
-        if not self.top1_content:
-            self.top1_content = self.incoming.toPlainText()
-        self.incoming.setText(self.hexdump(self.incoming.toPlainText()))
-
-    def view_top2_text(self):
-        if self.top2_content:
-            self.outgoing.setText(self.top2_content)
-
-    def view_top2_hex(self):
-        if not self.top2_content:
-            self.top2_content = self.outgoing.toPlainText()
-        self.outgoing.setText(self.hexdump(self.outgoing.toPlainText()))
+    def view_hex(self):
+        if not self.content:
+            self.content = self.field.toPlainText()
+        self.field.setText(self.hexdump(self.field.toPlainText()))
 
     def encode(self):
-        if not self.top1_content:
-            self.top1_content = self.incoming.toPlainText()
+        if not self.content:
+            self.content = self.field.toPlainText()
         enc = self.encoding_combo.currentText()
-        i = self.incoming.toPlainText().encode('utf8')
+        i = self.field.toPlainText().encode('utf8')
         if enc == 'Base64':
             output = base64.b64encode(i)
         elif enc == 'Hex':
@@ -211,14 +216,14 @@ class EncoderWidget(QWidget):
 
         if isinstance(output, bytes):
             output = output.decode()
-        self.outgoing.clear()
-        self.outgoing.setText(output)
+        self.next().field.clear()
+        self.next().field.setText(output)
 
     def decode(self):
-        if not self.top1_content:
-            self.top1_content = self.incoming.toPlainText()
+        if not self.content:
+            self.content = self.field.toPlainText()
         enc = self.decoding_combo.currentText()
-        i = self.incoming.toPlainText().encode('utf8')
+        i = self.field.toPlainText().encode('utf8')
         decode_error = None
         if enc == 'Base64':
             try:
@@ -259,14 +264,14 @@ class EncoderWidget(QWidget):
             output = output.decode()
         if decode_error:
             self.outgoing.setStyleSheet("color: rgb(255, 0, 0);")
-        self.outgoing.clear()
-        self.outgoing.setText(output)
+        self.next().field.clear()
+        self.next().field.setText(output)
 
     def compress(self):
-        if not self.top1_content:
-            self.top1_content = self.incoming.toPlainText()
+        if not self.content:
+            self.content = self.field.toPlainText()
         comp = self.compress_combo.currentText()
-        i = self.incoming.toPlainText().encode('utf8')
+        i = self.field.toPlainText().encode('utf8')
         if comp == 'Gzip':
             output = codecs.encode(i, 'zlib')
         elif comp == 'Bz2':
@@ -276,14 +281,14 @@ class EncoderWidget(QWidget):
 
         #if isinstance(output, bytes):
         #    output = output.decode()
-        self.outgoing.clear()
-        self.outgoing.setText(output.decode())
+        self.next().field.clear()
+        self.next().field.setText(output.decode())
 
     def uncompress(self):
-        if not self.top1_content:
-            self.top1_content = self.incoming.toPlainText()
+        if not self.content:
+            self.content = self.field.toPlainText()
         enc = self.uncompress_combo.currentText()
-        i = self.incoming.toPlainText().encode('utf8')
+        i = self.field.toPlainText().encode('utf8')
         decode_error = None
         if enc == 'Gzip':
             try:
@@ -304,14 +309,14 @@ class EncoderWidget(QWidget):
             output = output.decode()
         if decode_error:
             self.outgoing.setStyleSheet("color: rgb(255, 0, 0);")
-        self.outgoing.clear()
-        self.outgoing.setText(output)
+        self.next().field.clear()
+        self.next().field.setText(output)
 
     def hash(self):
-        if not self.top1_content:
-            self.top1_content = self.incoming.toPlainText()
+        if not self.content:
+            self.content = self.field.toPlainText()
         hash = self.hash_combo.currentText()
-        src = self.incoming.toPlainText().encode('utf8')
+        src = self.field.toPlainText().encode('utf8')
         if hash == 'ALL':
             output = ''
             for _hash in HASHS:
@@ -326,8 +331,8 @@ class EncoderWidget(QWidget):
             output = h.hexdigest()
         else:
             output = src
-        self.outgoing.clear()
-        self.outgoing.setText(output)
+        self.next().field.clear()
+        self.next().field.setText(output)
 
     def hexdump(self, src, length=16):
         FILTER = ''.join([(len(repr(chr(x))) == 3) and chr(x) or '.' for x in range(256)])
