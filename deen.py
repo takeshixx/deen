@@ -143,6 +143,7 @@ class DeenWidget(QWidget):
             self.action_panel.show()
         if not self.field.isReadOnly() and not self.hex_view:
             self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
+            self.length_field.setText('Length: ' + str(len(self.content)))
         if self.field.hasFocus():
             self.action()
 
@@ -155,6 +156,8 @@ class DeenWidget(QWidget):
         hex.stateChanged.connect(self.view_hex)
         clear = QPushButton('Clear')
         clear.clicked.connect(self.clear_content)
+        self.length_field = QLabel()
+        self.length_field.setText('Length: 0')
         view_group = QButtonGroup(self)
         view_group.addButton(text, 1)
         view_group.addButton(hex, 2)
@@ -162,8 +165,9 @@ class DeenWidget(QWidget):
         panel = QHBoxLayout()
         panel.addWidget(text)
         panel.addWidget(hex)
-        panel.addWidget(clear)
+        panel.addWidget(self.length_field)
         panel.addStretch()
+        panel.addWidget(clear)
         widget = QWidget()
         widget.setLayout(panel)
         return widget
@@ -275,6 +279,7 @@ class DeenWidget(QWidget):
             self.hash(self.current_pick)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
+        self.next().length_field.setText('Length: ' + str(len(self.next().field.toPlainText())))
 
     def encode(self, enc):
         if enc == 'Base64':
