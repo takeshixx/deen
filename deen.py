@@ -5,6 +5,7 @@ import codecs
 import binascii
 import zlib
 import hashlib
+import logging
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction, QToolButton,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
@@ -14,10 +15,15 @@ try:
 except ImportError:
     import urllib as urllibparse
 
+
+LOGGER = logging.getLogger(__name__)
+
 ENCODINGS = ['Base64',
              'Hex',
              'URL',
-             'Rot13']
+             'Rot13',
+             'UTF8',
+             'UTF16']
 
 COMPRESSIONS = ['Gzip',
                 'Bz2',]
@@ -232,24 +238,28 @@ class DeenWidget(QWidget):
     def encode(self, enc):
         if not self.content:
             self.content = self.field.toPlainText()
-        i = self.field.toPlainText().encode('utf8')
+        i = self.field.toPlainText()
         if enc == 'Base64':
-            output = base64.b64encode(i)
+            output = base64.b64encode(i.encode())
         elif enc == 'Hex':
-            output = codecs.encode(i, 'hex')
+            output = codecs.encode(i.encode(), 'hex')
         elif enc == 'URL':
-            output = urllibparse.quote_plus(i.decode())
+            output = urllibparse.quote_plus(i)
         elif enc == 'Gzip':
-            output = codecs.encode(i, 'zlib')
+            output = codecs.encode(i.encode(), 'zlib')
         elif enc == 'Bz2':
-            output = codecs.encode(i, 'bz2')
+            output = codecs.encode(i.encode(), 'bz2')
         elif enc == 'Rot13':
-            output = codecs.encode(codecs.decode(i), 'rot_13')
+            output = codecs.encode(i, 'rot_13')
+        elif enc == 'UTF8':
+            output = codecs.encode(i, 'utf8')
+        elif enc == 'UTF16':
+            output = codecs.encode(i, 'utf16')
         else:
             output = i
 
-        if isinstance(output, bytes):
-            output = output.decode()
+        #if isinstance(output, bytes):
+        #    output = output.decode()
         self.next().field.clear()
         self.next().field.setText(output)
 
@@ -296,6 +306,7 @@ class DeenWidget(QWidget):
         if isinstance(output, bytes):
             output = output.decode()
         if decode_error:
+            LOGGER.error(decode_error)
             self.next().field.setStyleSheet("color: rgb(255, 0, 0);")
         self.next().field.clear()
         self.next().field.setText(output)
@@ -336,6 +347,7 @@ class DeenWidget(QWidget):
         if isinstance(output, bytes):
             output = output.decode()
         if decode_error:
+            LOGGER.error(decode_error)
             self.outgoing.setStyleSheet("color: rgb(255, 0, 0);")
         self.next().field.clear()
         self.next().field.setText(output)
