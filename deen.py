@@ -17,7 +17,7 @@ except ImportError:
 
 
 LOGGER = logging.getLogger(__name__)
-logging.basicConfig(format='[%(lineno)s - %(funcName)20s() ] %(message)s')
+logging.basicConfig(format='[%(lineno)s - %(funcName)() ] %(message)s')
 
 ENCODINGS = ['Base64',
              'Hex',
@@ -267,7 +267,7 @@ class DeenWidget(QWidget):
     def decode(self, enc):
         if not self.content:
             self.content = self.field.toPlainText()
-        i = self.field.toPlainText().encode('utf8')
+        i = self.field.toPlainText()
         decode_error = None
         if enc == 'Base64':
             try:
