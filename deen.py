@@ -6,12 +6,11 @@ import binascii
 import zlib
 import hashlib
 import logging
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction,QScrollArea,
+from PyQt5.QtCore import Qt, QTextCodec, QRect
+from PyQt5.QtGui import QTextCursor, QTextTableFormat, QTextLength
+from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction,QScrollArea, QLabel,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
                              QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser, )
-from PyQt5.QtGui import QTextCursor, QTextTableFormat, QTextLength
-from PyQt5.QtCore import QTextCodec, QRect
 try:
     import urllib.parse as urllibparse
 except ImportError:
