@@ -74,7 +74,7 @@ class Deen(QMainWindow):
     def show_about(self):
         about = QMessageBox(self)
         about.setWindowTitle('About')
-        about.setText('DEcoderENcoder v0.1')
+        about.setText('DEcoderENcoder v0.2.1')
         about.resize(100, 75)
         about.show()
 
