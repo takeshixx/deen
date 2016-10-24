@@ -17,7 +17,7 @@ except ImportError:
 
 
 LOGGER = logging.getLogger(__name__)
-logging.baseConfig(format='[%(lineno)s - %(funcName)20s() ] %(message)s')
+logging.basicConfig(format='[%(lineno)s - %(funcName)20s() ] %(message)s')
 
 ENCODINGS = ['Base64',
              'Hex',
