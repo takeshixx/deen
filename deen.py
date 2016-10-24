@@ -7,10 +7,10 @@ import zlib
 import hashlib
 import logging
 from PyQt5.QtCore import Qt, QTextCodec, QRect
-from PyQt5.QtGui import QTextCursor, QTextTableFormat, QTextLength
+from PyQt5.QtGui import QTextCursor, QTextTableFormat, QTextLength, QFont
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction,QScrollArea, QLabel,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
-                             QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser, )
+                             QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser)
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -157,7 +157,11 @@ class DeenWidget(QWidget):
         clear = QPushButton('Clear')
         clear.clicked.connect(self.clear_content)
         self.length_field = QLabel()
+        self.length_field.setStyleSheet('border: 1px solid lightgrey')
         self.length_field.setText('Length: 0')
+        self.codec_field = QLabel()
+        self.codec_field.setStyleSheet('border: 1px solid lightgrey')
+        self.codec_field.hide()
         view_group = QButtonGroup(self)
         view_group.addButton(text, 1)
         view_group.addButton(hex, 2)
@@ -166,6 +170,7 @@ class DeenWidget(QWidget):
         panel.addWidget(text)
         panel.addWidget(hex)
         panel.addWidget(self.length_field)
+        panel.addWidget(self.codec_field)
         panel.addStretch()
         panel.addWidget(clear)
         widget = QWidget()
@@ -257,7 +262,7 @@ class DeenWidget(QWidget):
             self.parent.widgets.pop()
 
     def action(self, combo=None):
-        self.next().field.setStyleSheet("color: rgb(0, 0, 0);")
+        self.next().field.setStyleSheet('color: rgb(0, 0, 0);')
         if not self.content:
             self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
         if combo:
@@ -280,6 +285,9 @@ class DeenWidget(QWidget):
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
         self.next().length_field.setText('Length: ' + str(len(self.next().field.toPlainText())))
+        if self.next().field.isReadOnly() and self.current_pick:
+            self.next().codec_field.setText('Transformer: ' + self.current_pick)
+            self.next().codec_field.show()
 
     def encode(self, enc):
         if enc == 'Base64':
@@ -347,7 +355,7 @@ class DeenWidget(QWidget):
             output = self.codec.toUnicode(output)
         if decode_error:
             LOGGER.error(decode_error)
-            self.next().field.setStyleSheet("color: rgb(255, 0, 0);")
+            self.next().field.setStyleSheet('color: rgb(255, 0, 0);')
         self.next().field.clear()
         self.next().field.setText(output)
 
