@@ -6,11 +6,11 @@ import binascii
 import zlib
 import hashlib
 import logging
-from PyQt5.QtCore import Qt, QTextCodec, QRect
-from PyQt5.QtGui import QTextCursor, QTextTableFormat, QTextLength, QFont
+from PyQt5.QtCore import Qt, QTextCodec, QRect, QRegularExpression
+from PyQt5.QtGui import QTextCursor, QTextTableFormat, QTextLength, QFont, QTextCharFormat, QBrush, QColor
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction,QScrollArea, QLabel,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
-                             QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser)
+                             QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser, QLineEdit)
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -113,23 +113,39 @@ class DeenWidget(QWidget):
         self.action_panel = self.create_action_panel(enable_actions)
         if not enable_actions:
             self.action_panel.hide()
-        self.h_layout = QHBoxLayout()
-        self.h_layout.addWidget(self.field)
-        self.h_layout.addWidget(self.action_panel)
+        self.create_search_field()
         self.v_layout = QVBoxLayout()
         self.v_layout.addWidget(self.view_panel)
-        self.v_layout.addLayout(self.h_layout)
-        self.setLayout(self.v_layout)
+        self.v_layout.addWidget(self.field)
+        self.v_layout.addLayout(self.search)
+        self.h_layout = QHBoxLayout()
+        self.h_layout.addLayout(self.v_layout)
+        self.h_layout.addWidget(self.action_panel)
+        self.setLayout(self.h_layout)
+
+    def has_previous(self):
+        """Determine if the current widget is the root widget."""
+        return True if self.parent.widgets[0] != self else False
+
+    def has_next(self):
+        """Determine if there are already new widgets created."""
+        return True if self.parent.widgets[-1] != self else False
 
     def previous(self):
-        if self.parent.widgets[0] == self:
+        """Return the previous widget. If the current widget
+        is the root widget, this function returns the root
+        widget (self)."""
+        if not self.has_previous() == self:
             return self
         for i, w in enumerate(self.parent.widgets):
             if w == self:
                 return self.parent.widgets[i - 1]
 
     def next(self):
-        if self.parent.widgets[-1] == self:
+        """Return the next widget. This is most likely the one
+        that is supposed to hold the output of action()'s of
+        the current widget."""
+        if not self.has_next():
             w = DeenWidget(self.parent, readonly=True, enable_actions=False)
             self.parent.widgets.append(w)
             self.parent.encoder_layout.addWidget(w)
@@ -139,12 +155,21 @@ class DeenWidget(QWidget):
                 return self.parent.widgets[i + 1]
 
     def field_content_changed(self):
+        """The event handler for the textChanged event of the
+        current widget. This will be called whenever the text
+        of the QTextEdit() will be changed. Whatever will be
+        executed here will most likely differ if it will be
+        applied on a root widget or any following widget."""
         if self.action_panel.isHidden():
             self.action_panel.show()
+        if self.has_next() and not self.field.isReadOnly():
+            # If widget count is greater then two,
+            # remove all widgets after the second.
+            self.remove_next_widgets(offset=2)
         if not self.field.isReadOnly() and not self.hex_view:
             self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
             self.length_field.setText('Length: ' + str(len(self.content)))
-        if self.field.hasFocus():
+        if self.field.hasFocus() and self.current_pick:
             self.action()
 
     def create_view_panel(self):
@@ -176,6 +201,40 @@ class DeenWidget(QWidget):
         widget = QWidget()
         widget.setLayout(panel)
         return widget
+
+    def create_search_field(self):
+        self.search_field = QLineEdit()
+        self.search_field.returnPressed.connect(self.search_highlight)
+        self.search_field_matches = QLabel()
+        self.search_field_matches.hide()
+        self.search = QHBoxLayout()
+        self.search.addWidget(self.search_field)
+        self.search.addWidget(self.search_field_matches)
+
+    def search_highlight(self):
+        cursor = self.field.textCursor()
+        b_format = cursor.blockFormat()
+        b_format.setBackground(QBrush(QColor('white')))
+        cursor.setBlockFormat(b_format)
+        format = QTextCharFormat()
+        format.setBackground(QBrush(QColor('yellow')))
+        regex = QRegularExpression(self.search_field.text())
+        matches = regex.globalMatch(self.field.toPlainText())
+        F = True
+        match_count = 0
+        while matches.hasNext():
+            match_count += 1
+            match = matches.next()
+            if F == True:
+                F = match.capturedStart()
+            cursor.setPosition(match.capturedStart())
+            cursor.setPosition(match.capturedEnd(), QTextCursor.KeepAnchor)
+            cursor.mergeCharFormat(format)
+        #self.field.moveCursor(QTextCursor.Start)
+        self.field.moveCursor(F)
+        self.field.ensureCursorVisible()
+        self.search_field_matches.setText('Matches: ' + str(match_count))
+        self.search_field_matches.show()
 
     def create_action_panel(self, enable_actions=True):
         self.encoding_combo = QComboBox(self)
@@ -215,10 +274,10 @@ class DeenWidget(QWidget):
         self.hash_combo.currentIndexChanged.connect(lambda: self.action(self.hash_combo))
 
         action_panel = QVBoxLayout()
-        action_panel.addWidget(self.encoding_combo)
         action_panel.addWidget(self.decoding_combo)
-        action_panel.addWidget(self.compress_combo)
+        action_panel.addWidget(self.encoding_combo)
         action_panel.addWidget(self.uncompress_combo)
+        action_panel.addWidget(self.compress_combo)
         action_panel.addWidget(self.hash_combo)
         action_panel.addStretch()
         widget = QWidget()
@@ -252,7 +311,11 @@ class DeenWidget(QWidget):
     def clear_content(self):
         if self.parent.widgets[0] == self:
             self.field.clear()
-        index = self.parent.widgets.index(self)
+        self.remove_next_widgets()
+
+    def remove_next_widgets(self, offset=0):
+        assert isinstance(offset, int)
+        index = self.parent.widgets.index(self) + offset
         while len(self.parent.widgets) != index:
             if len(self.parent.widgets) == 1:
                 break
@@ -260,6 +323,21 @@ class DeenWidget(QWidget):
             self.parent.widgets[-1].deleteLater()
             self.parent.widgets[-1] = None
             self.parent.widgets.pop()
+
+    def set_content(self, content):
+        if isinstance(content, str):
+            content = codecs.encode(content, 'utf8')
+        self.content = content
+
+    def set_content_next(self, content):
+        assert isinstance(content, bytes)
+        self.next().content = content
+        content = self.codec.toUnicode(content)
+        self.next().field.clear()
+        self.next().field.setText(content)
+        self.next().length_field.setText('Length: ' + str(len(self.next().content)))
+        if self.next().hex_view:
+            self.next().view_hex()
 
     def action(self, combo=None):
         self.next().field.setStyleSheet('color: rgb(0, 0, 0);')
@@ -284,7 +362,6 @@ class DeenWidget(QWidget):
             self.hash(self.current_pick)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
-        self.next().length_field.setText('Length: ' + str(len(self.next().field.toPlainText())))
         if self.next().field.isReadOnly() and self.current_pick:
             self.next().codec_field.setText('Transformer: ' + self.current_pick)
             self.next().codec_field.show()
@@ -308,11 +385,7 @@ class DeenWidget(QWidget):
             output = codecs.encode(self.content.decode(), 'utf16')
         else:
             output = self.content
-
-        if isinstance(output, bytes):
-            output = self.codec.toUnicode(output)
-        self.next().field.clear()
-        self.next().field.setText(output)
+        self.set_content_next(output)
 
     def decode(self, enc):
         decode_error = None
@@ -351,13 +424,10 @@ class DeenWidget(QWidget):
         else:
             output = self.content
 
-        if isinstance(output, bytes):
-            output = self.codec.toUnicode(output)
         if decode_error:
             LOGGER.error(decode_error)
             self.next().field.setStyleSheet('color: rgb(255, 0, 0);')
-        self.next().field.clear()
-        self.next().field.setText(output)
+        self.set_content_next(output)
 
     def compress(self, comp):
         if comp == 'Gzip':
@@ -366,11 +436,7 @@ class DeenWidget(QWidget):
             output = codecs.encode(self.content, 'bz2')
         else:
             output = self.content
-
-        if isinstance(output, bytes):
-            output = self.codec.toUnicode(output)
-        self.next().field.clear()
-        self.next().field.setText(output)
+        self.set_content_next(output)
 
     def uncompress(self, comp):
         decode_error = None
@@ -389,13 +455,10 @@ class DeenWidget(QWidget):
         else:
             output = self.content
 
-        if isinstance(output, bytes):
-            output = self.codec.toUnicode(output)
         if decode_error:
             LOGGER.error(decode_error)
             self.next().field.setStyleSheet("color: rgb(255, 0, 0);")
-        self.next().field.clear()
-        self.next().field.setText(output)
+        self.set_content_next(output)
 
     def hash(self, hash):
         if hash == 'ALL':
@@ -411,9 +474,8 @@ class DeenWidget(QWidget):
             h.update(self.content)
             output = h.hexdigest()
         else:
-            output = src
-        self.next().field.clear()
-        self.next().field.setText(output)
+            output = hash
+        self.set_content_next(output)
 
 
 class DeenStatusConsole(QDialog):
