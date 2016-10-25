@@ -7,10 +7,11 @@ import zlib
 import hashlib
 import logging
 from PyQt5.QtCore import Qt, QTextCodec, QRect, QRegularExpression
-from PyQt5.QtGui import QTextCursor, QTextTableFormat, QTextLength, QFont, QTextCharFormat, QBrush, QColor
+from PyQt5.QtGui import (QTextCursor, QTextTableFormat, QTextLength, QTextCharFormat, QBrush, QColor)
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction,QScrollArea, QLabel,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
-                             QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser, QLineEdit)
+                             QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser, QLineEdit,
+                             QProgressBar)
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -207,8 +208,14 @@ class DeenWidget(QWidget):
         self.search_field.returnPressed.connect(self.search_highlight)
         self.search_field_matches = QLabel()
         self.search_field_matches.hide()
+        self.search_field_progress = QProgressBar()
+        self.search_field_progress.setGeometry(200, 80, 250, 20)
+        self.search_field_progress.hide()
+        self.search_bars = QVBoxLayout()
+        self.search_bars.addWidget(self.search_field)
+        self.search_bars.addWidget(self.search_field_progress)
         self.search = QHBoxLayout()
-        self.search.addWidget(self.search_field)
+        self.search.addLayout(self.search_bars)
         self.search.addWidget(self.search_field_matches)
 
     def search_highlight(self):
@@ -220,21 +227,28 @@ class DeenWidget(QWidget):
         format.setBackground(QBrush(QColor('yellow')))
         regex = QRegularExpression(self.search_field.text())
         matches = regex.globalMatch(self.field.toPlainText())
-        F = True
-        match_count = 0
+        _matches = list()
         while matches.hasNext():
+            _matches.append(matches.next())
+        self.search_matches = _matches
+        self.search_field_matches.setText('Matches: ' + str(len(self.search_matches)))
+        self.search_field_matches.show()
+        self.search_field_progress.setRange(0, len(self.search_matches))
+        if len(self.search_matches) > 100:
+            self.search_field_progress.show()
+        match_count = 1
+        for match in self.search_matches:
+            if match_count > 150:
+                # TODO: implement proper handling of > 1000 matches
+                break
+            self.search_field_progress.setValue(match_count)
             match_count += 1
-            match = matches.next()
-            if F == True:
-                F = match.capturedStart()
             cursor.setPosition(match.capturedStart())
             cursor.setPosition(match.capturedEnd(), QTextCursor.KeepAnchor)
             cursor.mergeCharFormat(format)
         #self.field.moveCursor(QTextCursor.Start)
-        self.field.moveCursor(F)
-        self.field.ensureCursorVisible()
-        self.search_field_matches.setText('Matches: ' + str(match_count))
-        self.search_field_matches.show()
+        #self.field.moveCursor(F)
+        #self.field.ensureCursorVisible()
 
     def create_action_panel(self, enable_actions=True):
         self.encoding_combo = QComboBox(self)
