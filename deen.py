@@ -319,7 +319,7 @@ class DeenWidget(QWidget):
             cursor.insertTable(len(rows), len(rows[0]) if len(rows[0]) < 16 else 16, format)
             for r in rows:
                 for c in r:
-                    cursor.insertText(self.codec.toUnicode(codecs.encode(bytes([c]), 'hex')))
+                    cursor.insertText(self.codec.toUnicode(codecs.encode(bytes([c]), 'hex').upper()))
                     cursor.movePosition(QTextCursor.NextCell)
 
     def clear_content(self):
