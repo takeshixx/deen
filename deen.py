@@ -344,11 +344,12 @@ class DeenWidget(QWidget):
         self.content = content
 
     def set_content_next(self, content):
-        assert isinstance(content, bytes)
-        self.next().content = content
-        content = self.codec.toUnicode(content)
+        if isinstance(content, bytes):
+            self.next().content = content
+        else:
+            self.next().content = codecs.encode(content, 'utf8')
         self.next().field.clear()
-        self.next().field.setText(content)
+        self.next().field.setText(self.codec.toUnicode(self.next().content))
         self.next().length_field.setText('Length: ' + str(len(self.next().content)))
         if self.next().hex_view:
             self.next().view_hex()
