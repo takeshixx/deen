@@ -4,5 +4,12 @@ A GUI application that allows to encode, compress, hash, ... generic input data.
 
 *Note*: This code is highly experimental!
 
+## Installation
+
+```bash
+python setup.py install
+```
+
+## Usage
 
 ![deen](https://kleber.io/cEW1/)
