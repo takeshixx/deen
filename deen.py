@@ -406,7 +406,7 @@ class DeenWidget(QWidget):
         decode_error = None
         if enc == 'Base64':
             try:
-                output = base64.b64decode(self.content)
+                output = base64.b64decode(self.content.replace(b'\n', b''))
             except binascii.Error as e:
                 decode_error = e
                 output = self.content
