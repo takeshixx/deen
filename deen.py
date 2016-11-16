@@ -46,11 +46,12 @@ HASHS = ['MD5',
 class HexDumpWidget(QTableWidget):
     bytesChanged = pyqtSignal()
 
-    def __init__(self, data=b'', max_bytes_per_line=16, width=1, parent=None):
+    def __init__(self, data=b'', max_bytes_per_line=16, width=1, read_only=False, parent=None):
         super(HexDumpWidget, self).__init__(parent)
         self._max_bytes_per_line = max_bytes_per_line
         self._bytes_per_line = max_bytes_per_line
         self._width = width
+        self._read_only = read_only
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.data = data
 
@@ -66,7 +67,7 @@ class HexDumpWidget(QTableWidget):
             rows.append(self._data[i:i+self._bytes_per_line])
 
         self.setRowCount(len(rows))
-        cols = self._bytes_per_line // self._width + 1 # ascii
+        cols = self._bytes_per_line // self._width + 1  # ascii
         self.setColumnCount(cols)
 
         header_labels = []
@@ -85,6 +86,10 @@ class HexDumpWidget(QTableWidget):
                 item = QTableWidgetItem(codecs.encode(block, 'hex').decode())
                 item.setBackground(QBrush(QColor('lightgray')))
                 item.setData(Qt.UserRole, block)  # store original data
+                if self._read_only:
+                    item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+                else:
+                    item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
                 self.setItem(y, x, item)
             for j in range(x+1, cols):
                 item = QTableWidgetItem()
@@ -96,6 +101,10 @@ class HexDumpWidget(QTableWidget):
             item = QTableWidgetItem(text)
             item.setData(Qt.UserRole, row)  # store original data
             item.setBackground(QBrush(QColor('lightblue')))
+            if self._read_only:
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            else:
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
             self.setItem(y, cols - 1, item)
 
         self.itemChanged.connect(self._itemChanged)
@@ -246,7 +255,7 @@ class DeenWidget(QWidget):
         self.field = QTextEdit(self)
         self.field.setReadOnly(readonly)
         self.field.textChanged.connect(self.field_content_changed)
-        self.hex_field = HexDumpWidget(parent=self)
+        self.hex_field = HexDumpWidget(read_only=readonly, parent=self)
         self.hex_field.setHidden(True)
         self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.codec = QTextCodec.codecForName('UTF-8')
