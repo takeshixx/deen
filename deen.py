@@ -39,7 +39,7 @@ HASHS = ['MD5',
          'RIPEMD160',
          'MD4',
          'MDC2',
-         'whirlpool']
+         'Whirlpool']
 
 
 class Deen(QMainWindow):
