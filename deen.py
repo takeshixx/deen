@@ -11,7 +11,7 @@ from PyQt5.QtGui import (QTextCursor, QTextTableFormat, QTextLength, QTextCharFo
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction,QScrollArea, QLabel,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
                              QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser, QLineEdit,
-                             QProgressBar)
+                             QProgressBar, QFileDialog)
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -182,6 +182,8 @@ class DeenWidget(QWidget):
         hex.stateChanged.connect(self.view_hex)
         clear = QPushButton('Clear')
         clear.clicked.connect(self.clear_content)
+        save = QPushButton('Save')
+        save.clicked.connect(self.save_content)
         self.length_field = QLabel()
         self.length_field.setStyleSheet('border: 1px solid lightgrey')
         self.length_field.setText('Length: 0')
@@ -192,6 +194,7 @@ class DeenWidget(QWidget):
         view_group.addButton(text, 1)
         view_group.addButton(hex, 2)
         view_group.addButton(clear, 3)
+        view_group.addButton(save, 4)
         panel = QHBoxLayout()
         panel.addWidget(text)
         panel.addWidget(hex)
@@ -199,6 +202,7 @@ class DeenWidget(QWidget):
         panel.addWidget(self.codec_field)
         panel.addStretch()
         panel.addWidget(clear)
+        panel.addWidget(save)
         widget = QWidget()
         widget.setLayout(panel)
         return widget
@@ -326,6 +330,13 @@ class DeenWidget(QWidget):
         if self.parent.widgets[0] == self:
             self.field.clear()
         self.remove_next_widgets()
+
+    def save_content(self):
+        fd = QFileDialog(self)
+        name = fd.getSaveFileName(fd, 'Save File')
+        file = open(name[0], 'wb')
+        file.write(self.content)
+        file.close()
 
     def remove_next_widgets(self, offset=0):
         assert isinstance(offset, int)
