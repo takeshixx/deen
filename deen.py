@@ -334,6 +334,8 @@ class DeenWidget(QWidget):
     def save_content(self):
         fd = QFileDialog(self)
         name = fd.getSaveFileName(fd, 'Save File')
+        if not name or not name[0]:
+            return
         file = open(name[0], 'wb')
         file.write(self.content)
         file.close()
