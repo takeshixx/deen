@@ -46,9 +46,10 @@ HASHS = ['MD5',
 class HexDumpWidget(QTableWidget):
     bytesChanged = pyqtSignal()
 
-    def __init__(self, data=b'', bytes_per_line=16, width=1, parent=None):
+    def __init__(self, data=b'', max_bytes_per_line=16, width=1, parent=None):
         super(HexDumpWidget, self).__init__(parent)
-        self._bytes_per_line = bytes_per_line
+        self._max_bytes_per_line = max_bytes_per_line
+        self._bytes_per_line = max_bytes_per_line
         self._width = width
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.data = data
@@ -163,10 +164,7 @@ class HexDumpWidget(QTableWidget):
             raise TypeError('bytestring required. Got ' + type(val).__name__)
         self._data = bytearray(val)
         if self._data:
-            if len(self._data) < self._bytes_per_line:
-                self._bytes_per_line = len(self._data)
-            elif len(self._data) >= self._bytes_per_line:
-                self._bytes_per_line = 16
+            self._bytes_per_line = min(len(self._data), self._max_bytes_per_line)
         self._reconstructTable()
 
     @property
@@ -175,7 +173,8 @@ class HexDumpWidget(QTableWidget):
 
     @bytes_per_line.setter
     def bytes_per_line(self, val):
-        self._bytes_per_line = val
+        self._max_bytes_per_line = val
+        self._bytes_per_line = min(self._max_bytes_per_line, self._bytes_per_line)
         self._reconstructTable()
 
     def to_bytes(self):
