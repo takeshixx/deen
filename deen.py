@@ -83,6 +83,7 @@ class HexDumpWidget(QTableWidget):
                 block = row[i:i+self._width]
                 item = QTableWidgetItem(block.hex())
                 item.setBackground(QBrush(QColor('lightgray')))
+                item.setData(Qt.UserRole, block)  # store original data
                 self.setItem(y, x, item)
             for j in range(x+1, cols):
                 item = QTableWidgetItem()
@@ -109,14 +110,21 @@ class HexDumpWidget(QTableWidget):
         orig_data = item.data(Qt.UserRole)
         offset = row * self._bytes_per_line
         if col != self.columnCount() - 1:  # hex part
-            offset += col * self._width
-            try:
-                value = bytes.fromhex(text.strip())
-            except ValueError:
-                text = self._bytes2ascii(orig_data)
+            text = text.strip()
+            fmt = "{{:>0{}}}".format(self._width * 2)
+            text = fmt.format(text)
+            if len(text) != self._width * 2:
+                text = orig_data.hex()
                 item.setText(text)
                 return
 
+            offset += col * self._width
+            try:
+                value = bytes.fromhex(text)
+            except ValueError:
+                text = orig_data.hex()
+                item.setText(text)
+                return
         else:  # ascii part
             if len(orig_data) != len(text):
                 text = self._bytes2ascii(orig_data)
