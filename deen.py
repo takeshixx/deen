@@ -66,8 +66,12 @@ class Deen(QMainWindow):
         self.file_menu = self.main_menu.addMenu("File")
         self.quit = QAction("Quit", self)
         self.quit.setShortcut("Alt+F4")
+        self.quit.triggered.connect(QApplication.quit)
+        self.load_file = QAction("Load from File", self)
+        self.load_file.setShortcut("Alt+O")
+        self.load_file.triggered.connect(self.load_from_file)
+        self.file_menu.addAction(self.load_file)
         self.file_menu.addAction(self.quit)
-        self.file_menu.triggered[QAction].connect(QApplication.quit)
         self.help_menu = self.main_menu.addMenu("Help")
         self.about = QAction('About', self)
         self.console = QAction('Status Console', self)
@@ -90,6 +94,20 @@ class Deen(QMainWindow):
         status.console.show()
         status.show()
 
+    def load_from_file(self):
+        fd = QFileDialog(self)
+        name = fd.getOpenFileName(fd, 'Load from File')
+        if not name or not name[0]:
+            return
+        with open(name[0], 'rb') as file:
+            content = file.read()
+        if content:
+            self.encoder_widget.widgets[0].clear_content()
+            self.encoder_widget.widgets[0].set_content(content)
+            self.encoder_widget.widgets[0].field.setText(
+                self.encoder_widget.widgets[0].codec.toUnicode(content))
+        self.encoder_widget.widgets[0].hex_field.setHidden(True)
+        self.encoder_widget.widgets[0].field.setHidden(False)
 
 class EncoderWidget(QWidget):
     def __init__(self, parent):
