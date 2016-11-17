@@ -485,6 +485,8 @@ class DeenWidget(QWidget):
     def clear_content(self):
         if self.parent.widgets[0] == self:
             self.field.clear()
+            self.hex_field.data = b''
+            self.content = b''
         self.remove_next_widgets()
 
     def save_content(self):
