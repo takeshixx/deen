@@ -52,6 +52,7 @@ class HexDumpWidget(QTableWidget):
         self._bytes_per_line = max_bytes_per_line
         self._width = width
         self._read_only = read_only
+        # self.horizontalHeader().setStretchLastSection(True)
         self.data = data
 
     def _reconstructTable(self):
@@ -69,6 +70,17 @@ class HexDumpWidget(QTableWidget):
         cols = self._bytes_per_line // self._width + 1  # ascii
         self.setColumnCount(cols)
 
+        self._process_headers()
+
+        for y, row in enumerate(rows):
+            self._process_row(y, row)
+        self.resizeColumnsToContents()
+
+        self.itemChanged.connect(self._itemChanged)
+
+    def _process_headers(self):
+        cols = self.columnCount()
+
         for i in range(cols):
             self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
 
@@ -82,46 +94,49 @@ class HexDumpWidget(QTableWidget):
         self.setHorizontalHeaderLabels(header_labels)
         self.setVerticalHeaderLabels(row_labels)
 
-        for y, row in enumerate(rows):
-            for x, i in enumerate(range(0, len(row), self._width)):
-                block = row[i:i+self._width]
-                item = QTableWidgetItem(codecs.encode(block, 'hex').decode())
-                item.setBackground(QBrush(QColor('lightgray')))
-                item.setTextAlignment(Qt.AlignHCenter)
-                item.setData(Qt.UserRole, block)  # store original data
-                if self._read_only:
-                    item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
-                else:
-                    item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
-                self.setItem(y, x, item)
-            for j in range(x+1, cols):
-                item = QTableWidgetItem()
-                item.setBackground(QBrush(QColor('gray')))
-                item.setFlags(Qt.NoItemFlags)
-                item.setTextAlignment(Qt.AlignHCenter)
-                self.setItem(y, j, item)
+    def _process_row(self, y, row):
+        cols = self.columnCount()
 
-            text = self._bytes2ascii(row)
-            item = QTableWidgetItem(text)
-            item.setData(Qt.UserRole, row)  # store original data
-            item.setTextAlignment(Qt.AlignLeft)
-            item.setBackground(QBrush(QColor('lightblue')))
+        for x, i in enumerate(range(0, len(row), self._width)):
+            block = row[i:i+self._width]
+            item = QTableWidgetItem(codecs.encode(block, 'hex').decode())
+            item.setBackground(QBrush(QColor('lightgray')))
+            item.setTextAlignment(Qt.AlignHCenter)
+            item.setData(Qt.UserRole, block)  # store original data
             if self._read_only:
                 item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             else:
                 item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
-            self.setItem(y, cols - 1, item)
+            self.setItem(y, x, item)
 
-        self.horizontalHeader().setSectionResizeMode(cols - 1, QHeaderView.Stretch)
-        self.resizeColumnsToContents()
+        # process remaining, unfilled cells
+        for j in range(x+1, cols):
+            item = QTableWidgetItem()
+            item.setBackground(QBrush(QColor('gray')))
+            item.setFlags(Qt.NoItemFlags)
+            item.setTextAlignment(Qt.AlignHCenter)
+            self.setItem(y, j, item)
 
-        self.itemChanged.connect(self._itemChanged)
+        text = self._bytes2ascii(row)
+        item = QTableWidgetItem(text)
+        item.setData(Qt.UserRole, row)  # store original data
+        item.setTextAlignment(Qt.AlignLeft)
+        item.setBackground(QBrush(QColor('lightblue')))
+        if self._read_only:
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        else:
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
+        self.setItem(y, cols - 1, item)
 
     def _bytes2ascii(self, data):
         allowed = (set(string.printable.encode()) - set(string.whitespace.encode())) | {b' '}
         return bytes(c if c in allowed else b'.'[0] for c in data).decode()
 
     def _itemChanged(self, item):
+        def reset_hex_text(orig_data):
+            text = codecs.encode(orig_data, 'hex').decode()
+            item.setText(text)
+
         col = item.column()
         row = item.row()
         text = item.text()
@@ -132,16 +147,14 @@ class HexDumpWidget(QTableWidget):
             fmt = "{{:>0{}}}".format(self._width * 2)
             text = fmt.format(text)
             if len(text) != self._width * 2:
-                text = codecs.encode(orig_data, 'hex').decode()
-                item.setText(text)
+                reset_hex_text(orig_data)
                 return
 
             offset += col * self._width
             try:
                 value = codecs.decode(text, 'hex')
             except ValueError:
-                text = codecs.encode(orig_data, 'hex').decode()
-                item.setText(text)
+                reset_hex_text(orig_data)
                 return
         else:  # ascii part
             if len(orig_data) != len(text):
