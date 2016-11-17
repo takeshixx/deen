@@ -589,8 +589,11 @@ class HexDumpWidget(QTableWidget):
         self.setItem(y, cols - 1, item)
 
     def _bytes_to_ascii(self, data):
+        if isinstance(data, str):
+            data = codecs.encode(data, 'utf8')
         allowed = (set(string.printable.encode()) - set(string.whitespace.encode())) | {b' '}
-        return bytes(c if c in allowed else b'.'[0] for c in data).decode()
+        allowed = [ord(x) if isinstance(x, str) else x for x in allowed]
+        return ''.join([chr(c) if c in allowed else '.' for c in data])
 
     def _item_changed(self, item):
         def reset_hex_text(orig_data):
