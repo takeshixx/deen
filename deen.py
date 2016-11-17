@@ -112,7 +112,7 @@ class Deen(QMainWindow):
 class EncoderWidget(QWidget):
     def __init__(self, parent):
         super(EncoderWidget, self).__init__(parent)
-        self.widgets = list()
+        self.widgets = []
         self.widgets.append(DeenWidget(self))
         self.encoder_layout = QVBoxLayout(self)
         for widget in self.widgets:
@@ -260,7 +260,7 @@ class DeenWidget(QWidget):
         format.setBackground(QBrush(QColor('yellow')))
         regex = QRegularExpression(self.search_field.text())
         matches = regex.globalMatch(self.field.toPlainText())
-        _matches = list()
+        _matches = []
         while matches.hasNext():
             _matches.append(matches.next())
         self.search_matches = _matches
@@ -408,7 +408,7 @@ class DeenWidget(QWidget):
                 self.compress(self.current_pick)
             else:
                 self.uncompress(self.current_pick)
-        elif self.current_pick in HASHS:
+        elif self.current_pick in HASHS or self.current_pick == 'ALL':
             self.hash(self.current_pick)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
@@ -515,7 +515,7 @@ class DeenWidget(QWidget):
             output = ''
             for _hash in HASHS:
                 output += '{}:\t'.format(_hash)
-                h = hashlib.new(_hash)
+                h = hashlib.new(_hash.lower())
                 h.update(self.content)
                 output += h.hexdigest()
                 output += '\n'
@@ -547,7 +547,7 @@ class HexDumpWidget(QTableWidget):
         except:
             pass
         self.clear()
-        rows = list()
+        rows = []
         for i in range(0, len(self._data), self._bytes_per_line):
             rows.append(self._data[i:i+self._bytes_per_line])
         self.setRowCount(len(rows))
@@ -563,11 +563,11 @@ class HexDumpWidget(QTableWidget):
         cols = self.columnCount()
         for i in range(cols):
             self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
-        header_labels = list()
+        header_labels = []
         for i in range(0, self._bytes_per_line, self._width):
             header_labels.append('{:X}'.format(i))
         header_labels.append('ASCII')
-        row_labels = list()
+        row_labels = []
         for i in range(0, len(self._data), self._bytes_per_line):
             row_labels.append('{:X}'.format(i))
         self.setHorizontalHeaderLabels(header_labels)
