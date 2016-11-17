@@ -52,7 +52,6 @@ class HexDumpWidget(QTableWidget):
         self._bytes_per_line = max_bytes_per_line
         self._width = width
         self._read_only = read_only
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.data = data
 
     def _reconstructTable(self):
@@ -70,6 +69,9 @@ class HexDumpWidget(QTableWidget):
         cols = self._bytes_per_line // self._width + 1  # ascii
         self.setColumnCount(cols)
 
+        for i in range(cols):
+            self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
+
         header_labels = []
         for i in range(0, self._bytes_per_line, self._width):
             header_labels.append('{:X}'.format(i))
@@ -85,6 +87,7 @@ class HexDumpWidget(QTableWidget):
                 block = row[i:i+self._width]
                 item = QTableWidgetItem(codecs.encode(block, 'hex').decode())
                 item.setBackground(QBrush(QColor('lightgray')))
+                item.setTextAlignment(Qt.AlignHCenter)
                 item.setData(Qt.UserRole, block)  # store original data
                 if self._read_only:
                     item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
@@ -95,17 +98,22 @@ class HexDumpWidget(QTableWidget):
                 item = QTableWidgetItem()
                 item.setBackground(QBrush(QColor('gray')))
                 item.setFlags(Qt.NoItemFlags)
+                item.setTextAlignment(Qt.AlignHCenter)
                 self.setItem(y, j, item)
 
             text = self._bytes2ascii(row)
             item = QTableWidgetItem(text)
             item.setData(Qt.UserRole, row)  # store original data
+            item.setTextAlignment(Qt.AlignLeft)
             item.setBackground(QBrush(QColor('lightblue')))
             if self._read_only:
                 item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             else:
                 item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
             self.setItem(y, cols - 1, item)
+
+        self.horizontalHeader().setSectionResizeMode(cols - 1, QHeaderView.Stretch)
+        self.resizeColumnsToContents()
 
         self.itemChanged.connect(self._itemChanged)
 
