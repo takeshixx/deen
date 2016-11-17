@@ -521,7 +521,7 @@ class HexDumpWidget(QTableWidget):
         self._width = width
         self._read_only = read_only
         self.data = data
-        self._reconstruct_table()
+        self.horizontalHeader().setStretchLastSection(True)
 
     def _reconstruct_table(self):
         try:
@@ -545,7 +545,6 @@ class HexDumpWidget(QTableWidget):
         cols = self.columnCount()
         for i in range(cols):
             self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
-        self.horizontalHeader().setStretchLastSection(True)
         header_labels = list()
         for i in range(0, self._bytes_per_line, self._width):
             header_labels.append('{:X}'.format(i))
