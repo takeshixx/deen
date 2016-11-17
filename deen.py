@@ -18,6 +18,9 @@ try:
 except ImportError:
     import urllib as urllibparse
 
+
+__version__ = '0.3.0'
+
 LOGGER = logging.getLogger()
 logging.basicConfig(format='[%(lineno)s - %(funcName)s() ] %(message)s')
 
@@ -76,7 +79,7 @@ class Deen(QMainWindow):
     def show_about(self):
         about = QMessageBox(self)
         about.setWindowTitle('About')
-        about.setText('DEcoderENcoder v0.2.1')
+        about.setText('DEcoderENcoder v' + __version__)
         about.resize(100, 75)
         about.show()
 
