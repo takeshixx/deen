@@ -338,9 +338,8 @@ class DeenWidget(QWidget):
         name = fd.getSaveFileName(fd, 'Save File')
         if not name or not name[0]:
             return
-        file = open(name[0], 'wb')
-        file.write(self.content)
-        file.close()
+        with open(name[0], 'wb') as file:
+            file.write(self.content)
 
     def remove_next_widgets(self, offset=0):
         assert isinstance(offset, int)
