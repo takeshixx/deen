@@ -6,12 +6,13 @@ import binascii
 import zlib
 import hashlib
 import logging
-from PyQt5.QtCore import Qt, QTextCodec, QRect, QRegularExpression
+import string
+from PyQt5.QtCore import Qt, QTextCodec, QRect, QRegularExpression, pyqtSignal
 from PyQt5.QtGui import (QTextCursor, QTextTableFormat, QTextLength, QTextCharFormat, QBrush, QColor)
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction,QScrollArea, QLabel,
+from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QMainWindow, QAction, QScrollArea, QLabel,
                              QApplication, QMessageBox, QTextEdit, QVBoxLayout, QComboBox,
                              QButtonGroup, QCheckBox, QPushButton, QDialog, QTextBrowser, QLineEdit,
-                             QProgressBar, QFileDialog)
+                             QProgressBar, QFileDialog, QTableWidget, QTableWidgetItem, QHeaderView)
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -28,7 +29,7 @@ ENCODINGS = ['Base64',
              'UTF16']
 
 COMPRESSIONS = ['Gzip',
-                'Bz2',]
+                'Bz2']
 
 HASHS = ['MD5',
          'SHA1',
@@ -40,6 +41,174 @@ HASHS = ['MD5',
          'MD4',
          'MDC2',
          'Whirlpool']
+
+
+class HexDumpWidget(QTableWidget):
+    bytesChanged = pyqtSignal()
+
+    def __init__(self, data=b'', max_bytes_per_line=16, width=1, read_only=False, parent=None):
+        super(HexDumpWidget, self).__init__(parent)
+        self._max_bytes_per_line = max_bytes_per_line
+        self._bytes_per_line = max_bytes_per_line
+        self._width = width
+        self._read_only = read_only
+        # self.horizontalHeader().setStretchLastSection(True)
+        self.data = data
+
+    def _reconstructTable(self):
+        try:
+            self.itemChanged.disconnect(self._itemChanged)
+        except:
+            pass
+        self.clear()
+
+        rows = []
+        for i in range(0, len(self._data), self._bytes_per_line):
+            rows.append(self._data[i:i+self._bytes_per_line])
+
+        self.setRowCount(len(rows))
+        cols = self._bytes_per_line // self._width + 1  # ascii
+        self.setColumnCount(cols)
+
+        self._process_headers()
+
+        for y, row in enumerate(rows):
+            self._process_row(y, row)
+        self.resizeColumnsToContents()
+
+        self.itemChanged.connect(self._itemChanged)
+
+    def _process_headers(self):
+        cols = self.columnCount()
+
+        for i in range(cols):
+            self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
+
+        header_labels = []
+        for i in range(0, self._bytes_per_line, self._width):
+            header_labels.append('{:X}'.format(i))
+        header_labels.append('ASCII')
+        row_labels = []
+        for i in range(0, len(self._data), self._bytes_per_line):
+            row_labels.append('{:X}'.format(i))
+        self.setHorizontalHeaderLabels(header_labels)
+        self.setVerticalHeaderLabels(row_labels)
+
+    def _process_row(self, y, row):
+        cols = self.columnCount()
+
+        for x, i in enumerate(range(0, len(row), self._width)):
+            block = row[i:i+self._width]
+            item = QTableWidgetItem(codecs.encode(block, 'hex').decode())
+            item.setBackground(QBrush(QColor('lightgray')))
+            item.setTextAlignment(Qt.AlignHCenter)
+            item.setData(Qt.UserRole, block)  # store original data
+            if self._read_only:
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            else:
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
+            self.setItem(y, x, item)
+
+        # process remaining, unfilled cells
+        for j in range(x+1, cols):
+            item = QTableWidgetItem()
+            item.setBackground(QBrush(QColor('gray')))
+            item.setFlags(Qt.NoItemFlags)
+            item.setTextAlignment(Qt.AlignHCenter)
+            self.setItem(y, j, item)
+
+        text = self._bytes2ascii(row)
+        item = QTableWidgetItem(text)
+        item.setData(Qt.UserRole, row)  # store original data
+        item.setTextAlignment(Qt.AlignLeft)
+        item.setBackground(QBrush(QColor('lightblue')))
+        if self._read_only:
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        else:
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
+        self.setItem(y, cols - 1, item)
+
+    def _bytes2ascii(self, data):
+        allowed = (set(string.printable.encode()) - set(string.whitespace.encode())) | {b' '}
+        return bytes(c if c in allowed else b'.'[0] for c in data).decode()
+
+    def _itemChanged(self, item):
+        def reset_hex_text(orig_data):
+            text = codecs.encode(orig_data, 'hex').decode()
+            item.setText(text)
+
+        col = item.column()
+        row = item.row()
+        text = item.text()
+        orig_data = item.data(Qt.UserRole)
+        offset = row * self._bytes_per_line
+        if col != self.columnCount() - 1:  # hex part
+            text = text.strip()
+            fmt = "{{:>0{}}}".format(self._width * 2)
+            text = fmt.format(text)
+            if len(text) != self._width * 2:
+                reset_hex_text(orig_data)
+                return
+
+            offset += col * self._width
+            try:
+                value = codecs.decode(text, 'hex')
+            except ValueError:
+                reset_hex_text(orig_data)
+                return
+        else:  # ascii part
+            if len(orig_data) != len(text):
+                text = self._bytes2ascii(orig_data)
+                item.setText(text)
+                return
+
+            value = bytearray()
+            for a, b in zip(orig_data, text.encode()):
+                if b == b'.'[0]:
+                    value.append(a)
+                else:
+                    value.append(b)
+
+        self._data[offset:offset+len(value)] = value
+        self.bytesChanged.emit()
+        self._reconstructTable()
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, val):
+        if val not in (1, 2, 2**2, 2**3, 2**4, 2**5, 2**6):
+            raise ValueError('Width not power of 2')
+        self._width = val
+        self._reconstructTable()
+
+    @property
+    def data(self):
+        return bytes(self._data)
+
+    @data.setter
+    def data(self, val):
+        if not isinstance(val, bytes):
+            raise TypeError('bytestring required. Got ' + type(val).__name__)
+        self._data = bytearray(val)
+        if self._data:
+            self._bytes_per_line = min(len(self._data), self._max_bytes_per_line)
+        self._reconstructTable()
+
+    @property
+    def bytes_per_line(self):
+        return self._bytes_per_line
+
+    @bytes_per_line.setter
+    def bytes_per_line(self, val):
+        self._max_bytes_per_line = val
+        self._bytes_per_line = min(self._max_bytes_per_line, self._bytes_per_line)
+        self._reconstructTable()
+
+    def to_bytes(self):
+        return self.data
 
 
 class Deen(QMainWindow):
@@ -107,6 +276,9 @@ class DeenWidget(QWidget):
         self.field = QTextEdit(self)
         self.field.setReadOnly(readonly)
         self.field.textChanged.connect(self.field_content_changed)
+        self.hex_field = HexDumpWidget(read_only=readonly, parent=self)
+        self.hex_field.setHidden(True)
+        self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.codec = QTextCodec.codecForName('UTF-8')
         self.content = None
         self.hex_view = False
@@ -118,6 +290,7 @@ class DeenWidget(QWidget):
         self.v_layout = QVBoxLayout()
         self.v_layout.addWidget(self.view_panel)
         self.v_layout.addWidget(self.field)
+        self.v_layout.addWidget(self.hex_field)
         self.v_layout.addLayout(self.search)
         self.h_layout = QHBoxLayout()
         self.h_layout.addLayout(self.v_layout)
@@ -167,10 +340,13 @@ class DeenWidget(QWidget):
             # If widget count is greater then two,
             # remove all widgets after the second.
             self.remove_next_widgets(offset=2)
-        if not self.field.isReadOnly() and not self.hex_view:
-            self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
+        if not self.field.isReadOnly():
+            if not self.hex_view:
+                self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
+            else:
+                self.content = self.hex_field.data
             self.length_field.setText('Length: ' + str(len(self.content)))
-        if self.field.hasFocus() and self.current_pick:
+        if (self.hex_field.hasFocus() or self.field.hasFocus()) and self.current_pick:
             self.action()
 
     def create_view_panel(self):
@@ -304,31 +480,26 @@ class DeenWidget(QWidget):
 
     def view_text(self):
         self.hex_view = False
+        self.field.setHidden(False)
+        self.hex_field.setHidden(True)
         if self.content:
             self.field.setText(self.codec.toUnicode(self.content))
 
     def view_hex(self):
         self.hex_view = True
+        self.field.setHidden(True)
+        self.hex_field.setHidden(False)
+
         if not self.content:
             self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
-        rows = [self.content[i:i+16] for i in range(0, len(self.content), 16)]
-        if rows:
-            format = QTextTableFormat()
-            format.setAlignment(Qt.AlignCenter)
-            format.setBorder(0)
-            format.setWidth(QTextLength(QTextLength.PercentageLength, 100))
-            cursor = self.field.textCursor()
-            cursor.select(QTextCursor.Document)
-            cursor.removeSelectedText()
-            cursor.insertTable(len(rows), len(rows[0]) if len(rows[0]) < 16 else 16, format)
-            for r in rows:
-                for c in r:
-                    cursor.insertText(self.codec.toUnicode(codecs.encode(bytes([c]), 'hex').upper()))
-                    cursor.movePosition(QTextCursor.NextCell)
+
+        self.hex_field.data = self.content
 
     def clear_content(self):
         if self.parent.widgets[0] == self:
             self.field.clear()
+            self.hex_field.data = b''
+            self.content = b''
         self.remove_next_widgets()
 
     def save_content(self):
