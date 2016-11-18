@@ -85,7 +85,7 @@ class HexDumpWidget(QTableWidget):
         self.setItem(y, cols - 1, item)
 
     def _bytes_to_ascii(self, data):
-        if isinstance(data, str):
+        if not isinstance(data, (bytes, bytearray)):
             data = codecs.encode(data, 'utf8')
         allowed = (set(string.printable.encode()) - set(string.whitespace.encode())) | {b' '}
         allowed = [ord(x) if isinstance(x, str) else x for x in allowed]
