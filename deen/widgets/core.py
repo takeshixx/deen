@@ -19,7 +19,7 @@ class Deen(QMainWindow):
         self.main_scrollable.setWidgetResizable(True)
         self.main_scrollable.setWidget(self.encoder_widget)
         self.setCentralWidget(self.main_scrollable)
-        self.setWindowTitle("DEEN")
+        self.setWindowTitle("deen")
         self.log = DeenLogger(self)
         self.show()
 

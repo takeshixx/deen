@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='DEEN',
+setup(name='deen',
       version='0.4.0',
       install_requires=['PyQt5'],
       packages=['deen',
