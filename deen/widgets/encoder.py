@@ -10,8 +10,8 @@ except ImportError:
     import urllib as urllibparse
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression
-from PyQt5.QtGui import (QTextCursor, QTextCharFormat, QBrush, QColor)
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QTextEdit, QVBoxLayout, QComboBox,
+from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor
+from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLayout, QComboBox,
                              QButtonGroup, QCheckBox, QPushButton, QLineEdit, QProgressBar,
                              QFileDialog)
 
@@ -123,6 +123,8 @@ class DeenWidget(QWidget):
         hex.stateChanged.connect(self.view_hex)
         clear = QPushButton('Clear')
         clear.clicked.connect(self.clear_content)
+        copy = QPushButton('Copy')
+        copy.clicked.connect(self.copy_to_clipboard)
         save = QPushButton('Save')
         save.clicked.connect(self.save_content)
         self.length_field = QLabel()
@@ -143,6 +145,7 @@ class DeenWidget(QWidget):
         panel.addWidget(self.codec_field)
         panel.addStretch()
         panel.addWidget(clear)
+        panel.addWidget(copy)
         panel.addWidget(save)
         widget = QWidget()
         widget.setLayout(panel)
@@ -265,6 +268,16 @@ class DeenWidget(QWidget):
             self.content = bytearray()
             self.length_field.setText('Length: ' + str(len(self.content)))
         self.remove_next_widgets()
+
+    def copy_to_clipboard(self):
+        try:
+            content = self.content.decode('utf8')
+        except UnicodeDecodeError as e:
+            LOGGER.error(e)
+            LOGGER.error('Cannot copy non-ASCII content to clipboard')
+            return
+        clipboard = QApplication.clipboard()
+        clipboard.setText(content)
 
     def save_content(self):
         fd = QFileDialog(self)

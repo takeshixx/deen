@@ -9,8 +9,8 @@ from deen.widgets.log import DeenLogger, DeenStatusConsole
 LOGGER = logging.getLogger(__name__)
 
 class Deen(QMainWindow):
-    def __init__(self, partent=None):
-        super(Deen, self).__init__(partent)
+    def __init__(self, parent=None):
+        super(Deen, self).__init__(parent)
         self.create_menubar()
         self.resize(800, 600)
         self.encoder_widget = EncoderWidget(self)
