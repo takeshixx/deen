@@ -39,7 +39,7 @@ class DeenWidget(QWidget):
         self.parent = parent
         self.current_pick = None
         self.current_combo = None
-        self.text_field = TextViewWidget(self)
+        self.text_field = TextViewWidget(self, readonly=readonly)
         self.text_field.textChanged.connect(self.field_content_changed)
         self.hex_field = HexViewWidget(read_only=readonly, parent=self)
         self.hex_field.setHidden(True)
@@ -256,12 +256,12 @@ class DeenWidget(QWidget):
         self.hex_field.setHidden(False)
         if not self.content:
             self.content = bytearray(self.text_field.toPlainText(), 'utf8')
-        self.hex_field.data = self.content
+        self.hex_field.content = self.content
 
     def clear_content(self):
         if self.parent.widgets[0] == self:
             self.text_field.clear()
-            self.hex_field.data = bytearray()
+            self.hex_field.content = bytearray()
             self.content = bytearray()
             self.length_field.setText('Length: ' + str(len(self.content)))
         self.remove_next_widgets()

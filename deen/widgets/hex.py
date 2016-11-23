@@ -9,14 +9,18 @@ from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QHeaderView)
 class HexViewWidget(QTableWidget):
     bytesChanged = pyqtSignal()
 
-    def __init__(self, content=b'', max_bytes_per_line=16, width=1,
+    def __init__(self, content=None, max_bytes_per_line=16, width=1,
                  read_only=False, parent=None):
         super(HexViewWidget, self).__init__(parent)
+        self.parent = parent
         self._max_bytes_per_line = max_bytes_per_line
         self._bytes_per_line = max_bytes_per_line
         self._width = width
         self._read_only = read_only
-        self.content = content
+        if content:
+            self.content = content
+        else:
+            self.content = bytearray()
         self.horizontalHeader().setStretchLastSection(True)
 
     def _reconstruct_table(self):
@@ -141,13 +145,12 @@ class HexViewWidget(QTableWidget):
 
     @property
     def content(self):
-        return bytes(self._data)
+        return self._data
 
     @content.setter
-    def content(self, val):
-        if not isinstance(val, bytes):
-            raise TypeError('bytestring required. Got ' + type(val).__name__)
-        self._data = bytearray(val)
+    def content(self, content):
+        assert isinstance(content, bytearray), TypeError('bytearray required. Got ' + type(content).__name__)
+        self._data = content
         if self._data:
             self._bytes_per_line = min(len(self._data), self._max_bytes_per_line)
         self._reconstruct_table()

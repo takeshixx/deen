@@ -14,9 +14,3 @@ class TextViewWidget(QTextEdit):
         self.parent = parent
         self.setReadOnly(readonly)
         self.codec = QTextCodec.codecForName('UTF-8')
-        self.content = None
-
-    def set_content(self, content):
-        if isinstance(content, str):
-            content = codecs.encode(content, 'utf8')
-        self.content = content
