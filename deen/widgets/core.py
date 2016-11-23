@@ -19,7 +19,7 @@ class Deen(QMainWindow):
         self.main_scrollable.setWidgetResizable(True)
         self.main_scrollable.setWidget(self.encoder_widget)
         self.setCentralWidget(self.main_scrollable)
-        self.setWindowTitle("DEEN")
+        self.setWindowTitle("deen")
         self.log = DeenLogger(self)
         self.show()
 
@@ -46,7 +46,7 @@ class Deen(QMainWindow):
         about = QMessageBox(self)
         about.setWindowTitle('About')
         # TODO: readd __version__ variable
-        about.setText('DEcoderENcoder v0.3.0')
+        about.setText('DEcoderENcoder')
         about.resize(100, 75)
         about.show()
 

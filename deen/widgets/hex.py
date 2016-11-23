@@ -6,17 +6,17 @@ from PyQt5.QtGui import (QBrush, QColor)
 from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QHeaderView)
 
 
-class HexDumpWidget(QTableWidget):
+class HexViewWidget(QTableWidget):
     bytesChanged = pyqtSignal()
 
-    def __init__(self, data=b'', max_bytes_per_line=16, width=1,
+    def __init__(self, content=b'', max_bytes_per_line=16, width=1,
                  read_only=False, parent=None):
-        super(HexDumpWidget, self).__init__(parent)
+        super(HexViewWidget, self).__init__(parent)
         self._max_bytes_per_line = max_bytes_per_line
         self._bytes_per_line = max_bytes_per_line
         self._width = width
         self._read_only = read_only
-        self.data = data
+        self.content = content
         self.horizontalHeader().setStretchLastSection(True)
 
     def _reconstruct_table(self):
@@ -140,11 +140,11 @@ class HexDumpWidget(QTableWidget):
         self._reconstruct_table()
 
     @property
-    def data(self):
+    def content(self):
         return bytes(self._data)
 
-    @data.setter
-    def data(self, val):
+    @content.setter
+    def content(self, val):
         if not isinstance(val, bytes):
             raise TypeError('bytestring required. Got ' + type(val).__name__)
         self._data = bytearray(val)
@@ -163,4 +163,4 @@ class HexDumpWidget(QTableWidget):
         self._reconstruct_table()
 
     def to_bytes(self):
-        return self.data
+        return self.content
