@@ -12,8 +12,8 @@ except ImportError:
 from PyQt5.QtCore import QTextCodec, QRegularExpression
 from PyQt5.QtGui import (QTextCursor, QTextCharFormat, QBrush, QColor)
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QTextEdit, QVBoxLayout, QComboBox,
-                             QButtonGroup, QCheckBox, QPushButton, QLineEdit,
-                             QProgressBar, QFileDialog)
+                             QButtonGroup, QCheckBox, QPushButton, QLineEdit, QProgressBar,
+                             QFileDialog)
 
 from deen.widgets.hex import HexDumpWidget
 from deen.core import *
@@ -45,7 +45,7 @@ class DeenWidget(QWidget):
         self.hex_field.setHidden(True)
         self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.codec = QTextCodec.codecForName('UTF-8')
-        self.content = None
+        self.content = bytearray()
         self.hex_view = False
         self.view_panel = self.create_view_panel()
         self.action_panel = self.create_action_panel(enable_actions)
@@ -107,7 +107,7 @@ class DeenWidget(QWidget):
             self.remove_next_widgets(offset=2)
         if not self.field.isReadOnly():
             if not self.hex_view:
-                self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
+                self.content = bytearray(self.field.toPlainText(), 'utf8')
             else:
                 self.content = self.hex_field.data
             self.length_field.setText('Length: ' + str(len(self.content)))
@@ -255,14 +255,14 @@ class DeenWidget(QWidget):
         self.field.setHidden(True)
         self.hex_field.setHidden(False)
         if not self.content:
-            self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
+            self.content = bytearray(self.field.toPlainText(), 'utf8')
         self.hex_field.data = self.content
 
     def clear_content(self):
         if self.parent.widgets[0] == self:
             self.field.clear()
-            self.hex_field.data = b''
-            self.content = b''
+            self.hex_field.data = bytearray()
+            self.content = bytearray()
             self.length_field.setText('Length: ' + str(len(self.content)))
         self.remove_next_widgets()
 
@@ -288,13 +288,15 @@ class DeenWidget(QWidget):
     def set_content(self, content):
         if isinstance(content, str):
             content = codecs.encode(content, 'utf8')
-        self.content = content
+        self.content = bytearray(content)
 
     def set_content_next(self, content):
         if isinstance(content, bytes):
-            self.next().content = content
+            self.next().content = bytearray(content)
+        elif isinstance(content, str):
+            self.next().content = bytearray(content, 'utf8')
         else:
-            self.next().content = codecs.encode(content, 'utf8')
+            self.next().content = content
         self.next().field.clear()
         self.next().field.setText(self.codec.toUnicode(self.next().content))
         self.next().length_field.setText('Length: ' + str(len(self.next().content)))
@@ -304,7 +306,7 @@ class DeenWidget(QWidget):
     def action(self, combo=None):
         self.next().field.setStyleSheet('color: rgb(0, 0, 0);')
         if not self.content:
-            self.content = bytes(self.codec.fromUnicode(self.field.toPlainText()))
+            self.content = bytearray(self.field.toPlainText(), 'utf8')
         if combo:
             if combo.currentIndex() == 0:
                 return
