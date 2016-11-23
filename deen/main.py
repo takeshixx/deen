@@ -1,13 +1,13 @@
 import sys
 import logging
-import pathlib
+import os.path
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
 from deen.widgets.core import Deen
 
-ICON = str(pathlib.PurePath(__file__).parent / 'icon.png')
+ICON = os.path.dirname(os.path.abspath(__file__)) + '/icon.png'
 LOGGER = logging.getLogger()
 logging.basicConfig(format='[%(lineno)s - %(funcName)s() ] %(message)s')
 
