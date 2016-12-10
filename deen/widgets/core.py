@@ -67,7 +67,7 @@ class Deen(QMainWindow):
         if content:
             self.encoder_widget.widgets[0].clear_content()
             self.encoder_widget.widgets[0].set_content(content)
-            self.encoder_widget.widgets[0].field.setText(
+            self.encoder_widget.widgets[0].text_field.setText(
                 self.encoder_widget.widgets[0].codec.toUnicode(content))
         self.encoder_widget.widgets[0].hex_field.setHidden(True)
-        self.encoder_widget.widgets[0].field.setHidden(False)
+        self.encoder_widget.widgets[0].text_field.setHidden(False)
