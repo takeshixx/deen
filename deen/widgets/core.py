@@ -67,7 +67,12 @@ class Deen(QMainWindow):
         if content:
             self.encoder_widget.widgets[0].clear_content()
             self.encoder_widget.widgets[0].set_content(content)
-            self.encoder_widget.widgets[0].text_field.setText(
-                self.encoder_widget.widgets[0].codec.toUnicode(content))
+            try:
+                content = content.decode('utf8')
+            except UnicodeDecodeError:
+                content = content.decode('utf8', errors='replace')
+                self.encoder_widget.widgets[0].text_field.setReadOnly(True)
+                LOGGER.warn('Failed to decode file content, root widget will be read only')
+            self.encoder_widget.widgets[0].text_field.setText(content)
         self.encoder_widget.widgets[0].hex_field.setHidden(True)
         self.encoder_widget.widgets[0].text_field.setHidden(False)

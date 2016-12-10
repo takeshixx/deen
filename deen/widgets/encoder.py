@@ -110,7 +110,8 @@ class DeenWidget(QWidget):
                 self.content = bytearray(self.text_field.toPlainText(), 'utf8')
             else:
                 self.content = self.hex_field.content
-            self.update_length_field(self)
+        self.update_length_field(self)
+        self.update_readonly_field(self)
         if (self.hex_field.hasFocus() or self.text_field.hasFocus()) and self.current_pick:
             self.action()
 
@@ -130,6 +131,9 @@ class DeenWidget(QWidget):
         self.length_field = QLabel()
         self.length_field.setStyleSheet('border: 1px solid lightgrey')
         self.update_length_field(self)
+        self.readonly_field = QLabel()
+        self.readonly_field.setStyleSheet('border: 1px solid lightgrey')
+        self.update_readonly_field(self)
         self.codec_field = QLabel()
         self.codec_field.setStyleSheet('border: 1px solid lightgrey')
         self.codec_field.hide()
@@ -142,6 +146,7 @@ class DeenWidget(QWidget):
         panel.addWidget(text)
         panel.addWidget(hex)
         panel.addWidget(self.length_field)
+        panel.addWidget(self.readonly_field)
         panel.addWidget(self.codec_field)
         panel.addStretch()
         panel.addWidget(clear)
@@ -257,6 +262,7 @@ class DeenWidget(QWidget):
         self.hex_view = True
         self.text_field.setHidden(True)
         self.hex_field.setHidden(False)
+        self.hex_field._read_only = self.text_field.isReadOnly()
         if not self.content:
             self.content = bytearray(self.text_field.toPlainText(), 'utf8')
         self.hex_field.content = self.content
@@ -266,7 +272,9 @@ class DeenWidget(QWidget):
             self.text_field.clear()
             self.hex_field.content = bytearray()
             self.content = bytearray()
-            self.length_field.setText('Length: ' + str(len(self.content)))
+            self.update_length_field(self)
+            self.text_field.setReadOnly(False)
+            self.update_readonly_field(self)
         self.remove_next_widgets()
 
     def copy_to_clipboard(self):
@@ -289,6 +297,9 @@ class DeenWidget(QWidget):
 
     def update_length_field(self, widget):
         widget.length_field.setText('Length: ' + str(len(widget.content)))
+
+    def update_readonly_field(self, widget):
+        widget.readonly_field.setText('R-' if widget.text_field.isReadOnly() else 'RW')
 
     def remove_next_widgets(self, offset=0):
         assert isinstance(offset, int)
