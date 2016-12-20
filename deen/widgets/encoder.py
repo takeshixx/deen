@@ -4,10 +4,15 @@ import binascii
 import zlib
 import hashlib
 import logging
+import cgi
 try:
     import urllib.parse as urllibparse
 except ImportError:
     import urllib as urllibparse
+try:
+    from html.parser import HTMLParser
+except ImportError:
+    from HTMLParser import HTMLParser
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor
@@ -363,6 +368,8 @@ class DeenWidget(QWidget):
             output = codecs.encode(self.content, 'hex')
         elif enc == 'URL':
             output = urllibparse.quote_plus(self.content.decode())
+        elif enc == 'HTML':
+            output = cgi.escape(self.content.decode())
         elif enc == 'Gzip':
             output = codecs.encode(self.conent, 'zlib')
         elif enc == 'Bz2':
@@ -394,6 +401,13 @@ class DeenWidget(QWidget):
         elif enc == 'URL':
             try:
                 output = urllibparse.unquote_plus(self.content.decode())
+            except TypeError as e:
+                decode_error = e
+                output = self.content
+        elif enc == 'HTML':
+            h = HTMLParser()
+            try:
+                output = h.unescape(self.content.decode())
             except TypeError as e:
                 decode_error = e
                 output = self.content
