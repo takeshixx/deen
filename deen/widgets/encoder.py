@@ -1,19 +1,5 @@
-import codecs
-import base64
-import binascii
-import zlib
-import hashlib
 import logging
-import cgi
 import string
-try:
-    import urllib.parse as urllibparse
-except ImportError:
-    import urllib as urllibparse
-try:
-    from html.parser import HTMLParser
-except ImportError:
-    from HTMLParser import HTMLParser
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor
@@ -23,6 +9,7 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLa
 
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
+from deen.transformers.core import DeenTransformer
 from deen.core import *
 
 LOGGER = logging.getLogger(__name__)
@@ -363,140 +350,32 @@ class DeenWidget(QWidget):
                 return
             self.current_combo = combo
             self.current_pick = combo.currentText()
+        transformer = DeenTransformer()
         if self.current_pick in ENCODINGS:
             if self.current_combo.model().item(0).text() == 'Encode':
-                self.encode(self.current_pick)
+                encoded = transformer.encode(self.current_pick, self._content)
+                self.set_content_next(encoded)
             else:
-                self.decode(self.current_pick)
+                decoded, error = transformer.decode(self.current_pick, self._content)
+                if error:
+                    LOGGER.error(error)
+                    self.next().text_field.setStyleSheet('color: rgb(255, 0, 0);')
+                self.set_content_next(decoded)
         elif self.current_pick in COMPRESSIONS:
             if self.current_combo.model().item(0).text() == 'Compress':
-                self.compress(self.current_pick)
+                compressed = transformer.compress(self.current_pick, self._content)
+                self.set_content_next(compressed)
             else:
-                self.uncompress(self.current_pick)
+                uncompressed, error = transformer.uncompress(self.current_pick, self._content)
+                if error:
+                    LOGGER.error(error)
+                    self.next().text_field.setStyleSheet('color: rgb(255, 0, 0);')
+                self.set_content_next(uncompressed)
         elif self.current_pick in HASHS or self.current_pick == 'ALL':
-            self.hash(self.current_pick)
+            hashed = transformer.hash(self.current_pick, self._content)
+            self.set_content_next(hashed)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
         if self.next().text_field.isReadOnly() and self.current_pick:
             self.next().codec_field.setText('Transformer: ' + self.current_pick)
             self.next().codec_field.show()
-
-    def encode(self, enc):
-        if enc == 'Base64':
-            output = base64.b64encode(self._content)
-        elif enc == 'Hex':
-            output = codecs.encode(self._content, 'hex')
-        elif enc == 'URL':
-            output = urllibparse.quote_plus(self._content.decode())
-        elif enc == 'HTML':
-            output = cgi.escape(self._content.decode())
-        elif enc == 'Gzip':
-            output = codecs.encode(self.conent, 'zlib')
-        elif enc == 'Bz2':
-            output = codecs.encode(self._content, 'bz2')
-        elif enc == 'Rot13':
-            output = codecs.encode(self._content.decode(), 'rot_13')
-        elif enc == 'UTF8':
-            output = codecs.encode(self._content.decode(), 'utf8')
-        elif enc == 'UTF16':
-            output = codecs.encode(self._content.decode(), 'utf16')
-        else:
-            output = self._content
-        self.set_content_next(output)
-
-    def decode(self, enc):
-        decode_error = None
-        if enc == 'Base64':
-            try:
-                output = base64.b64decode(self._content.replace(b'\n', b''))
-            except binascii.Error as e:
-                decode_error = e
-                output = self._content
-        elif enc == 'Hex':
-            try:
-                output = codecs.decode(self._content, 'hex')
-            except binascii.Error as e:
-                decode_error = e
-                output = self._content
-        elif enc == 'URL':
-            try:
-                output = urllibparse.unquote_plus(self._content.decode())
-            except TypeError as e:
-                decode_error = e
-                output = self._content
-        elif enc == 'HTML':
-            h = HTMLParser()
-            try:
-                output = h.unescape(self._content.decode())
-            except TypeError as e:
-                decode_error = e
-                output = self._content
-        elif enc == 'Gzip':
-            try:
-                output = codecs.decode(self._content.decode(), 'zlib')
-            except zlib.error as e:
-                decode_error = e
-                output = self._content
-        elif enc == 'Bz2':
-            try:
-                output = codecs.decode(self._content.decode(), 'bz2')
-            except OSError as e:
-                decode_error = e
-                output = self._content
-        elif enc == 'Rot13':
-            output = codecs.decode(self._content.decode(), 'rot_13')
-        else:
-            output = self._content
-
-        if decode_error:
-            LOGGER.error(decode_error)
-            self.next().text_field.setStyleSheet('color: rgb(255, 0, 0);')
-        self.set_content_next(output)
-
-    def compress(self, comp):
-        if comp == 'Gzip':
-            output = codecs.encode(self._content, 'zlib')
-        elif comp == 'Bz2':
-            output = codecs.encode(self._content, 'bz2')
-        else:
-            output = self._content
-        self.set_content_next(output)
-
-    def uncompress(self, comp):
-        decode_error = None
-        if comp == 'Gzip':
-            try:
-                output = codecs.decode(self._content, 'zlib')
-            except zlib.error as e:
-                decode_error = e
-                output = self._content
-        elif comp == 'Bz2':
-            try:
-                output = codecs.decode(self._content, 'bz2')
-            except OSError as e:
-                decode_error = e
-                output = self._content
-        else:
-            output = self._content
-
-        if decode_error:
-            LOGGER.error(decode_error)
-            self.next().text_field.setStyleSheet("color: rgb(255, 0, 0);")
-        self.set_content_next(output)
-
-    def hash(self, hash):
-        if hash == 'ALL':
-            output = ''
-            for _hash in HASHS:
-                output += '{}:\t'.format(_hash)
-                h = hashlib.new(_hash.lower())
-                h.update(self._content)
-                output += h.hexdigest()
-                output += '\n'
-        elif hash in HASHS:
-            h = hashlib.new(hash)
-            h.update(self._content)
-            output = h.hexdigest()
-        else:
-            output = hash
-        self.set_content_next(output)
