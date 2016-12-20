@@ -261,7 +261,7 @@ class DeenWidget(QWidget):
         self.text_field.setHidden(False)
         self.hex_field.setHidden(True)
         if self.content:
-            self.text_field.setText(self.codec.toUnicode(self.content))
+            self.text_field.setPlainText(self.codec.toUnicode(self.content))
 
     def view_hex(self):
         self.hex_view = True
@@ -329,7 +329,7 @@ class DeenWidget(QWidget):
             self.next().content = bytearray(content, 'utf8')
         else:
             self.next().content = content
-        self.next().text_field.setText(self.codec.toUnicode(self.next().content))
+        self.next().text_field.setPlainText(self.codec.toUnicode(self.next().content))
         self.update_length_field(self.next())
         if self.next().hex_view:
             self.next().view_hex()
