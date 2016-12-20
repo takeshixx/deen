@@ -30,7 +30,7 @@ class Deen(QMainWindow):
         self.quit.setShortcut("Alt+F4")
         self.quit.triggered.connect(QApplication.quit)
         self.load_file = QAction("Load from File", self)
-        self.load_file.setShortcut("Alt+O")
+        self.load_file.setShortcut("Ctrl+O")
         self.load_file.triggered.connect(self.load_from_file)
         self.file_menu.addAction(self.load_file)
         self.file_menu.addAction(self.quit)
