@@ -5,6 +5,7 @@ import zlib
 import hashlib
 import logging
 import cgi
+import string
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -37,6 +38,12 @@ class EncoderWidget(QWidget):
             self.encoder_layout.addWidget(widget)
         self.setLayout(self.encoder_layout)
 
+    def set_root_content(self, data):
+        if data:
+            if isinstance(data, (str, bytes)):
+                data = bytearray(data)
+            self.widgets[0].content = data
+
 
 class DeenWidget(QWidget):
     def __init__(self, parent, readonly=False, enable_actions=True):
@@ -50,7 +57,7 @@ class DeenWidget(QWidget):
         self.hex_field.setHidden(True)
         self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.codec = QTextCodec.codecForName('UTF-8')
-        self.content = bytearray()
+        self._content = bytearray()
         self.hex_view = False
         self.view_panel = self.create_view_panel()
         self.action_panel = self.create_action_panel(enable_actions)
@@ -66,6 +73,24 @@ class DeenWidget(QWidget):
         self.h_layout.addLayout(self.v_layout)
         self.h_layout.addWidget(self.action_panel)
         self.setLayout(self.h_layout)
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, data):
+        assert isinstance(data, bytearray)
+        self._content = data
+        if self.hex_view:
+            self.hex_field.content = self._content
+        else:
+            # Prevent the field from overwriting itself with invalid
+            # characters.
+            if not all(chr(c) in string.printable for c in self._content):
+                self.text_field.setReadOnly(True)
+            self.text_field.setPlainText(self.codec.toUnicode(self._content))
+            self.text_field.moveCursor(QTextCursor.End)
 
     def has_previous(self):
         """Determine if the current widget is the root widget."""
@@ -112,9 +137,9 @@ class DeenWidget(QWidget):
             self.remove_next_widgets(offset=2)
         if not self.text_field.isReadOnly():
             if not self.hex_view:
-                self.content = bytearray(self.text_field.toPlainText(), 'utf8')
+                self._content = bytearray(self.text_field.toPlainText(), 'utf8')
             else:
-                self.content = self.hex_field.content
+                self._content = self.hex_field.content
         self.update_length_field(self)
         self.update_readonly_field(self)
         if (self.hex_field.hasFocus() or self.text_field.hasFocus()) and self.current_pick:
@@ -260,23 +285,23 @@ class DeenWidget(QWidget):
         self.hex_view = False
         self.text_field.setHidden(False)
         self.hex_field.setHidden(True)
-        if self.content:
-            self.text_field.setPlainText(self.codec.toUnicode(self.content))
+        if self._content:
+            self.text_field.setPlainText(self.codec.toUnicode(self._content))
 
     def view_hex(self):
         self.hex_view = True
         self.text_field.setHidden(True)
         self.hex_field.setHidden(False)
         self.hex_field._read_only = self.text_field.isReadOnly()
-        if not self.content:
-            self.content = bytearray(self.text_field.toPlainText(), 'utf8')
-        self.hex_field.content = self.content
+        if not self._content:
+            self._content = bytearray(self.text_field.toPlainText(), 'utf8')
+        self.hex_field.content = self._content
 
     def clear_content(self):
         if self.parent.widgets[0] == self:
             self.text_field.clear()
             self.hex_field.content = bytearray()
-            self.content = bytearray()
+            self._content = bytearray()
             self.update_length_field(self)
             self.text_field.setReadOnly(False)
             self.update_readonly_field(self)
@@ -284,7 +309,7 @@ class DeenWidget(QWidget):
 
     def copy_to_clipboard(self):
         try:
-            content = self.content.decode('utf8')
+            content = self._content.decode('utf8')
         except UnicodeDecodeError as e:
             LOGGER.error(e)
             LOGGER.error('Cannot copy non-ASCII content to clipboard')
@@ -298,7 +323,7 @@ class DeenWidget(QWidget):
         if not name or not name[0]:
             return
         with open(name[0], 'wb') as file:
-            file.write(self.content)
+            file.write(self._content)
 
     def update_length_field(self, widget):
         widget.length_field.setText('Length: ' + str(len(widget.content)))
@@ -317,27 +342,22 @@ class DeenWidget(QWidget):
             self.parent.widgets[-1] = None
             self.parent.widgets.pop()
 
-    def set_content(self, content):
-        if isinstance(content, str):
-            content = codecs.encode(content, 'utf8')
-        self.content = bytearray(content)
-
     def set_content_next(self, content):
         if isinstance(content, bytes):
-            self.next().content = bytearray(content)
+            self.next()._content = bytearray(content)
         elif isinstance(content, str):
-            self.next().content = bytearray(content, 'utf8')
+            self.next()._content = bytearray(content, 'utf8')
         else:
-            self.next().content = content
-        self.next().text_field.setPlainText(self.codec.toUnicode(self.next().content))
+            self.next()._content = content
+        self.next().text_field.setPlainText(self.codec.toUnicode(self.next()._content))
         self.update_length_field(self.next())
         if self.next().hex_view:
             self.next().view_hex()
 
     def action(self, combo=None):
         self.next().text_field.setStyleSheet('color: rgb(0, 0, 0);')
-        if not self.content:
-            self.content = bytearray(self.text_field.toPlainText(), 'utf8')
+        if not self._content:
+            self._content = bytearray(self.text_field.toPlainText(), 'utf8')
         if combo:
             if combo.currentIndex() == 0:
                 return
@@ -363,70 +383,70 @@ class DeenWidget(QWidget):
 
     def encode(self, enc):
         if enc == 'Base64':
-            output = base64.b64encode(self.content)
+            output = base64.b64encode(self._content)
         elif enc == 'Hex':
-            output = codecs.encode(self.content, 'hex')
+            output = codecs.encode(self._content, 'hex')
         elif enc == 'URL':
-            output = urllibparse.quote_plus(self.content.decode())
+            output = urllibparse.quote_plus(self._content.decode())
         elif enc == 'HTML':
-            output = cgi.escape(self.content.decode())
+            output = cgi.escape(self._content.decode())
         elif enc == 'Gzip':
             output = codecs.encode(self.conent, 'zlib')
         elif enc == 'Bz2':
-            output = codecs.encode(self.content, 'bz2')
+            output = codecs.encode(self._content, 'bz2')
         elif enc == 'Rot13':
-            output = codecs.encode(self.content.decode(), 'rot_13')
+            output = codecs.encode(self._content.decode(), 'rot_13')
         elif enc == 'UTF8':
-            output = codecs.encode(self.content.decode(), 'utf8')
+            output = codecs.encode(self._content.decode(), 'utf8')
         elif enc == 'UTF16':
-            output = codecs.encode(self.content.decode(), 'utf16')
+            output = codecs.encode(self._content.decode(), 'utf16')
         else:
-            output = self.content
+            output = self._content
         self.set_content_next(output)
 
     def decode(self, enc):
         decode_error = None
         if enc == 'Base64':
             try:
-                output = base64.b64decode(self.content.replace(b'\n', b''))
+                output = base64.b64decode(self._content.replace(b'\n', b''))
             except binascii.Error as e:
                 decode_error = e
-                output = self.content
+                output = self._content
         elif enc == 'Hex':
             try:
-                output = codecs.decode(self.content, 'hex')
+                output = codecs.decode(self._content, 'hex')
             except binascii.Error as e:
                 decode_error = e
-                output = self.content
+                output = self._content
         elif enc == 'URL':
             try:
-                output = urllibparse.unquote_plus(self.content.decode())
+                output = urllibparse.unquote_plus(self._content.decode())
             except TypeError as e:
                 decode_error = e
-                output = self.content
+                output = self._content
         elif enc == 'HTML':
             h = HTMLParser()
             try:
-                output = h.unescape(self.content.decode())
+                output = h.unescape(self._content.decode())
             except TypeError as e:
                 decode_error = e
-                output = self.content
+                output = self._content
         elif enc == 'Gzip':
             try:
-                output = codecs.decode(self.content.decode(), 'zlib')
+                output = codecs.decode(self._content.decode(), 'zlib')
             except zlib.error as e:
                 decode_error = e
-                output = self.content
+                output = self._content
         elif enc == 'Bz2':
             try:
-                output = codecs.decode(self.content.decode(), 'bz2')
+                output = codecs.decode(self._content.decode(), 'bz2')
             except OSError as e:
                 decode_error = e
-                output = self.content
+                output = self._content
         elif enc == 'Rot13':
-            output = codecs.decode(self.content.decode(), 'rot_13')
+            output = codecs.decode(self._content.decode(), 'rot_13')
         else:
-            output = self.content
+            output = self._content
 
         if decode_error:
             LOGGER.error(decode_error)
@@ -435,29 +455,29 @@ class DeenWidget(QWidget):
 
     def compress(self, comp):
         if comp == 'Gzip':
-            output = codecs.encode(self.content, 'zlib')
+            output = codecs.encode(self._content, 'zlib')
         elif comp == 'Bz2':
-            output = codecs.encode(self.content, 'bz2')
+            output = codecs.encode(self._content, 'bz2')
         else:
-            output = self.content
+            output = self._content
         self.set_content_next(output)
 
     def uncompress(self, comp):
         decode_error = None
         if comp == 'Gzip':
             try:
-                output = codecs.decode(self.content, 'zlib')
+                output = codecs.decode(self._content, 'zlib')
             except zlib.error as e:
                 decode_error = e
-                output = self.content
+                output = self._content
         elif comp == 'Bz2':
             try:
-                output = codecs.decode(self.content, 'bz2')
+                output = codecs.decode(self._content, 'bz2')
             except OSError as e:
                 decode_error = e
-                output = self.content
+                output = self._content
         else:
-            output = self.content
+            output = self._content
 
         if decode_error:
             LOGGER.error(decode_error)
@@ -470,12 +490,12 @@ class DeenWidget(QWidget):
             for _hash in HASHS:
                 output += '{}:\t'.format(_hash)
                 h = hashlib.new(_hash.lower())
-                h.update(self.content)
+                h.update(self._content)
                 output += h.hexdigest()
                 output += '\n'
         elif hash in HASHS:
             h = hashlib.new(hash)
-            h.update(self.content)
+            h.update(self._content)
             output = h.hexdigest()
         else:
             output = hash

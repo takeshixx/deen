@@ -68,7 +68,7 @@ class Deen(QMainWindow):
             content = file.read()
         if content:
             self.encoder_widget.widgets[0].clear_content()
-            self.encoder_widget.widgets[0].set_content(content)
+            self.encoder_widget.widgets[0].content = content
             try:
                 content = content.decode('utf8')
             except UnicodeDecodeError:
