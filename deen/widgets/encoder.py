@@ -4,10 +4,15 @@ import binascii
 import zlib
 import hashlib
 import logging
+import cgi
 try:
     import urllib.parse as urllibparse
 except ImportError:
     import urllib as urllibparse
+try:
+    from html.parser import HTMLParser
+except ImportError:
+    from HTMLParser import HTMLParser
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor
@@ -256,7 +261,7 @@ class DeenWidget(QWidget):
         self.text_field.setHidden(False)
         self.hex_field.setHidden(True)
         if self.content:
-            self.text_field.setText(self.codec.toUnicode(self.content))
+            self.text_field.setPlainText(self.codec.toUnicode(self.content))
 
     def view_hex(self):
         self.hex_view = True
@@ -324,7 +329,7 @@ class DeenWidget(QWidget):
             self.next().content = bytearray(content, 'utf8')
         else:
             self.next().content = content
-        self.next().text_field.setText(self.codec.toUnicode(self.next().content))
+        self.next().text_field.setPlainText(self.codec.toUnicode(self.next().content))
         self.update_length_field(self.next())
         if self.next().hex_view:
             self.next().view_hex()
@@ -363,6 +368,8 @@ class DeenWidget(QWidget):
             output = codecs.encode(self.content, 'hex')
         elif enc == 'URL':
             output = urllibparse.quote_plus(self.content.decode())
+        elif enc == 'HTML':
+            output = cgi.escape(self.content.decode())
         elif enc == 'Gzip':
             output = codecs.encode(self.conent, 'zlib')
         elif enc == 'Bz2':
@@ -394,6 +401,13 @@ class DeenWidget(QWidget):
         elif enc == 'URL':
             try:
                 output = urllibparse.unquote_plus(self.content.decode())
+            except TypeError as e:
+                decode_error = e
+                output = self.content
+        elif enc == 'HTML':
+            h = HTMLParser()
+            try:
+                output = h.unescape(self.content.decode())
             except TypeError as e:
                 decode_error = e
                 output = self.content

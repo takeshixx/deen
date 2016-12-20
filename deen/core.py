@@ -1,6 +1,7 @@
 ENCODINGS = ['Base64',
              'Hex',
              'URL',
+             'HTML',
              'Rot13',
              'UTF8',
              'UTF16']
