@@ -13,8 +13,20 @@ LOGGER = logging.getLogger()
 logging.basicConfig(format='[%(lineno)s - %(funcName)s() ] %(message)s')
 
 ARGS = argparse.ArgumentParser()
-ARGS.add_argument('infile', nargs='?', default=None)
-ARGS.add_argument('outfile', nargs='?', default=None)
+ARGS.add_argument('infile', nargs='?', default=None,
+                  help="File name or - for STDIN")
+ARGS.add_argument('--data', action='store', dest='data',
+                  default=None, help='Input data')
+ARGS.add_argument('--decode', action='store', dest='decode',
+                  default=None, help='Decode data')
+ARGS.add_argument('--encode', action='store', dest='encode',
+                  default=None, help='Encode data')
+ARGS.add_argument('--uncompress', action='store', dest='uncompress',
+                  default=None, help='Uncompress data')
+ARGS.add_argument('--compress', action='store', dest='compress',
+                  default=None, help='Compress data')
+ARGS.add_argument('--hash', action='store', dest='hash',
+                  default=None, help='Hash data')
 
 
 def main():
@@ -30,10 +42,39 @@ def main():
         else:
             with open(args.infile, 'rb') as f:
                 content = f.read()
-    app = QApplication(sys.argv)
-    ex = Deen()
-    if content:
-        ex.encoder_widget.set_root_content(content)
-    ex.setWindowIcon(QIcon(ICON))
-    LOGGER.addHandler(ex.log)
-    return app.exec_()
+    elif args.data:
+        content = args.data
+    if any([args.encode, args.decode, args.uncompress,
+            args.compress, args.hash]):
+        # We are in command line mode
+        if not content:
+            LOGGER.error('Please provide a file or pipe into STDIN')
+            sys.exit(1)
+        from deen.transformers.core import DeenTransformer
+        transformer = DeenTransformer()
+        if args.decode:
+            decoded = transformer.decode(args.decode, content)
+            print(decoded)
+        elif args.encode:
+            encoded = transformer.encode(args.encode, content)
+            print(encoded)
+        elif args.compress:
+            compressed = transformer.compress(args.compress, content)
+            print(compressed)
+        elif args.uncompress:
+            uncompressed = transformer.uncompress(args.uncompress, content)
+            print(uncompressed)
+        elif args.hash:
+            hashed = transformer.hash(args.hash, content)
+            print(hashed)
+    else:
+        # We are in GUI mode
+        app = QApplication(sys.argv)
+        ex = Deen()
+        if content:
+            # GUI mode also supports input files and
+            # content via STDIN.
+            ex.encoder_widget.set_root_content(content)
+        ex.setWindowIcon(QIcon(ICON))
+        LOGGER.addHandler(ex.log)
+        return app.exec_()
