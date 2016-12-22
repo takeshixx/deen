@@ -1,11 +1,11 @@
 import logging
 import string
 
-from PyQt5.QtCore import QTextCodec, QRegularExpression
-from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor
+from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
+from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLayout, QComboBox,
                              QButtonGroup, QCheckBox, QPushButton, QLineEdit, QProgressBar,
-                             QFileDialog)
+                             QFileDialog, QToolButton)
 
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
@@ -139,12 +139,22 @@ class DeenWidget(QWidget):
         hex = QCheckBox('Hex')
         hex.setChecked(False)
         hex.stateChanged.connect(self.view_hex)
-        clear = QPushButton('Clear')
+        clear = QToolButton()
+        clear.setIcon(QIcon.fromTheme('edit-clear'))
+        clear.setToolTip('Clear widget content')
         clear.clicked.connect(self.clear_content)
-        copy = QPushButton('Copy')
-        copy.clicked.connect(self.copy_to_clipboard)
-        save = QPushButton('Save')
+        save = QToolButton()
+        save.setIcon(QIcon.fromTheme('document-save-as'))
+        save.setToolTip('Save content to file')
         save.clicked.connect(self.save_content)
+        copy = QToolButton()
+        copy.setIcon(QIcon.fromTheme('edit-copy'))
+        copy.setToolTip('Copy content to clipboard')
+        copy.clicked.connect(self.copy_to_clipboard)
+        move = QToolButton()
+        move.setIcon(QIcon.fromTheme('go-up'))
+        move.setToolTip('Move content to root widget')
+        move.clicked.connect(self.move_content_to_root)
         self.length_field = QLabel()
         self.length_field.setStyleSheet('border: 1px solid lightgrey')
         self.update_length_field(self)
@@ -157,8 +167,9 @@ class DeenWidget(QWidget):
         view_group = QButtonGroup(self)
         view_group.addButton(text, 1)
         view_group.addButton(hex, 2)
-        view_group.addButton(clear, 3)
-        view_group.addButton(save, 4)
+        view_group.addButton(save, 3)
+        view_group.addButton(clear, 4)
+        view_group.addButton(move, 5)
         panel = QHBoxLayout()
         panel.addWidget(text)
         panel.addWidget(hex)
