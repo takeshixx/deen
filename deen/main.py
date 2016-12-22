@@ -13,21 +13,23 @@ ICON = os.path.dirname(os.path.abspath(__file__)) + '/icon.png'
 LOGGER = logging.getLogger()
 logging.basicConfig(format='[%(lineno)s - %(funcName)s() ] %(message)s')
 
-ARGS = argparse.ArgumentParser()
+ARGS = argparse.ArgumentParser(description='Apply encodings, compression and hashing to arbitrary input data.')
 ARGS.add_argument('infile', nargs='?', default=None,
                   help="File name or - for STDIN")
-ARGS.add_argument('--data', action='store', dest='data',
-                  default=None, help='Input data')
-ARGS.add_argument('--decode', action='store', dest='decode',
-                  default=None, help='Decode data')
-ARGS.add_argument('--encode', action='store', dest='encode',
-                  default=None, help='Encode data')
-ARGS.add_argument('--uncompress', action='store', dest='uncompress',
-                  default=None, help='Uncompress data')
-ARGS.add_argument('--compress', action='store', dest='compress',
-                  default=None, help='Compress data')
+ARGS.add_argument('-l', '--list', action='store_true', dest='list',
+                  default=False, help='List supported ENCODINGS/COMPRESSIONS/HASHS')
+ARGS.add_argument('-d', '--decode', action='store', dest='decode',
+                  metavar='ENCODING', default=None, help='Decode data with ENCODING')
+ARGS.add_argument('-e', '--encode', action='store', dest='encode',
+                  metavar='ENCODING', default=None, help='Encode data with ENCODING')
+ARGS.add_argument('-u', '--uncompress', action='store', dest='uncompress',
+                  metavar='COMPRESSION', default=None, help='Uncompress data witn COMPRESSION')
+ARGS.add_argument('-c', '--compress', action='store', dest='compress',
+                  metavar='COMPRESSION', default=None, help='Compress data with COMPRESSION')
 ARGS.add_argument('--hash', action='store', dest='hash',
-                  default=None, help='Hash data')
+                  default=None, help='Hash data with hash algorithm')
+ARGS.add_argument('--data', action='store', dest='data',
+                  default=None, help='Instead of a file, provide an input string')
 
 
 def main():
