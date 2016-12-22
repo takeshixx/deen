@@ -326,6 +326,10 @@ class DeenWidget(QWidget):
         clipboard.setText(content)
 
     def save_content(self):
+        """Save the content of the current widget
+        to a file."""
+        if not self._content:
+            return
         fd = QFileDialog(self)
         name = fd.getSaveFileName(fd, 'Save File')
         if not name or not name[0]:
@@ -374,6 +378,10 @@ class DeenWidget(QWidget):
             self.next().view_hex()
 
     def action(self, combo=None):
+        """The main function that is responsible for calling transformers
+        on input data. It will use self._content as source and puts the
+        result of each transformer into the next widget in line via the
+        self.set_content_next() function."""
         self.next().text_field.setStyleSheet('color: rgb(0, 0, 0);')
         if not self._content:
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
