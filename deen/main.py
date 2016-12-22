@@ -48,7 +48,7 @@ def main():
             with open(args.infile, 'rb') as f:
                 content = f.read()
     elif args.data:
-        content = args.data
+        content = bytearray(args.data, 'utf8')
     if any([args.encode, args.decode, args.uncompress,
             args.compress, args.hash, args.list]):
         # We are in command line mode
@@ -70,18 +70,24 @@ def main():
             sys.exit(1)
         from deen.transformers.core import DeenTransformer
         transformer = DeenTransformer()
+        try:
+            # Python 3
+            stdout = sys.stdout.buffer
+        except AttributeError:
+            # Python 2
+            stdout = sys.stdout
         if args.decode:
             decoded = transformer.decode(args.decode, content)
-            print(decoded)
+            stdout.write(decoded)
         elif args.encode:
             encoded = transformer.encode(args.encode, content)
-            print(encoded)
+            stdout.write(encoded)
         elif args.compress:
             compressed = transformer.compress(args.compress, content)
-            print(compressed)
+            stdout.write(compressed)
         elif args.uncompress:
             uncompressed = transformer.uncompress(args.uncompress, content)
-            print(uncompressed)
+            stdout.write(uncompressed)
         elif args.hash:
             hashed = transformer.hash(args.hash, content)
             stdout.write(hashed)
