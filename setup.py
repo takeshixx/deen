@@ -1,10 +1,11 @@
 from setuptools import setup
 
 setup(name='deen',
-      version='0.5.0',
+      version='0.6.1',
       install_requires=['PyQt5'],
       packages=['deen',
-                'deen.widgets'],
+                'deen.widgets',
+                'deen.transformers'],
       entry_points = {
             'console_scripts': ['deen=deen.main:main']},
       url='https://github.com/takeshixx/deen',
