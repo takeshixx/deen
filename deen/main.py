@@ -30,6 +30,8 @@ ARGS.add_argument('--hash', action='store', dest='hash',
                   default=None, help='Hash data with hash algorithm')
 ARGS.add_argument('--data', action='store', dest='data',
                   default=None, help='Instead of a file, provide an input string')
+ARGS.add_argument('-n', action='store_true', dest='nonewline',
+                  default=False, help='Omit new line character at the end of the output')
 
 
 def main():
@@ -82,7 +84,9 @@ def main():
             print(uncompressed)
         elif args.hash:
             hashed = transformer.hash(args.hash, content)
-            print(hashed)
+            stdout.write(hashed)
+        if not args.nonewline:
+            stdout.write(b'\n')
     else:
         # We are in GUI mode
         app = QApplication(sys.argv)
