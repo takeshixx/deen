@@ -36,11 +36,12 @@ class DeenWidget(QWidget):
     def __init__(self, parent, readonly=False, enable_actions=True):
         super(DeenWidget, self).__init__(parent)
         self.parent = parent
+        self.readonly = readonly
         self.current_pick = None
         self.current_combo = None
-        self.text_field = TextViewWidget(self, readonly=readonly)
+        self.text_field = TextViewWidget(self, readonly=self.readonly)
         self.text_field.textChanged.connect(self.field_content_changed)
-        self.hex_field = HexViewWidget(read_only=readonly, parent=self)
+        self.hex_field = HexViewWidget(read_only=self.readonly, parent=self)
         self.hex_field.setHidden(True)
         self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.codec = QTextCodec.codecForName('UTF-8')
@@ -180,6 +181,8 @@ class DeenWidget(QWidget):
         panel.addWidget(clear)
         panel.addWidget(copy)
         panel.addWidget(save)
+        if self.readonly:
+            panel.addWidget(move)
         widget = QWidget()
         widget.setLayout(panel)
         return widget
@@ -295,17 +298,24 @@ class DeenWidget(QWidget):
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
         self.hex_field.content = self._content
 
-    def clear_content(self):
-        if self.parent.widgets[0] == self:
-            self.text_field.clear()
-            self.hex_field.content = bytearray()
-            self._content = bytearray()
-            self.update_length_field(self)
-            self.text_field.setReadOnly(False)
-            self.update_readonly_field(self)
-        self.remove_next_widgets()
+    def clear_content(self, widget=None):
+        """Clear the content of widget. If widget
+        is not set, clear the content of the current
+        widget. This will also remove all widgets
+        that follow widget."""
+        widget = widget or self
+        if self.parent.widgets[0] == widget:
+            widget.text_field.clear()
+            widget.hex_field.content = bytearray()
+            widget._content = bytearray()
+            widget.update_length_field(self)
+            widget.text_field.setReadOnly(False)
+            widget.update_readonly_field(self)
+        self.remove_next_widgets(widget=widget)
 
     def copy_to_clipboard(self):
+        if not self._content:
+            return
         try:
             content = self._content.decode('utf8')
         except UnicodeDecodeError as e:
@@ -323,15 +333,26 @@ class DeenWidget(QWidget):
         with open(name[0], 'wb') as file:
             file.write(self._content)
 
+    def move_content_to_root(self):
+        """Moves the content of the current widget
+        to the root widget and removes all widgets
+        after the root widget."""
+        content = self._content
+        self.clear_content(self.parent.widgets[0])
+        self.parent.widgets[0].content = content
+
     def update_length_field(self, widget):
         widget.length_field.setText('Length: ' + str(len(widget.content)))
 
     def update_readonly_field(self, widget):
         widget.readonly_field.setText('R-' if widget.text_field.isReadOnly() else 'RW')
 
-    def remove_next_widgets(self, offset=0):
+    def remove_next_widgets(self, widget=None, offset=0):
+        """Remove all widgets after widget. If widget is not
+        set, remove all widgets after the current widget."""
+        widget = widget or self
         assert isinstance(offset, int)
-        index = self.parent.widgets.index(self) + offset
+        index = self.parent.widgets.index(widget) + offset
         while len(self.parent.widgets) != index:
             if len(self.parent.widgets) == 1:
                 break
