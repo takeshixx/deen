@@ -12,6 +12,40 @@ The code should be compatible with Python 2 (at least 2.7.x) and Python 3. Howev
 python setup.py install
 ```
 
-## Usage
+## GUI
 
-![deen](https://kleber.io/fGfL/)
+By invoking deen without any command line arguments, the graphical interface will start.
+
+![deen](https://kleber.io/KhD/)
+
+The GUI also supports reading input from files:
+
+```
+deen /bin/ls
+```
+
+and from STDIN:
+
+```
+cat /bin/ls | deen -
+```
+
+## CLI
+
+Some functionality is also available via a CLI. A list of available operations and supported transfomers is available in the help page (`-h`/`--help`) and with the list command (`-l`/`--list`). The command line can read input either from a file:
+
+```
+deen --hash sha256 /bin/ls
+```
+
+or from STDIN by using `-` as a file name:
+
+```
+cat /bin/ls | deen --hash sha256 -
+```
+
+Alternatively an input string can also be supplied with the `--data` argument:
+
+```
+deen --encode base64 --data admin:admin
+```
