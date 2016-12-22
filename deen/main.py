@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
 from deen.widgets.core import Deen
+from deen.core import ENCODINGS, COMPRESSIONS, HASHS
 
 ICON = os.path.dirname(os.path.abspath(__file__)) + '/icon.png'
 LOGGER = logging.getLogger()
@@ -45,8 +46,21 @@ def main():
     elif args.data:
         content = args.data
     if any([args.encode, args.decode, args.uncompress,
-            args.compress, args.hash]):
+            args.compress, args.hash, args.list]):
         # We are in command line mode
+        if args.list:
+            print('Encodings:')
+            for e in ENCODINGS:
+                print('\t' + e)
+            print()
+            print('Compressions:')
+            for c in COMPRESSIONS:
+                print('\t' + c)
+            print()
+            print('Hashs:')
+            for h in HASHS:
+                print('\t' + h)
+            return
         if not content:
             LOGGER.error('Please provide a file or pipe into STDIN')
             sys.exit(1)
