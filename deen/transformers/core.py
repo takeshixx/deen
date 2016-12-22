@@ -18,100 +18,112 @@ from deen.core import *
 
 LOGGER = logging.getLogger(__name__)
 
-
+# TODO: make transformer checks non-case-sensitive
 class DeenTransformer(object):
     """A generic wrapper class that provides various tranformation
     functions."""
+    def _in_dict(self, data, core_dict):
+        included = False
+        for item in core_dict:
+            if data.lower() == item.lower():
+                included = True
+                break
+        return included
+
     def encode(self, enc, data):
-        assert enc in ENCODINGS, 'Unknown encoding %s' % enc
+        enc = enc.lower()
+        assert self._in_dict(enc, ENCODINGS), 'Unknown encoding %s' % enc
         if enc == 'base64':
             output = base64.b64encode(data)
-        elif enc == 'Hex':
+        elif enc == 'hex':
             output = codecs.encode(data, 'hex')
-        elif enc == 'URL':
+        elif enc == 'url':
             output = urllibparse.quote_plus(data.decode())
-        elif enc == 'HTML':
+        elif enc == 'html':
             output = cgi.escape(data.decode())
-        elif enc == 'Gzip':
+        elif enc == 'gzip':
             output = codecs.encode(data, 'zlib')
-        elif enc == 'Bz2':
+        elif enc == 'bz2':
             output = codecs.encode(data, 'bz2')
-        elif enc == 'Rot13':
+        elif enc == 'rot13':
             output = codecs.encode(data.decode(), 'rot_13')
-        elif enc == 'UTF8':
+        elif enc == 'utf8':
             output = codecs.encode(data.decode(), 'utf8')
-        elif enc == 'UTF16':
+        elif enc == 'utf16':
             output = codecs.encode(data.decode(), 'utf16')
         else:
             output = data
         return output
 
     def decode(self, enc, data):
-        assert enc in ENCODINGS, 'Unknown encoding %s' % enc
+        enc = enc.lower()
+        assert self._in_dict(enc, ENCODINGS), 'Unknown encoding %s' % enc
         decode_error = None
-        if enc == 'Base64':
+        if enc == 'base64':
             try:
                 output = base64.b64decode(data.replace(b'\n', b''))
             except binascii.Error as e:
                 decode_error = e
                 output = data
-        elif enc == 'Hex':
+        elif enc == 'hex':
             try:
                 output = codecs.decode(data, 'hex')
             except binascii.Error as e:
                 decode_error = e
                 output = data
-        elif enc == 'URL':
+        elif enc == 'url':
             try:
                 output = urllibparse.unquote_plus(data.decode())
             except TypeError as e:
                 decode_error = e
                 output = data
-        elif enc == 'HTML':
+        elif enc == 'html':
             h = HTMLParser()
             try:
                 output = h.unescape(data.decode())
             except TypeError as e:
                 decode_error = e
                 output = data
-        elif enc == 'Gzip':
+        elif enc == 'gzip':
             try:
                 output = codecs.decode(data.decode(), 'zlib')
             except zlib.error as e:
                 decode_error = e
                 output = data
-        elif enc == 'Bz2':
+        elif enc == 'bz2':
             try:
                 output = codecs.decode(data.decode(), 'bz2')
             except OSError as e:
                 decode_error = e
                 output = data
-        elif enc == 'Rot13':
+        elif enc == 'rot13':
             output = codecs.decode(data.decode(), 'rot_13')
         else:
             output = data
         return output, decode_error
 
     def compress(self, comp, data):
-        assert comp in COMPRESSIONS, 'Unknown compression %s' % comp
-        if comp == 'Gzip':
+        comp = comp.lower()
+        assert self._in_dict(comp, COMPRESSIONS), 'Unknown compression %s' % comp
+        if comp == 'gzip':
             output = codecs.encode(data, 'zlib')
-        elif comp == 'Bz2':
+        elif comp == 'bz2':
             output = codecs.encode(data, 'bz2')
         else:
             output = data
         return output
 
     def uncompress(self, comp, data):
-        assert comp in COMPRESSIONS, 'Unknown compression %s' % comp
+        comp = comp.lower()
+        assert self._in_dict(comp, COMPRESSIONS), 'Unknown compression %s' % comp
         decode_error = None
-        if comp == 'Gzip':
+        if comp == 'gzip':
             try:
                 output = codecs.decode(data, 'zlib')
             except zlib.error as e:
                 decode_error = e
                 output = data
-        elif comp == 'Bz2':
+        elif comp == 'bz2':
             try:
                 output = codecs.decode(data, 'bz2')
             except OSError as e:
@@ -122,8 +134,8 @@ class DeenTransformer(object):
         return output, decode_error
 
     def hash(self, hash, data):
-        assert hash in HASHS, 'Unknown hash %s' % hash
-        if hash == 'ALL':
+        hash = hash.lower()
+        if hash == 'all':
             output = ''
             for _hash in HASHS:
                 output += '{}:\t'.format(_hash)
@@ -131,10 +143,10 @@ class DeenTransformer(object):
                 h.update(data)
                 output += h.hexdigest()
                 output += '\n'
-        elif hash in HASHS:
+        elif self._in_dict(hash, HASHS):
             h = hashlib.new(hash)
             h.update(data)
             output = h.hexdigest()
         else:
-            output = hash
+            output = data
         return output
