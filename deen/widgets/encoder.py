@@ -1,11 +1,11 @@
 import logging
 import string
 
-from PyQt5.QtCore import QTextCodec, QRegularExpression
-from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor
+from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
+from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLayout, QComboBox,
                              QButtonGroup, QCheckBox, QPushButton, QLineEdit, QProgressBar,
-                             QFileDialog)
+                             QFileDialog, QToolButton)
 
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
@@ -36,11 +36,12 @@ class DeenWidget(QWidget):
     def __init__(self, parent, readonly=False, enable_actions=True):
         super(DeenWidget, self).__init__(parent)
         self.parent = parent
+        self.readonly = readonly
         self.current_pick = None
         self.current_combo = None
-        self.text_field = TextViewWidget(self, readonly=readonly)
+        self.text_field = TextViewWidget(self, readonly=self.readonly)
         self.text_field.textChanged.connect(self.field_content_changed)
-        self.hex_field = HexViewWidget(read_only=readonly, parent=self)
+        self.hex_field = HexViewWidget(read_only=self.readonly, parent=self)
         self.hex_field.setHidden(True)
         self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.codec = QTextCodec.codecForName('UTF-8')
@@ -139,12 +140,22 @@ class DeenWidget(QWidget):
         hex = QCheckBox('Hex')
         hex.setChecked(False)
         hex.stateChanged.connect(self.view_hex)
-        clear = QPushButton('Clear')
+        clear = QToolButton()
+        clear.setIcon(QIcon.fromTheme('edit-clear'))
+        clear.setToolTip('Clear widget content')
         clear.clicked.connect(self.clear_content)
-        copy = QPushButton('Copy')
-        copy.clicked.connect(self.copy_to_clipboard)
-        save = QPushButton('Save')
+        save = QToolButton()
+        save.setIcon(QIcon.fromTheme('document-save-as'))
+        save.setToolTip('Save content to file')
         save.clicked.connect(self.save_content)
+        copy = QToolButton()
+        copy.setIcon(QIcon.fromTheme('edit-copy'))
+        copy.setToolTip('Copy content to clipboard')
+        copy.clicked.connect(self.copy_to_clipboard)
+        move = QToolButton()
+        move.setIcon(QIcon.fromTheme('go-up'))
+        move.setToolTip('Move content to root widget')
+        move.clicked.connect(self.move_content_to_root)
         self.length_field = QLabel()
         self.length_field.setStyleSheet('border: 1px solid lightgrey')
         self.update_length_field(self)
@@ -157,8 +168,9 @@ class DeenWidget(QWidget):
         view_group = QButtonGroup(self)
         view_group.addButton(text, 1)
         view_group.addButton(hex, 2)
-        view_group.addButton(clear, 3)
-        view_group.addButton(save, 4)
+        view_group.addButton(save, 3)
+        view_group.addButton(clear, 4)
+        view_group.addButton(move, 5)
         panel = QHBoxLayout()
         panel.addWidget(text)
         panel.addWidget(hex)
@@ -169,6 +181,8 @@ class DeenWidget(QWidget):
         panel.addWidget(clear)
         panel.addWidget(copy)
         panel.addWidget(save)
+        if self.readonly:
+            panel.addWidget(move)
         widget = QWidget()
         widget.setLayout(panel)
         return widget
@@ -284,17 +298,24 @@ class DeenWidget(QWidget):
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
         self.hex_field.content = self._content
 
-    def clear_content(self):
-        if self.parent.widgets[0] == self:
-            self.text_field.clear()
-            self.hex_field.content = bytearray()
-            self._content = bytearray()
-            self.update_length_field(self)
-            self.text_field.setReadOnly(False)
-            self.update_readonly_field(self)
-        self.remove_next_widgets()
+    def clear_content(self, widget=None):
+        """Clear the content of widget. If widget
+        is not set, clear the content of the current
+        widget. This will also remove all widgets
+        that follow widget."""
+        widget = widget or self
+        if self.parent.widgets[0] == widget:
+            widget.text_field.clear()
+            widget.hex_field.content = bytearray()
+            widget._content = bytearray()
+            widget.update_length_field(self)
+            widget.text_field.setReadOnly(False)
+            widget.update_readonly_field(self)
+        self.remove_next_widgets(widget=widget)
 
     def copy_to_clipboard(self):
+        if not self._content:
+            return
         try:
             content = self._content.decode('utf8')
         except UnicodeDecodeError as e:
@@ -305,6 +326,10 @@ class DeenWidget(QWidget):
         clipboard.setText(content)
 
     def save_content(self):
+        """Save the content of the current widget
+        to a file."""
+        if not self._content:
+            return
         fd = QFileDialog(self)
         name = fd.getSaveFileName(fd, 'Save File')
         if not name or not name[0]:
@@ -312,15 +337,26 @@ class DeenWidget(QWidget):
         with open(name[0], 'wb') as file:
             file.write(self._content)
 
+    def move_content_to_root(self):
+        """Moves the content of the current widget
+        to the root widget and removes all widgets
+        after the root widget."""
+        content = self._content
+        self.clear_content(self.parent.widgets[0])
+        self.parent.widgets[0].content = content
+
     def update_length_field(self, widget):
         widget.length_field.setText('Length: ' + str(len(widget.content)))
 
     def update_readonly_field(self, widget):
         widget.readonly_field.setText('R-' if widget.text_field.isReadOnly() else 'RW')
 
-    def remove_next_widgets(self, offset=0):
+    def remove_next_widgets(self, widget=None, offset=0):
+        """Remove all widgets after widget. If widget is not
+        set, remove all widgets after the current widget."""
+        widget = widget or self
         assert isinstance(offset, int)
-        index = self.parent.widgets.index(self) + offset
+        index = self.parent.widgets.index(widget) + offset
         while len(self.parent.widgets) != index:
             if len(self.parent.widgets) == 1:
                 break
@@ -342,6 +378,10 @@ class DeenWidget(QWidget):
             self.next().view_hex()
 
     def action(self, combo=None):
+        """The main function that is responsible for calling transformers
+        on input data. It will use self._content as source and puts the
+        result of each transformer into the next widget in line via the
+        self.set_content_next() function."""
         self.next().text_field.setStyleSheet('color: rgb(0, 0, 0);')
         if not self._content:
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
