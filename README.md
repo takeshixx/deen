@@ -18,7 +18,7 @@ python setup.py install
 
 By invoking deen without any command line arguments, the graphical interface will start.
 
-![deen](https://kleber.io/NGp/)
+![deen](https://kleber.io/96G5/)
 
 The GUI also supports reading input from files:
 
