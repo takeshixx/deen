@@ -172,5 +172,8 @@ class X509Certificate():
 
     def decode(self):
         if OPENSSL:
-            return OpenSSL.crypto.dump_certificate(
+            out = OpenSSL.crypto.dump_certificate(
                 OpenSSL.crypto.FILETYPE_TEXT, self._c)
+            cert = OpenSSL.crypto.dump_certificate(
+                OpenSSL.crypto.FILETYPE_PEM, self._c)
+            return out + b'\n' + cert
