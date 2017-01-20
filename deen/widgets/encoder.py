@@ -394,7 +394,7 @@ class DeenWidget(QWidget):
         on input data. It will use self._content as source and puts the
         result of each transformer into the next widget in line via the
         self.set_content_next() function."""
-        self.next().text_field.setStyleSheet('color: rgb(0, 0, 0);')
+        error = None
         if not self._content:
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
         if combo:
@@ -411,7 +411,8 @@ class DeenWidget(QWidget):
                 decoded, error = transformer.decode(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    self.next().text_field.setStyleSheet('color: rgb(255, 0, 0);')
+                    next = self.next()
+                    next.text_field.setStyleSheet('border: 2px solid red;')
                 self.set_content_next(decoded)
         elif self.current_pick in COMPRESSIONS:
             if self.current_combo.model().item(0).text() == 'Compress':
@@ -421,7 +422,8 @@ class DeenWidget(QWidget):
                 uncompressed, error = transformer.uncompress(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    self.next().text_field.setStyleSheet('color: rgb(255, 0, 0);')
+                    next = self.next()
+                    next.text_field.setStyleSheet('border: 2px solid red;')
                 self.set_content_next(uncompressed)
         elif self.current_pick in HASHS or self.current_pick == 'ALL':
             hashed = transformer.hash(self.current_pick, self._content)
@@ -433,9 +435,14 @@ class DeenWidget(QWidget):
                     self.set_content_next(transformer.decode())
                 except crypto.Error as e:
                     LOGGER.error(e)
-                    self.set_content_next('')
+                    error = e
+                    next = self.next()
+                    next.text_field.setStyleSheet('border: 2px solid red;')
+                    self.set_content_next(self._content)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
         if self.next().text_field.isReadOnly() and self.current_pick:
             self.next().codec_field.setText('Transformer: ' + self.current_pick)
             self.next().codec_field.show()
+        if not error:
+            self.next().text_field.setStyleSheet('border: none;')
