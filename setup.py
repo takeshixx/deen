@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='deen',
-      version='0.6.4',
+      version='0.6.5',
       install_requires=['PyQt5'],
       packages=['deen',
                 'deen.widgets',

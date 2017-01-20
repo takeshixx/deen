@@ -1,5 +1,9 @@
 import logging
 import string
+try:
+    from OpenSSL import crypto
+except ImportError:
+    crypto = None
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
@@ -9,7 +13,7 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLa
 
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
-from deen.transformers.core import DeenTransformer
+from deen.transformers.core import DeenTransformer, X509Certificate
 from deen.core import *
 
 LOGGER = logging.getLogger(__name__)
@@ -271,12 +275,20 @@ class DeenWidget(QWidget):
         self.hash_combo.addItem('ALL')
         self.hash_combo.currentIndexChanged.connect(lambda: self.action(self.hash_combo))
 
+        self.misc_combo = QComboBox(self)
+        self.misc_combo.addItem('Miscellaneous')
+        self.misc_combo.model().item(0).setEnabled(False)
+        for misc in MISC:
+            self.misc_combo.addItem(misc)
+        self.misc_combo.currentIndexChanged.connect(lambda: self.action(self.misc_combo))
+
         action_panel = QVBoxLayout()
         action_panel.addWidget(self.decoding_combo)
         action_panel.addWidget(self.encoding_combo)
         action_panel.addWidget(self.uncompress_combo)
         action_panel.addWidget(self.compress_combo)
         action_panel.addWidget(self.hash_combo)
+        action_panel.addWidget(self.misc_combo)
         action_panel.addStretch()
         widget = QWidget()
         widget.setLayout(action_panel)
@@ -414,6 +426,14 @@ class DeenWidget(QWidget):
         elif self.current_pick in HASHS or self.current_pick == 'ALL':
             hashed = transformer.hash(self.current_pick, self._content)
             self.set_content_next(hashed)
+        elif self.current_pick in MISC:
+            if self.current_pick == 'X509Certificate' and crypto:
+                try:
+                    transformer = X509Certificate(self._content)
+                    self.set_content_next(transformer.decode())
+                except crypto.Error as e:
+                    LOGGER.error(e)
+                    self.set_content_next('')
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
         if self.next().text_field.isReadOnly() and self.current_pick:

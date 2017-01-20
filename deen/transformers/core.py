@@ -13,6 +13,11 @@ try:
     from html.parser import HTMLParser
 except ImportError:
     from HTMLParser import HTMLParser
+try:
+    import OpenSSL.crypto
+    OPENSSL = True
+except ImportError:
+    OPENSSL = False
 
 from deen.core import *
 
@@ -150,3 +155,16 @@ class DeenTransformer(object):
         else:
             output = data
         return output
+
+
+class X509Certificate():
+    def __init__(self, certificate):
+        # TODO: if it's just plain base64, fix it
+        if OPENSSL:
+            self._c = OpenSSL.crypto.load_certificate(
+                OpenSSL.crypto.FILETYPE_PEM, certificate.decode())
+
+    def decode(self):
+        if OPENSSL:
+            return OpenSSL.crypto.dump_certificate(
+                OpenSSL.crypto.FILETYPE_TEXT, self._c)

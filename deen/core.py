@@ -19,3 +19,5 @@ HASHS = ['MD5',
          'MD4',
          'MDC2',
          'Whirlpool']
+
+MISC = ['X509Certificate']
