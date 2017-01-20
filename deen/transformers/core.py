@@ -159,10 +159,16 @@ class DeenTransformer(object):
 
 class X509Certificate():
     def __init__(self, certificate):
-        # TODO: if it's just plain base64, fix it
-        if OPENSSL:
-            self._c = OpenSSL.crypto.load_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, certificate.decode())
+        if not OPENSSL:
+            return
+        if not b'-----BEGIN CERTIFICATE-----' in certificate:
+            LOGGER.warning('Missing certificate prefix')
+            certificate = b'-----BEGIN CERTIFICATE-----\n' + certificate
+        if not b'-----END CERTIFICATE-----' in certificate:
+            LOGGER.warning('Missing certificate suffix')
+            certificate = certificate + b'\n-----END CERTIFICATE-----'
+        self._c = OpenSSL.crypto.load_certificate(
+            OpenSSL.crypto.FILETYPE_PEM, certificate.decode())
 
     def decode(self):
         if OPENSSL:
