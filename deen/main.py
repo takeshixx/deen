@@ -28,6 +28,8 @@ ARGS.add_argument('-c', '--compress', action='store', dest='compress',
                   metavar='COMPRESSION', default=None, help='Compress data with COMPRESSION')
 ARGS.add_argument('--hash', action='store', dest='hash',
                   default=None, help='Hash data with hash algorithm')
+ARGS.add_argument('--x509', action='store_true', dest='x509_certificate',
+                  default=False, help='Print X509 certificate in human readable format')
 ARGS.add_argument('--data', action='store', dest='data',
                   default=None, help='Instead of a file, provide an input string')
 ARGS.add_argument('-n', action='store_true', dest='nonewline',
@@ -50,7 +52,8 @@ def main():
     elif args.data:
         content = bytearray(args.data, 'utf8')
     if any([args.encode, args.decode, args.uncompress,
-            args.compress, args.hash, args.list]):
+            args.compress, args.hash, args.list,
+            args.x509_certificate]):
         # We are in command line mode
         if args.list:
             print('Encodings:')
@@ -91,6 +94,10 @@ def main():
         elif args.hash:
             hashed = transformer.hash(args.hash, content)
             stdout.write(hashed)
+        elif args.x509_certificate:
+            from deen.transformers.core import X509Certificate
+            certificate = X509Certificate(content)
+            stdout.write(certificate.decode())
         if not args.nonewline:
             stdout.write(b'\n')
     else:
