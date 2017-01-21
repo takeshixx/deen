@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
 from deen.widgets.core import Deen
-from deen.core import ENCODINGS, COMPRESSIONS, HASHS
+from deen.core import *
 
 ICON = os.path.dirname(os.path.abspath(__file__)) + '/icon.png'
 LOGGER = logging.getLogger()
@@ -67,6 +67,15 @@ def main():
             print('Hashs:')
             for h in HASHS:
                 print('\t' + h)
+            try:
+                import OpenSSL.crypto
+            except ImportError:
+                MISC.remove('X509Certificate')
+            if MISC:
+                print()
+                print('Misc')
+                for m in MISC:
+                    print('\t' + m)
             return
         if not content:
             LOGGER.error('Please provide a file or pipe into STDIN')
