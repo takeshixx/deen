@@ -323,6 +323,7 @@ class DeenWidget(QWidget):
             widget.update_length_field(self)
             widget.text_field.setReadOnly(False)
             widget.update_readonly_field(self)
+            widget.current_pick = None
         self.remove_next_widgets(widget=widget)
 
     def copy_to_clipboard(self):
