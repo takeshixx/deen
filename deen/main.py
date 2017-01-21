@@ -13,27 +13,27 @@ ICON = os.path.dirname(os.path.abspath(__file__)) + '/icon.png'
 LOGGER = logging.getLogger()
 logging.basicConfig(format='[%(lineno)s - %(funcName)s() ] %(message)s')
 
-ARGS = argparse.ArgumentParser(description='Apply encodings, compression and hashing to arbitrary input data.')
+ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.')
 ARGS.add_argument('infile', nargs='?', default=None,
-                  help="File name or - for STDIN")
+                  help="file name or - for STDIN")
 ARGS.add_argument('-l', '--list', action='store_true', dest='list',
-                  default=False, help='List supported ENCODINGS/COMPRESSIONS/HASHS')
+                  default=False, help='list supported ENCODINGS/COMPRESSIONS/HASHS')
 ARGS.add_argument('-d', '--decode', action='store', dest='decode',
-                  metavar='ENCODING', default=None, help='Decode data with ENCODING')
+                  metavar='ENCODING', default=None, help='decode data with ENCODING')
 ARGS.add_argument('-e', '--encode', action='store', dest='encode',
-                  metavar='ENCODING', default=None, help='Encode data with ENCODING')
+                  metavar='ENCODING', default=None, help='encode data with ENCODING')
 ARGS.add_argument('-u', '--uncompress', action='store', dest='uncompress',
-                  metavar='COMPRESSION', default=None, help='Uncompress data witn COMPRESSION')
+                  metavar='COMPRESSION', default=None, help='uncompress data witn COMPRESSION')
 ARGS.add_argument('-c', '--compress', action='store', dest='compress',
-                  metavar='COMPRESSION', default=None, help='Compress data with COMPRESSION')
+                  metavar='COMPRESSION', default=None, help='compress data with COMPRESSION')
 ARGS.add_argument('--hash', action='store', dest='hash',
-                  default=None, help='Hash data with hash algorithm')
+                  default=None, help='hash data with hash algorithm')
 ARGS.add_argument('--x509', action='store_true', dest='x509_certificate',
-                  default=False, help='Print X509 certificate in human readable format')
+                  default=False, help='print X509 certificate in human readable format')
 ARGS.add_argument('--data', action='store', dest='data',
-                  default=None, help='Instead of a file, provide an input string')
+                  default=None, help='instead of a file, provide an input string')
 ARGS.add_argument('-n', action='store_true', dest='nonewline',
-                  default=False, help='Omit new line character at the end of the output')
+                  default=False, help='omit new line character at the end of the output')
 
 
 def main():
