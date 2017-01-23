@@ -4,15 +4,24 @@ import base64
 import codecs
 import binascii
 import zlib
-import cgi
 try:
+    # Python 3
     import urllib.parse as urllibparse
 except ImportError:
+    # Python 2
     import urllib as urllibparse
 try:
-    from html.parser import HTMLParser
+    # Python 3
+    import html
+    html_encode = html.escape
+    html_decode = html.unescape
 except ImportError:
+    # Python 2
+    import cgi
+    html_encode = cgi.escape
     from HTMLParser import HTMLParser
+    html = HTMLParser()
+    html_decode = html.unescape
 try:
     import OpenSSL.crypto
     OPENSSL = True
@@ -36,6 +45,7 @@ class DeenTransformer(object):
         return included
 
     def encode(self, enc, data):
+        assert isinstance(data, (bytearray, bytes))
         enc = enc.lower()
         assert self._in_dict(enc, ENCODINGS), 'Unknown encoding %s' % enc
         if enc == 'base64':
@@ -43,13 +53,13 @@ class DeenTransformer(object):
         elif enc == 'hex':
             output = codecs.encode(data, 'hex')
         elif enc == 'url':
+            # urllib requires str?
             output = urllibparse.quote_plus(data.decode())
+            output = output.encode()
         elif enc == 'html':
-            output = cgi.escape(data.decode())
-        elif enc == 'gzip':
-            output = codecs.encode(data, 'zlib')
-        elif enc == 'bz2':
-            output = codecs.encode(data, 'bz2')
+            # html module requires str?
+            output = html_encode(data.decode())
+            output = output.encode()
         elif enc == 'rot13':
             output = codecs.encode(data.decode(), 'rot_13')
         elif enc == 'utf8':
@@ -63,14 +73,23 @@ class DeenTransformer(object):
     def decode(self, enc, data):
         enc = enc.lower()
         assert self._in_dict(enc, ENCODINGS), 'Unknown encoding %s' % enc
+        assert data is not None, 'Data is None'
+        assert isinstance(data, (bytes, bytearray)),\
+            'Wrong data type %s' % type(data)
         decode_error = None
         if enc == 'base64':
+            # Remove new lines and carriage returns from
+            # Base64 encoded data.
+            data = data.replace(b'\n', b'').replace(b'\r', b'')
             try:
-                output = base64.b64decode(data.replace(b'\n', b''))
+                output = base64.b64decode(data)
             except binascii.Error as e:
                 decode_error = e
                 output = data
         elif enc == 'hex':
+            # Remove new lines and carriage returns from
+            # Base64 encoded data.
+            data = data.replace(b'\n', b'').replace(b'\r', b'')
             try:
                 output = codecs.decode(data, 'hex')
             except binascii.Error as e:
@@ -79,26 +98,15 @@ class DeenTransformer(object):
         elif enc == 'url':
             try:
                 output = urllibparse.unquote_plus(data.decode())
+                output = output.encode()
             except TypeError as e:
                 decode_error = e
                 output = data
         elif enc == 'html':
-            h = HTMLParser()
             try:
-                output = h.unescape(data.decode())
+                output = html_decode(data.decode())
+                output = output.encode()
             except TypeError as e:
-                decode_error = e
-                output = data
-        elif enc == 'gzip':
-            try:
-                output = codecs.decode(data.decode(), 'zlib')
-            except zlib.error as e:
-                decode_error = e
-                output = data
-        elif enc == 'bz2':
-            try:
-                output = codecs.decode(data.decode(), 'bz2')
-            except OSError as e:
                 decode_error = e
                 output = data
         elif enc == 'rot13':
@@ -110,6 +118,9 @@ class DeenTransformer(object):
     def compress(self, comp, data):
         comp = comp.lower()
         assert self._in_dict(comp, COMPRESSIONS), 'Unknown compression %s' % comp
+        assert data is not None, 'Data is None'
+        assert isinstance(data, (bytes, bytearray)),\
+            'Wrong data type %s' % type(data)
         if comp == 'gzip':
             output = codecs.encode(data, 'zlib')
         elif comp == 'bz2':
@@ -121,6 +132,9 @@ class DeenTransformer(object):
     def uncompress(self, comp, data):
         comp = comp.lower()
         assert self._in_dict(comp, COMPRESSIONS), 'Unknown compression %s' % comp
+        assert data is not None, 'Data is None'
+        assert isinstance(data, (bytes, bytearray)),\
+            'Wrong data type %s' % type(data)
         decode_error = None
         if comp == 'gzip':
             try:
@@ -138,20 +152,23 @@ class DeenTransformer(object):
             output = data
         return output, decode_error
 
-    def hash(self, hash, data):
-        hash = hash.lower()
-        if hash == 'all':
-            output = ''
+    def hash(self, hash_algo, data):
+        hash_algo = hash_algo.lower()
+        assert data is not None, 'Data is None'
+        assert isinstance(data, (bytes, bytearray)),\
+            'Wrong data type %s' % type(data)
+        if hash_algo == 'all':
+            output = bytearray()
             for _hash in HASHS:
-                output += '{}:\t'.format(_hash)
+                output.extend(_hash.encode() + b':\t')
                 h = hashlib.new(_hash.lower())
                 h.update(data)
-                output += h.hexdigest()
-                output += '\n'
-        elif self._in_dict(hash, HASHS):
-            h = hashlib.new(hash)
+                output.extend(h.hexdigest().encode())
+                output.extend(b'\n')
+        elif self._in_dict(hash_algo, HASHS):
+            h = hashlib.new(hash_algo)
             h.update(data)
-            output = h.hexdigest()
+            output = h.hexdigest().encode()
         else:
             output = data
         return output
@@ -169,6 +186,7 @@ class X509Certificate():
     def certificate(self, data):
         if not OPENSSL:
             return
+        data = data.strip()
         if not b'-----BEGIN CERTIFICATE-----' in data:
             LOGGER.warning('Missing certificate prefix')
             data = b'-----BEGIN CERTIFICATE-----\n' + data
