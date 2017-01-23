@@ -127,6 +127,10 @@ class DeenWidget(QWidget):
             # If widget count is greater then two,
             # remove all widgets after the second.
             self.remove_next_widgets(offset=2)
+        elif self.has_next() and self.text_field.isReadOnly():
+            # If the current widget is not the root
+            # but there is at least one next widget.
+            self.set_content_next(self.content)
         if not self.text_field.isReadOnly():
             if not self.hex_view:
                 self._content = bytearray(self.text_field.toPlainText(), 'utf8')
@@ -134,7 +138,8 @@ class DeenWidget(QWidget):
                 self._content = self.hex_field.content
         self.update_length_field(self)
         self.update_readonly_field(self)
-        if (self.hex_field.hasFocus() or self.text_field.hasFocus()) and self.current_pick:
+        if (self.hex_field.hasFocus() or self.text_field.hasFocus()) \
+                and self.current_pick:
             self.action()
 
     def create_view_panel(self):
@@ -380,11 +385,11 @@ class DeenWidget(QWidget):
 
     def set_content_next(self, content):
         if isinstance(content, bytes):
-            self.next()._content = bytearray(content)
+            self.next().content = bytearray(content)
         elif isinstance(content, str):
-            self.next()._content = bytearray(content, 'utf8')
+            self.next().content = bytearray(content, 'utf8')
         else:
-            self.next()._content = content
+            self.next().content = content
         self.next().text_field.setPlainText(self.codec.toUnicode(self.next()._content))
         self.update_length_field(self.next())
         if self.next().hex_view:
