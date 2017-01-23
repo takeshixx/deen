@@ -32,10 +32,10 @@ from deen.core import *
 
 LOGGER = logging.getLogger(__name__)
 
-# TODO: make transformer checks non-case-sensitive
+
 class DeenTransformer(object):
-    """A generic wrapper class that provides various tranformation
-    functions."""
+    """A generic wrapper class that provides
+    various transformation functions."""
     def _in_dict(self, data, core_dict):
         included = False
         for item in core_dict:
@@ -47,7 +47,8 @@ class DeenTransformer(object):
     def encode(self, enc, data):
         assert isinstance(data, (bytearray, bytes))
         enc = enc.lower()
-        assert self._in_dict(enc, ENCODINGS), 'Unknown encoding %s' % enc
+        assert self._in_dict(enc, ENCODINGS),\
+            'Unknown encoding %s' % enc
         if enc == 'base64':
             output = base64.b64encode(data)
         elif enc == 'hex':
@@ -72,7 +73,8 @@ class DeenTransformer(object):
 
     def decode(self, enc, data):
         enc = enc.lower()
-        assert self._in_dict(enc, ENCODINGS), 'Unknown encoding %s' % enc
+        assert self._in_dict(enc, ENCODINGS),\
+            'Unknown encoding %s' % enc
         assert data is not None, 'Data is None'
         assert isinstance(data, (bytes, bytearray)),\
             'Wrong data type %s' % type(data)
@@ -117,7 +119,8 @@ class DeenTransformer(object):
 
     def compress(self, comp, data):
         comp = comp.lower()
-        assert self._in_dict(comp, COMPRESSIONS), 'Unknown compression %s' % comp
+        assert self._in_dict(comp, COMPRESSIONS),\
+            'Unknown compression %s' % comp
         assert data is not None, 'Data is None'
         assert isinstance(data, (bytes, bytearray)),\
             'Wrong data type %s' % type(data)
@@ -131,7 +134,8 @@ class DeenTransformer(object):
 
     def uncompress(self, comp, data):
         comp = comp.lower()
-        assert self._in_dict(comp, COMPRESSIONS), 'Unknown compression %s' % comp
+        assert self._in_dict(comp, COMPRESSIONS),\
+            'Unknown compression %s' % comp
         assert data is not None, 'Data is None'
         assert isinstance(data, (bytes, bytearray)),\
             'Wrong data type %s' % type(data)
