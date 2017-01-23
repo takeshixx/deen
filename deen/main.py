@@ -36,6 +36,29 @@ ARGS.add_argument('-n', action='store_true', dest='nonewline',
                   default=False, help='omit new line character at the end of the output')
 
 
+def list_supported_transformers():
+    print('Encodings:')
+    for e in ENCODINGS:
+        print('\t' + e)
+    print()
+    print('Compressions:')
+    for c in COMPRESSIONS:
+        print('\t' + c)
+    print()
+    print('Hashs:')
+    for h in HASHS:
+        print('\t' + h)
+    try:
+        import OpenSSL.crypto
+    except ImportError:
+        MISC.remove('X509Certificate')
+    if MISC:
+        print()
+        print('Misc')
+        for m in MISC:
+            print('\t' + m)
+
+
 def main():
     args = ARGS.parse_args()
     content = None
@@ -56,26 +79,7 @@ def main():
             args.x509_certificate]):
         # We are in command line mode
         if args.list:
-            print('Encodings:')
-            for e in ENCODINGS:
-                print('\t' + e)
-            print()
-            print('Compressions:')
-            for c in COMPRESSIONS:
-                print('\t' + c)
-            print()
-            print('Hashs:')
-            for h in HASHS:
-                print('\t' + h)
-            try:
-                import OpenSSL.crypto
-            except ImportError:
-                MISC.remove('X509Certificate')
-            if MISC:
-                print()
-                print('Misc')
-                for m in MISC:
-                    print('\t' + m)
+            list_supported_transformers()
             return
         if not content:
             LOGGER.error('Please provide a file or pipe into STDIN')
@@ -105,7 +109,8 @@ def main():
             stdout.write(hashed)
         elif args.x509_certificate:
             from deen.transformers.core import X509Certificate
-            certificate = X509Certificate(content)
+            certificate = X509Certificate()
+            certificate.certificate = content
             stdout.write(certificate.decode())
         if not args.nonewline:
             stdout.write(b'\n')

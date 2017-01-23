@@ -127,6 +127,10 @@ class DeenWidget(QWidget):
             # If widget count is greater then two,
             # remove all widgets after the second.
             self.remove_next_widgets(offset=2)
+        elif self.has_next() and self.text_field.isReadOnly():
+            # If the current widget is not the root
+            # but there is at least one next widget.
+            self.set_content_next(self.content)
         if not self.text_field.isReadOnly():
             if not self.hex_view:
                 self._content = bytearray(self.text_field.toPlainText(), 'utf8')
@@ -134,7 +138,8 @@ class DeenWidget(QWidget):
                 self._content = self.hex_field.content
         self.update_length_field(self)
         self.update_readonly_field(self)
-        if (self.hex_field.hasFocus() or self.text_field.hasFocus()) and self.current_pick:
+        if (self.hex_field.hasFocus() or self.text_field.hasFocus()) \
+                and self.current_pick:
             self.action()
 
     def create_view_panel(self):
@@ -380,15 +385,23 @@ class DeenWidget(QWidget):
 
     def set_content_next(self, content):
         if isinstance(content, bytes):
-            self.next()._content = bytearray(content)
+            self.next().content = bytearray(content)
         elif isinstance(content, str):
-            self.next()._content = bytearray(content, 'utf8')
+            self.next().content = bytearray(content, 'utf8')
         else:
-            self.next()._content = content
+            self.next().content = content
         self.next().text_field.setPlainText(self.codec.toUnicode(self.next()._content))
         self.update_length_field(self.next())
         if self.next().hex_view:
             self.next().view_hex()
+
+    def set_error_next(self):
+        """If an an error occured during transformation
+        this function sets the color of the next widget's
+        border to red and removes all following widgets."""
+        next_widget = self.next()
+        next_widget.text_field.setStyleSheet('border: 2px solid red;')
+        self.remove_next_widgets(widget=next_widget, offset=1)
 
     def action(self, combo=None):
         """The main function that is responsible for calling transformers
@@ -412,8 +425,7 @@ class DeenWidget(QWidget):
                 decoded, error = transformer.decode(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    next = self.next()
-                    next.text_field.setStyleSheet('border: 2px solid red;')
+                    self.set_error_next()
                 self.set_content_next(decoded)
         elif self.current_pick in COMPRESSIONS:
             if self.current_combo.model().item(0).text() == 'Compress':
@@ -423,8 +435,7 @@ class DeenWidget(QWidget):
                 uncompressed, error = transformer.uncompress(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    next = self.next()
-                    next.text_field.setStyleSheet('border: 2px solid red;')
+                    self.set_error_next()
                 self.set_content_next(uncompressed)
         elif self.current_pick in HASHS or self.current_pick == 'ALL':
             hashed = transformer.hash(self.current_pick, self._content)
@@ -432,13 +443,13 @@ class DeenWidget(QWidget):
         elif self.current_pick in MISC:
             if self.current_pick == 'X509Certificate' and crypto:
                 try:
-                    transformer = X509Certificate(self._content)
+                    transformer = X509Certificate()
+                    transformer.certificate = self._content
                     self.set_content_next(transformer.decode())
                 except crypto.Error as e:
                     LOGGER.error(e)
                     error = e
-                    next = self.next()
-                    next.text_field.setStyleSheet('border: 2px solid red;')
+                    self.set_error_next()
                     self.set_content_next(self._content)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
