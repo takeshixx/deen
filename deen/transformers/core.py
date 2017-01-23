@@ -94,7 +94,7 @@ class DeenTransformer(object):
             data = data.replace(b'\n', b'').replace(b'\r', b'')
             try:
                 output = codecs.decode(data, 'hex')
-            except binascii.Error as e:
+            except (binascii.Error, TypeError) as e:
                 decode_error = e
                 output = data
         elif enc == 'url':
@@ -125,7 +125,11 @@ class DeenTransformer(object):
         assert isinstance(data, (bytes, bytearray)),\
             'Wrong data type %s' % type(data)
         if comp == 'gzip':
-            output = codecs.encode(data, 'zlib')
+            try:
+                output = codecs.encode(data, 'zlib')
+            except TypeError:
+                # Python 2 does not like bytearrays
+                output = codecs.encode(buffer(data), 'zlib')
         elif comp == 'bz2':
             output = codecs.encode(data, 'bz2')
         else:
@@ -146,10 +150,17 @@ class DeenTransformer(object):
             except zlib.error as e:
                 decode_error = e
                 output = data
+            except TypeError:
+                try:
+                    # Python 2 does not like bytearrays
+                    output = codecs.decode(buffer(data), 'zlib')
+                except zlib.error as e:
+                    decode_error = e
+                    output = data
         elif comp == 'bz2':
             try:
                 output = codecs.decode(data, 'bz2')
-            except OSError as e:
+            except (OSError, IOError) as e:
                 decode_error = e
                 output = data
         else:
