@@ -105,7 +105,8 @@ def main():
             stdout.write(hashed)
         elif args.x509_certificate:
             from deen.transformers.core import X509Certificate
-            certificate = X509Certificate(content)
+            certificate = X509Certificate()
+            certificate.certificate = content
             stdout.write(certificate.decode())
         if not args.nonewline:
             stdout.write(b'\n')

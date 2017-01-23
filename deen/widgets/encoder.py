@@ -443,7 +443,8 @@ class DeenWidget(QWidget):
         elif self.current_pick in MISC:
             if self.current_pick == 'X509Certificate' and crypto:
                 try:
-                    transformer = X509Certificate(self._content)
+                    transformer = X509Certificate()
+                    transformer.certificate = self._content
                     self.set_content_next(transformer.decode())
                 except crypto.Error as e:
                     LOGGER.error(e)
