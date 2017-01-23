@@ -395,6 +395,14 @@ class DeenWidget(QWidget):
         if self.next().hex_view:
             self.next().view_hex()
 
+    def set_error_next(self):
+        """If an an error occured during transformation
+        this function sets the color of the next widget's
+        border to red and removes all following widgets."""
+        next_widget = self.next()
+        next_widget.text_field.setStyleSheet('border: 2px solid red;')
+        self.remove_next_widgets(widget=next_widget, offset=1)
+
     def action(self, combo=None):
         """The main function that is responsible for calling transformers
         on input data. It will use self._content as source and puts the
@@ -417,8 +425,7 @@ class DeenWidget(QWidget):
                 decoded, error = transformer.decode(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    next = self.next()
-                    next.text_field.setStyleSheet('border: 2px solid red;')
+                    self.set_error_next()
                 self.set_content_next(decoded)
         elif self.current_pick in COMPRESSIONS:
             if self.current_combo.model().item(0).text() == 'Compress':
@@ -428,8 +435,7 @@ class DeenWidget(QWidget):
                 uncompressed, error = transformer.uncompress(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    next = self.next()
-                    next.text_field.setStyleSheet('border: 2px solid red;')
+                    self.set_error_next()
                 self.set_content_next(uncompressed)
         elif self.current_pick in HASHS or self.current_pick == 'ALL':
             hashed = transformer.hash(self.current_pick, self._content)
@@ -442,8 +448,7 @@ class DeenWidget(QWidget):
                 except crypto.Error as e:
                     LOGGER.error(e)
                     error = e
-                    next = self.next()
-                    next.text_field.setStyleSheet('border: 2px solid red;')
+                    self.set_error_next()
                     self.set_content_next(self._content)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
