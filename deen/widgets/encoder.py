@@ -141,7 +141,6 @@ class DeenWidget(QWidget):
             else:
                 self._content = self.hex_field.content
         if not self.formatted_view:
-            print('still not in formatted view')
             self.update_length_field(self)
             self.update_readonly_field(self)
             if (self.hex_field.hasFocus() or self.text_field.hasFocus()) \
