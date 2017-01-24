@@ -358,16 +358,21 @@ class DeenWidget(QWidget):
         clipboard = QApplication.clipboard()
         clipboard.setText(content)
 
-    def save_content(self):
+    def save_content(self, file_name=None):
         """Save the content of the current widget
         to a file."""
         if not self._content:
             return
         fd = QFileDialog(self)
-        name = fd.getSaveFileName(fd, 'Save File')
+        if file_name:
+            name = file_name
+        else:
+            name = fd.getSaveFileName(fd, 'Save File')
         if not name or not name[0]:
             return
-        with open(name[0], 'wb') as file:
+        if isinstance(name, tuple):
+            name = name[0]
+        with open(name, 'wb') as file:
             file.write(self._content)
 
     def move_content_to_root(self):
