@@ -21,3 +21,6 @@ HASHS = ['MD5',
          'Whirlpool']
 
 MISC = ['X509Certificate']
+
+FORMATTERS = ['HTML',
+              'JSON']

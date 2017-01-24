@@ -19,6 +19,7 @@ class Deen(QMainWindow):
         self.main_scrollable.setWidgetResizable(True)
         self.main_scrollable.setWidget(self.encoder_widget)
         self.setCentralWidget(self.main_scrollable)
+        self.load_from_file_dialog = QFileDialog(self)
         self.setWindowTitle('deen')
         self.log = DeenLogger(self)
         self.show()
@@ -59,12 +60,17 @@ class Deen(QMainWindow):
         status.console.show()
         status.show()
 
-    def load_from_file(self):
-        fd = QFileDialog(self)
-        name = fd.getOpenFileName(fd, 'Load from File')
+    def load_from_file(self, file_name=None):
+        if file_name:
+            name = file_name
+        else:
+            name = self.load_from_file_dialog.getOpenFileName(
+                        self.load_from_file_dialog, 'Load from File')
         if not name or not name[0]:
             return
-        with open(name[0], 'rb') as file:
+        if isinstance(name, tuple):
+            name = name[0]
+        with open(name, 'rb') as file:
             content = file.read()
         if content:
             self.encoder_widget.widgets[0].clear_content()
@@ -74,7 +80,7 @@ class Deen(QMainWindow):
             except UnicodeDecodeError:
                 content = content.decode('utf8', errors='replace')
                 self.encoder_widget.widgets[0].text_field.setReadOnly(True)
-                LOGGER.warn('Failed to decode file content, root widget will be read only')
+                LOGGER.warning('Failed to decode file content, root widget will be read only')
             self.encoder_widget.widgets[0].text_field.setPlainText(content)
         self.encoder_widget.widgets[0].hex_field.setHidden(True)
         self.encoder_widget.widgets[0].text_field.setHidden(False)
