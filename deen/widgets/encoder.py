@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLa
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
 from deen.transformers.core import DeenTransformer, X509Certificate
+from deen.transformers.formats import HtmlFormat, JsonFormat
 from deen.core import *
 
 LOGGER = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ class DeenWidget(QWidget):
         self.hex_view = False
         self.view_panel = self.create_view_panel()
         self.action_panel = self.create_action_panel(enable_actions)
+        self.formatted_view = False
         if not enable_actions:
             self.action_panel.hide()
         self.create_search_field()
@@ -74,6 +76,7 @@ class DeenWidget(QWidget):
     def content(self, data):
         assert isinstance(data, bytearray)
         self._content = data
+        self.formatted_view = False
         if self.hex_view:
             self.hex_field.content = self._content
         else:
@@ -123,7 +126,8 @@ class DeenWidget(QWidget):
         applied on a root widget or any following widget."""
         if self.action_panel.isHidden():
             self.action_panel.show()
-        if self.has_next() and not self.text_field.isReadOnly():
+        if self.has_next() and not self.text_field.isReadOnly() \
+                and not self.formatted_view:
             # If widget count is greater then two,
             # remove all widgets after the second.
             self.remove_next_widgets(offset=2)
@@ -131,16 +135,18 @@ class DeenWidget(QWidget):
             # If the current widget is not the root
             # but there is at least one next widget.
             self.set_content_next(self.content)
-        if not self.text_field.isReadOnly():
+        if not self.text_field.isReadOnly() and not self.formatted_view:
             if not self.hex_view:
                 self._content = bytearray(self.text_field.toPlainText(), 'utf8')
             else:
                 self._content = self.hex_field.content
-        self.update_length_field(self)
-        self.update_readonly_field(self)
-        if (self.hex_field.hasFocus() or self.text_field.hasFocus()) \
-                and self.current_pick:
-            self.action()
+        if not self.formatted_view:
+            print('still not in formatted view')
+            self.update_length_field(self)
+            self.update_readonly_field(self)
+            if (self.hex_field.hasFocus() or self.text_field.hasFocus()) \
+                    and self.current_pick:
+                self.action()
 
     def create_view_panel(self):
         text = QCheckBox('Text')
@@ -287,6 +293,13 @@ class DeenWidget(QWidget):
             self.misc_combo.addItem(misc)
         self.misc_combo.currentIndexChanged.connect(lambda: self.action(self.misc_combo))
 
+        self.format_combo = QComboBox(self)
+        self.format_combo.addItem('Format')
+        self.format_combo.model().item(0).setEnabled(False)
+        for formatter in FORMATTERS:
+            self.format_combo.addItem(formatter)
+        self.format_combo.currentIndexChanged.connect(lambda: self.action(self.format_combo))
+
         action_panel = QVBoxLayout()
         action_panel.addWidget(self.decoding_combo)
         action_panel.addWidget(self.encoding_combo)
@@ -295,6 +308,7 @@ class DeenWidget(QWidget):
         action_panel.addWidget(self.hash_combo)
         action_panel.addWidget(self.misc_combo)
         action_panel.addStretch()
+        action_panel.addWidget(self.format_combo)
         widget = QWidget()
         widget.setLayout(action_panel)
         return widget
@@ -329,6 +343,7 @@ class DeenWidget(QWidget):
             widget.text_field.setReadOnly(False)
             widget.update_readonly_field(self)
             widget.current_pick = None
+            widget.formatted_view = False
         self.remove_next_widgets(widget=widget)
 
     def copy_to_clipboard(self):
@@ -417,7 +432,24 @@ class DeenWidget(QWidget):
             self.current_combo = combo
             self.current_pick = combo.currentText()
         transformer = DeenTransformer()
-        if self.current_pick in ENCODINGS:
+        if self.current_pick in FORMATTERS:
+            if self.current_pick == 'HTML':
+                formatter = HtmlFormat()
+                formatter.content = self._content
+                if formatter.content:
+                    self.formatted_view = True
+                    self.text_field.setPlainText(
+                        self.codec.toUnicode(formatter.content))
+                    self.text_field.moveCursor(QTextCursor.End)
+            elif self.current_pick == 'JSON':
+                formatter = JsonFormat()
+                formatter.content = self._content
+                if formatter.content:
+                    self.formatted_view = True
+                    self.text_field.setPlainText(
+                        self.codec.toUnicode(formatter.content))
+                    self.text_field.moveCursor(QTextCursor.End)
+        elif self.current_pick in ENCODINGS:
             if self.current_combo.model().item(0).text() == 'Encode':
                 encoded = transformer.encode(self.current_pick, self._content)
                 self.set_content_next(encoded)
@@ -453,8 +485,9 @@ class DeenWidget(QWidget):
                     self.set_content_next(self._content)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
-        if self.next().text_field.isReadOnly() and self.current_pick:
-            self.next().codec_field.setText('Transformer: ' + self.current_pick)
-            self.next().codec_field.show()
-        if not error:
-            self.next().text_field.setStyleSheet('border: none;')
+        if self.current_combo.model().item(0).text() != 'Format':
+            if self.next().text_field.isReadOnly() and self.current_pick:
+                self.next().codec_field.setText('Transformer: ' + self.current_pick)
+                self.next().codec_field.show()
+            if not error:
+                self.next().text_field.setStyleSheet('border: none;')
