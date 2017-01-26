@@ -76,7 +76,9 @@ class DeenWidget(QWidget):
 
     @content.setter
     def content(self, data):
-        assert isinstance(data, bytearray)
+        assert isinstance(data, (bytearray, bytes))
+        if isinstance(data, bytes):
+            data = bytearray(data)
         self._content = data
         self.formatted_view = False
         if self.hex_view:
@@ -136,7 +138,7 @@ class DeenWidget(QWidget):
         elif self.has_next() and self.text_field.isReadOnly():
             # If the current widget is not the root
             # but there is at least one next widget.
-            self.set_content_next(self.content)
+            self.next().content = self.content
         if not self.text_field.isReadOnly() and not self.formatted_view:
             if not self.hex_view:
                 self._content = bytearray(self.text_field.toPlainText(), 'utf8')
@@ -427,19 +429,6 @@ class DeenWidget(QWidget):
             self.parent.widgets[-1] = None
             self.parent.widgets.pop()
 
-    def set_content_next(self, content):
-        if isinstance(content, bytes):
-            self.next().content = bytearray(content)
-        elif isinstance(content, str):
-            self.next().content = bytearray(content, 'utf8')
-        else:
-            self.next().content = content
-        self.next().text_field.setPlainText(
-            self.codec.toUnicode(self.next()._content))
-        self.update_length_field(self.next())
-        if self.next().hex_view:
-            self.next().view_hex()
-
     def action(self, combo=None):
         """The main function that is responsible for calling transformers
         on input data. It will use self._content as source and puts the
@@ -474,40 +463,40 @@ class DeenWidget(QWidget):
         elif self.current_pick in ENCODINGS:
             if self.current_combo.model().item(0).text() == 'Encode':
                 encoded = transformer.encode(self.current_pick, self._content)
-                self.set_content_next(encoded)
+                self.next().content = encoded
             else:
                 decoded, error = transformer.decode(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
                     self.next().set_error()
                     self.next().set_error_message(str(error))
-                self.set_content_next(decoded)
+                self.next().content = decoded
         elif self.current_pick in COMPRESSIONS:
             if self.current_combo.model().item(0).text() == 'Compress':
                 compressed = transformer.compress(self.current_pick, self._content)
-                self.set_content_next(compressed)
+                self.next().content = compressed
             else:
                 uncompressed, error = transformer.uncompress(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
                     self.next().set_error()
                     self.next().set_error_message(str(error))
-                self.set_content_next(uncompressed)
+                self.next().content = uncompressed
         elif self.current_pick in HASHS or self.current_pick == 'ALL':
             hashed = transformer.hash(self.current_pick, self._content)
-            self.set_content_next(hashed)
+            self.next().content = hashed
         elif self.current_pick in MISC:
             if self.current_pick == 'X509Certificate' and crypto:
                 try:
                     transformer = X509Certificate()
                     transformer.certificate = self._content
-                    self.set_content_next(transformer.decode())
+                    self.next().content = transformer.decode()
                 except crypto.Error as e:
                     LOGGER.error(e)
                     error = e
                     self.next().set_error()
                     self.next().set_error_message(str(error))
-                    self.set_content_next(self._content)
+                    self.next().content = self._content
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
         if self.current_combo.model().item(0).text() != 'Format':
