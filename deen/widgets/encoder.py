@@ -58,10 +58,12 @@ class DeenWidget(QWidget):
         if not enable_actions:
             self.action_panel.hide()
         self.create_search_field()
+        self.create_error_label()
         self.v_layout = QVBoxLayout()
         self.v_layout.addWidget(self.view_panel)
         self.v_layout.addWidget(self.text_field)
         self.v_layout.addWidget(self.hex_field)
+        self.v_layout.addWidget(self.error_message)
         self.v_layout.addLayout(self.search)
         self.h_layout = QHBoxLayout()
         self.h_layout.addLayout(self.v_layout)
@@ -248,6 +250,29 @@ class DeenWidget(QWidget):
         #self.field.moveCursor(F)
         #self.field.ensureCursorVisible()
 
+    def set_error(self, widget=None):
+        """If an an error occured during transformation
+        this function sets the color of the next widget's
+        border to red and removes all following widgets."""
+        widget = widget or self
+        widget.text_field.setStyleSheet('border: 2px solid red;')
+        self.remove_next_widgets(widget=widget, offset=1)
+
+    def create_error_label(self):
+        self.error_message = QLabel()
+        self.error_message.hide()
+
+    def set_error_message(self, message, widget=None):
+        widget = widget or self
+        widget.error_message.setText('Error: ' + message)
+        widget.error_message.setStyleSheet('color: red;')
+        widget.error_message.show()
+
+    def clear_error_message(self, widget=None):
+        widget = widget or self
+        widget.error_message.clear()
+        widget.error_message.hide()
+
     def create_action_panel(self, enable_actions=True):
         self.encoding_combo = QComboBox(self)
         self.encoding_combo.addItem('Encode')
@@ -409,18 +434,11 @@ class DeenWidget(QWidget):
             self.next().content = bytearray(content, 'utf8')
         else:
             self.next().content = content
-        self.next().text_field.setPlainText(self.codec.toUnicode(self.next()._content))
+        self.next().text_field.setPlainText(
+            self.codec.toUnicode(self.next()._content))
         self.update_length_field(self.next())
         if self.next().hex_view:
             self.next().view_hex()
-
-    def set_error_next(self):
-        """If an an error occured during transformation
-        this function sets the color of the next widget's
-        border to red and removes all following widgets."""
-        next_widget = self.next()
-        next_widget.text_field.setStyleSheet('border: 2px solid red;')
-        self.remove_next_widgets(widget=next_widget, offset=1)
 
     def action(self, combo=None):
         """The main function that is responsible for calling transformers
@@ -461,7 +479,8 @@ class DeenWidget(QWidget):
                 decoded, error = transformer.decode(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    self.set_error_next()
+                    self.next().set_error()
+                    self.next().set_error_message(str(error))
                 self.set_content_next(decoded)
         elif self.current_pick in COMPRESSIONS:
             if self.current_combo.model().item(0).text() == 'Compress':
@@ -471,7 +490,8 @@ class DeenWidget(QWidget):
                 uncompressed, error = transformer.uncompress(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    self.set_error_next()
+                    self.next().set_error()
+                    self.next().set_error_message(str(error))
                 self.set_content_next(uncompressed)
         elif self.current_pick in HASHS or self.current_pick == 'ALL':
             hashed = transformer.hash(self.current_pick, self._content)
@@ -485,7 +505,8 @@ class DeenWidget(QWidget):
                 except crypto.Error as e:
                     LOGGER.error(e)
                     error = e
-                    self.set_error_next()
+                    self.next().set_error()
+                    self.next().set_error_message(str(error))
                     self.set_content_next(self._content)
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
@@ -495,3 +516,4 @@ class DeenWidget(QWidget):
                 self.next().codec_field.show()
             if not error:
                 self.next().text_field.setStyleSheet('border: none;')
+                self.next().clear_error_message()
