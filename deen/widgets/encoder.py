@@ -444,67 +444,68 @@ class DeenWidget(QWidget):
                 return
             self.current_combo = combo
             self.current_pick = combo.currentText()
-        transformer = DeenTransformer()
-        if self.current_pick in FORMATTERS:
-            if self.current_pick == 'HTML':
-                formatter = HtmlFormat()
-                formatter.content = self._content
-                if formatter.content:
-                    self.formatted_view = True
-                    self.text_field.setPlainText(
-                        self.codec.toUnicode(formatter.content))
-                    self.text_field.moveCursor(QTextCursor.End)
-            elif self.current_pick == 'JSON':
-                formatter = JsonFormat()
-                formatter.content = self._content
-                if formatter.content:
-                    self.formatted_view = True
-                    self.text_field.setPlainText(
-                        self.codec.toUnicode(formatter.content))
-                    self.text_field.moveCursor(QTextCursor.End)
-        elif self.current_pick in ENCODINGS:
-            if self.current_combo.model().item(0).text() == 'Encode':
-                encoded = transformer.encode(self.current_pick, self._content)
-                self.next.content = encoded
-            else:
-                decoded, error = transformer.decode(self.current_pick, self._content)
-                if error:
-                    LOGGER.error(error)
-                    self.next.set_error()
-                    self.next.set_error_message(str(error))
-                self.next.content = decoded
-        elif self.current_pick in COMPRESSIONS:
-            if self.current_combo.model().item(0).text() == 'Compress':
-                compressed = transformer.compress(self.current_pick, self._content)
-                self.next.content = compressed
-            else:
-                uncompressed, error = transformer.uncompress(self.current_pick, self._content)
-                if error:
-                    LOGGER.error(error)
-                    self.next.set_error()
-                    self.next.set_error_message(str(error))
-                self.next.content = uncompressed
-        elif self.current_pick in HASHS or self.current_pick == 'ALL':
-            hashed = transformer.hash(self.current_pick, self._content)
-            self.next.content = hashed
-        elif self.current_pick in MISC:
-            if self.current_pick == 'X509Certificate' and crypto:
-                try:
-                    transformer = X509Certificate()
-                    transformer.certificate = self._content
-                    self.next.content = transformer.decode()
-                except crypto.Error as e:
-                    LOGGER.error(e)
-                    error = e
-                    self.next.set_error()
-                    self.next.set_error_message(str(error))
-                    self.next.content = self._content
+        if self._content:
+            transformer = DeenTransformer()
+            if self.current_pick in FORMATTERS:
+                if self.current_pick == 'HTML':
+                    formatter = HtmlFormat()
+                    formatter.content = self._content
+                    if formatter.content:
+                        self.formatted_view = True
+                        self.text_field.setPlainText(
+                            self.codec.toUnicode(formatter.content))
+                        self.text_field.moveCursor(QTextCursor.End)
+                elif self.current_pick == 'JSON':
+                    formatter = JsonFormat()
+                    formatter.content = self._content
+                    if formatter.content:
+                        self.formatted_view = True
+                        self.text_field.setPlainText(
+                            self.codec.toUnicode(formatter.content))
+                        self.text_field.moveCursor(QTextCursor.End)
+            elif self.current_pick in ENCODINGS:
+                if self.current_combo.model().item(0).text() == 'Encode':
+                    encoded = transformer.encode(self.current_pick, self._content)
+                    self.next.content = encoded
+                else:
+                    decoded, error = transformer.decode(self.current_pick, self._content)
+                    if error:
+                        LOGGER.error(error)
+                        self.next.set_error()
+                        self.next.set_error_message(str(error))
+                    self.next.content = decoded
+            elif self.current_pick in COMPRESSIONS:
+                if self.current_combo.model().item(0).text() == 'Compress':
+                    compressed = transformer.compress(self.current_pick, self._content)
+                    self.next.content = compressed
+                else:
+                    uncompressed, error = transformer.uncompress(self.current_pick, self._content)
+                    if error:
+                        LOGGER.error(error)
+                        self.next.set_error()
+                        self.next.set_error_message(str(error))
+                    self.next.content = uncompressed
+            elif self.current_pick in HASHS or self.current_pick == 'ALL':
+                hashed = transformer.hash(self.current_pick, self._content)
+                self.next.content = hashed
+            elif self.current_pick in MISC:
+                if self.current_pick == 'X509Certificate' and crypto:
+                    try:
+                        transformer = X509Certificate()
+                        transformer.certificate = self._content
+                        self.next.content = transformer.decode()
+                    except crypto.Error as e:
+                        LOGGER.error(e)
+                        error = e
+                        self.next.set_error()
+                        self.next.set_error_message(str(error))
+                        self.next.content = self._content
+            if self.current_combo.model().item(0).text() != 'Format':
+                if self.next.text_field.isReadOnly() and self.current_pick:
+                    self.next.codec_field.setText('Transformer: ' + self.current_pick)
+                    self.next.codec_field.show()
+                if not error:
+                    self.next.text_field.setStyleSheet('border: none;')
+                    self.next.clear_error_message()
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
-        if self.current_combo.model().item(0).text() != 'Format':
-            if self.next.text_field.isReadOnly() and self.current_pick:
-                self.next.codec_field.setText('Transformer: ' + self.current_pick)
-                self.next.codec_field.show()
-            if not error:
-                self.next.text_field.setStyleSheet('border: none;')
-                self.next.clear_error_message()
