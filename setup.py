@@ -1,8 +1,11 @@
 from setuptools import setup
+import deen.core
 
 setup(name='deen',
-      version='0.7.1',
-      install_requires=['PyQt5'],
+      version=deen.core.__version__,
+      install_requires=['PyQt5',
+                        'lxml'],
+      extras_require={'X509': 'pyOpenSSL'},
       packages=['deen',
                 'deen.widgets',
                 'deen.transformers'],
