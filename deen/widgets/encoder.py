@@ -99,6 +99,7 @@ class DeenWidget(QWidget):
         """Determine if there are already new widgets created."""
         return True if self.parent.widgets[-1] != self else False
 
+    @property
     def previous(self):
         """Return the previous widget. If the current widget
         is the root widget, this function returns the root
@@ -109,6 +110,7 @@ class DeenWidget(QWidget):
             if w == self:
                 return self.parent.widgets[i - 1]
 
+    @property
     def next(self):
         """Return the next widget. This is most likely the one
         that is supposed to hold the output of action()'s of
@@ -138,7 +140,7 @@ class DeenWidget(QWidget):
         elif self.has_next() and self.text_field.isReadOnly():
             # If the current widget is not the root
             # but there is at least one next widget.
-            self.next().content = self.content
+            self.next.content = self.content
         if not self.text_field.isReadOnly() and not self.formatted_view:
             if not self.hex_view:
                 self._content = bytearray(self.text_field.toPlainText(), 'utf8')
@@ -231,7 +233,7 @@ class DeenWidget(QWidget):
         matches = regex.globalMatch(self.text_field.toPlainText())
         _matches = []
         while matches.hasNext():
-            _matches.append(matches.next())
+            _matches.append(matches.next)
         self.search_matches = _matches
         self.search_field_matches.setText('Matches: ' + str(len(self.search_matches)))
         self.search_field_matches.show()
@@ -463,46 +465,46 @@ class DeenWidget(QWidget):
         elif self.current_pick in ENCODINGS:
             if self.current_combo.model().item(0).text() == 'Encode':
                 encoded = transformer.encode(self.current_pick, self._content)
-                self.next().content = encoded
+                self.next.content = encoded
             else:
                 decoded, error = transformer.decode(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    self.next().set_error()
-                    self.next().set_error_message(str(error))
-                self.next().content = decoded
+                    self.next.set_error()
+                    self.next.set_error_message(str(error))
+                self.next.content = decoded
         elif self.current_pick in COMPRESSIONS:
             if self.current_combo.model().item(0).text() == 'Compress':
                 compressed = transformer.compress(self.current_pick, self._content)
-                self.next().content = compressed
+                self.next.content = compressed
             else:
                 uncompressed, error = transformer.uncompress(self.current_pick, self._content)
                 if error:
                     LOGGER.error(error)
-                    self.next().set_error()
-                    self.next().set_error_message(str(error))
-                self.next().content = uncompressed
+                    self.next.set_error()
+                    self.next.set_error_message(str(error))
+                self.next.content = uncompressed
         elif self.current_pick in HASHS or self.current_pick == 'ALL':
             hashed = transformer.hash(self.current_pick, self._content)
-            self.next().content = hashed
+            self.next.content = hashed
         elif self.current_pick in MISC:
             if self.current_pick == 'X509Certificate' and crypto:
                 try:
                     transformer = X509Certificate()
                     transformer.certificate = self._content
-                    self.next().content = transformer.decode()
+                    self.next.content = transformer.decode()
                 except crypto.Error as e:
                     LOGGER.error(e)
                     error = e
-                    self.next().set_error()
-                    self.next().set_error_message(str(error))
-                    self.next().content = self._content
+                    self.next.set_error()
+                    self.next.set_error_message(str(error))
+                    self.next.content = self._content
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
         if self.current_combo.model().item(0).text() != 'Format':
-            if self.next().text_field.isReadOnly() and self.current_pick:
-                self.next().codec_field.setText('Transformer: ' + self.current_pick)
-                self.next().codec_field.show()
+            if self.next.text_field.isReadOnly() and self.current_pick:
+                self.next.codec_field.setText('Transformer: ' + self.current_pick)
+                self.next.codec_field.show()
             if not error:
-                self.next().text_field.setStyleSheet('border: none;')
-                self.next().clear_error_message()
+                self.next.text_field.setStyleSheet('border: none;')
+                self.next.clear_error_message()
