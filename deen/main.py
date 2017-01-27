@@ -63,15 +63,18 @@ def main():
     args = ARGS.parse_args()
     content = None
     if args.infile:
-        if args.infile == '-':
-            try:
-                stdin = sys.stdin.buffer
-            except AttributeError:
-                stdin = sys.stdin
-            content = stdin.read()
-        else:
-            with open(args.infile, 'rb') as f:
-                content = f.read()
+        try:
+            if args.infile == '-':
+                try:
+                    stdin = sys.stdin.buffer
+                except AttributeError:
+                    stdin = sys.stdin
+                content = stdin.read()
+            else:
+                with open(args.infile, 'rb') as f:
+                    content = f.read()
+        except KeyboardInterrupt:
+            return
     elif args.data:
         content = bytearray(args.data, 'utf8')
     if any([args.encode, args.decode, args.uncompress,
@@ -94,7 +97,8 @@ def main():
             stdout = sys.stdout
         if args.decode:
             decoded = transformer.decode(args.decode, content)
-            stdout.write(decoded)
+            assert isinstance(decoded, tuple)
+            stdout.write(decoded[0])
         elif args.encode:
             encoded = transformer.encode(args.encode, content)
             stdout.write(encoded)
@@ -103,7 +107,8 @@ def main():
             stdout.write(compressed)
         elif args.uncompress:
             uncompressed = transformer.uncompress(args.uncompress, content)
-            stdout.write(uncompressed)
+            assert isinstance(uncompressed, tuple)
+            stdout.write(uncompressed[0])
         elif args.hash:
             hashed = transformer.hash(args.hash, content)
             stdout.write(hashed)

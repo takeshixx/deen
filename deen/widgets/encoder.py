@@ -58,10 +58,12 @@ class DeenWidget(QWidget):
         if not enable_actions:
             self.action_panel.hide()
         self.create_search_field()
+        self.create_error_label()
         self.v_layout = QVBoxLayout()
         self.v_layout.addWidget(self.view_panel)
         self.v_layout.addWidget(self.text_field)
         self.v_layout.addWidget(self.hex_field)
+        self.v_layout.addWidget(self.error_message)
         self.v_layout.addLayout(self.search)
         self.h_layout = QHBoxLayout()
         self.h_layout.addLayout(self.v_layout)
@@ -74,7 +76,9 @@ class DeenWidget(QWidget):
 
     @content.setter
     def content(self, data):
-        assert isinstance(data, bytearray)
+        assert isinstance(data, (bytearray, bytes))
+        if isinstance(data, bytes):
+            data = bytearray(data)
         self._content = data
         self.formatted_view = False
         if self.hex_view:
@@ -95,6 +99,7 @@ class DeenWidget(QWidget):
         """Determine if there are already new widgets created."""
         return True if self.parent.widgets[-1] != self else False
 
+    @property
     def previous(self):
         """Return the previous widget. If the current widget
         is the root widget, this function returns the root
@@ -105,6 +110,7 @@ class DeenWidget(QWidget):
             if w == self:
                 return self.parent.widgets[i - 1]
 
+    @property
     def next(self):
         """Return the next widget. This is most likely the one
         that is supposed to hold the output of action()'s of
@@ -134,7 +140,7 @@ class DeenWidget(QWidget):
         elif self.has_next() and self.text_field.isReadOnly():
             # If the current widget is not the root
             # but there is at least one next widget.
-            self.set_content_next(self.content)
+            self.next.content = self.content
         if not self.text_field.isReadOnly() and not self.formatted_view:
             if not self.hex_view:
                 self._content = bytearray(self.text_field.toPlainText(), 'utf8')
@@ -227,7 +233,7 @@ class DeenWidget(QWidget):
         matches = regex.globalMatch(self.text_field.toPlainText())
         _matches = []
         while matches.hasNext():
-            _matches.append(matches.next())
+            _matches.append(matches.next)
         self.search_matches = _matches
         self.search_field_matches.setText('Matches: ' + str(len(self.search_matches)))
         self.search_field_matches.show()
@@ -247,6 +253,29 @@ class DeenWidget(QWidget):
         #self.field.moveCursor(QTextCursor.Start)
         #self.field.moveCursor(F)
         #self.field.ensureCursorVisible()
+
+    def set_error(self, widget=None):
+        """If an an error occured during transformation
+        this function sets the color of the next widget's
+        border to red and removes all following widgets."""
+        widget = widget or self
+        widget.text_field.setStyleSheet('border: 2px solid red;')
+        self.remove_next_widgets(widget=widget, offset=1)
+
+    def create_error_label(self):
+        self.error_message = QLabel()
+        self.error_message.hide()
+
+    def set_error_message(self, message, widget=None):
+        widget = widget or self
+        widget.error_message.setText('Error: ' + message)
+        widget.error_message.setStyleSheet('color: red;')
+        widget.error_message.show()
+
+    def clear_error_message(self, widget=None):
+        widget = widget or self
+        widget.error_message.clear()
+        widget.error_message.hide()
 
     def create_action_panel(self, enable_actions=True):
         self.encoding_combo = QComboBox(self)
@@ -402,26 +431,6 @@ class DeenWidget(QWidget):
             self.parent.widgets[-1] = None
             self.parent.widgets.pop()
 
-    def set_content_next(self, content):
-        if isinstance(content, bytes):
-            self.next().content = bytearray(content)
-        elif isinstance(content, str):
-            self.next().content = bytearray(content, 'utf8')
-        else:
-            self.next().content = content
-        self.next().text_field.setPlainText(self.codec.toUnicode(self.next()._content))
-        self.update_length_field(self.next())
-        if self.next().hex_view:
-            self.next().view_hex()
-
-    def set_error_next(self):
-        """If an an error occured during transformation
-        this function sets the color of the next widget's
-        border to red and removes all following widgets."""
-        next_widget = self.next()
-        next_widget.text_field.setStyleSheet('border: 2px solid red;')
-        self.remove_next_widgets(widget=next_widget, offset=1)
-
     def action(self, combo=None):
         """The main function that is responsible for calling transformers
         on input data. It will use self._content as source and puts the
@@ -435,63 +444,68 @@ class DeenWidget(QWidget):
                 return
             self.current_combo = combo
             self.current_pick = combo.currentText()
-        transformer = DeenTransformer()
-        if self.current_pick in FORMATTERS:
-            if self.current_pick == 'HTML':
-                formatter = HtmlFormat()
-                formatter.content = self._content
-                if formatter.content:
-                    self.formatted_view = True
-                    self.text_field.setPlainText(
-                        self.codec.toUnicode(formatter.content))
-                    self.text_field.moveCursor(QTextCursor.End)
-            elif self.current_pick == 'JSON':
-                formatter = JsonFormat()
-                formatter.content = self._content
-                if formatter.content:
-                    self.formatted_view = True
-                    self.text_field.setPlainText(
-                        self.codec.toUnicode(formatter.content))
-                    self.text_field.moveCursor(QTextCursor.End)
-        elif self.current_pick in ENCODINGS:
-            if self.current_combo.model().item(0).text() == 'Encode':
-                encoded = transformer.encode(self.current_pick, self._content)
-                self.set_content_next(encoded)
-            else:
-                decoded, error = transformer.decode(self.current_pick, self._content)
-                if error:
-                    LOGGER.error(error)
-                    self.set_error_next()
-                self.set_content_next(decoded)
-        elif self.current_pick in COMPRESSIONS:
-            if self.current_combo.model().item(0).text() == 'Compress':
-                compressed = transformer.compress(self.current_pick, self._content)
-                self.set_content_next(compressed)
-            else:
-                uncompressed, error = transformer.uncompress(self.current_pick, self._content)
-                if error:
-                    LOGGER.error(error)
-                    self.set_error_next()
-                self.set_content_next(uncompressed)
-        elif self.current_pick in HASHS or self.current_pick == 'ALL':
-            hashed = transformer.hash(self.current_pick, self._content)
-            self.set_content_next(hashed)
-        elif self.current_pick in MISC:
-            if self.current_pick == 'X509Certificate' and crypto:
-                try:
-                    transformer = X509Certificate()
-                    transformer.certificate = self._content
-                    self.set_content_next(transformer.decode())
-                except crypto.Error as e:
-                    LOGGER.error(e)
-                    error = e
-                    self.set_error_next()
-                    self.set_content_next(self._content)
+        if self._content:
+            transformer = DeenTransformer()
+            if self.current_pick in FORMATTERS:
+                if self.current_pick == 'HTML':
+                    formatter = HtmlFormat()
+                    formatter.content = self._content
+                    if formatter.content:
+                        self.formatted_view = True
+                        self.text_field.setPlainText(
+                            self.codec.toUnicode(formatter.content))
+                        self.text_field.moveCursor(QTextCursor.End)
+                elif self.current_pick == 'JSON':
+                    formatter = JsonFormat()
+                    formatter.content = self._content
+                    if formatter.content:
+                        self.formatted_view = True
+                        self.text_field.setPlainText(
+                            self.codec.toUnicode(formatter.content))
+                        self.text_field.moveCursor(QTextCursor.End)
+            elif self.current_pick in ENCODINGS:
+                if self.current_combo.model().item(0).text() == 'Encode':
+                    encoded = transformer.encode(self.current_pick, self._content)
+                    self.next.content = encoded
+                else:
+                    decoded, error = transformer.decode(self.current_pick, self._content)
+                    if error:
+                        LOGGER.error(error)
+                        self.next.set_error()
+                        self.next.set_error_message(str(error))
+                    self.next.content = decoded
+            elif self.current_pick in COMPRESSIONS:
+                if self.current_combo.model().item(0).text() == 'Compress':
+                    compressed = transformer.compress(self.current_pick, self._content)
+                    self.next.content = compressed
+                else:
+                    uncompressed, error = transformer.uncompress(self.current_pick, self._content)
+                    if error:
+                        LOGGER.error(error)
+                        self.next.set_error()
+                        self.next.set_error_message(str(error))
+                    self.next.content = uncompressed
+            elif self.current_pick in HASHS or self.current_pick == 'ALL':
+                hashed = transformer.hash(self.current_pick, self._content)
+                self.next.content = hashed
+            elif self.current_pick in MISC:
+                if self.current_pick == 'X509Certificate' and crypto:
+                    try:
+                        transformer = X509Certificate()
+                        transformer.certificate = self._content
+                        self.next.content = transformer.decode()
+                    except crypto.Error as e:
+                        LOGGER.error(e)
+                        error = e
+                        self.next.set_error()
+                        self.next.set_error_message(str(error))
+                        self.next.content = self._content
+            if self.current_combo.model().item(0).text() != 'Format':
+                if self.next.text_field.isReadOnly() and self.current_pick:
+                    self.next.codec_field.setText('Transformer: ' + self.current_pick)
+                    self.next.codec_field.show()
+                if not error:
+                    self.next.text_field.setStyleSheet('border: none;')
+                    self.next.clear_error_message()
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
-        if self.current_combo.model().item(0).text() != 'Format':
-            if self.next().text_field.isReadOnly() and self.current_pick:
-                self.next().codec_field.setText('Transformer: ' + self.current_pick)
-                self.next().codec_field.show()
-            if not error:
-                self.next().text_field.setStyleSheet('border: none;')
