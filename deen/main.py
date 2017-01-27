@@ -94,7 +94,8 @@ def main():
             stdout = sys.stdout
         if args.decode:
             decoded = transformer.decode(args.decode, content)
-            stdout.write(decoded)
+            assert isinstance(decoded, tuple)
+            stdout.write(decoded[0])
         elif args.encode:
             encoded = transformer.encode(args.encode, content)
             stdout.write(encoded)
@@ -103,7 +104,8 @@ def main():
             stdout.write(compressed)
         elif args.uncompress:
             uncompressed = transformer.uncompress(args.uncompress, content)
-            stdout.write(uncompressed)
+            assert isinstance(uncompressed, tuple)
+            stdout.write(uncompressed[0])
         elif args.hash:
             hashed = transformer.hash(args.hash, content)
             stdout.write(hashed)
