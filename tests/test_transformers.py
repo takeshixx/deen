@@ -1,6 +1,7 @@
 import os
 import unittest
 import codecs
+import base64
 import random
 import string
 import functools
@@ -40,8 +41,7 @@ class TestTransformers(unittest.TestCase):
 
     def test_encode_base64(self):
         data_bytes = self._random_bytes()
-        # codecs module adds new line character
-        encoded_bytes = codecs.encode(data_bytes, 'base64').strip()
+        encoded_bytes = base64.b64encode(data_bytes)
         result_bytes = self._transformer.encode('base64', data_bytes)
         self.assertIsInstance(result_bytes, bytes,
             'Base64 encoding result should be bytes or bytearray, ' \
@@ -54,8 +54,7 @@ class TestTransformers(unittest.TestCase):
 
     def test_decode_base64(self):
         data_bytes = self._random_bytes()
-        # codecs module adds new line character
-        encoded_bytes = codecs.encode(data_bytes, 'base64').strip()
+        encoded_bytes = base64.b64encode(data_bytes)
         result = self._transformer.decode('base64', encoded_bytes)
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during Base64 decoding'
