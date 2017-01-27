@@ -11,7 +11,7 @@ from deen.core import *
 
 ICON = os.path.dirname(os.path.abspath(__file__)) + '/icon.png'
 LOGGER = logging.getLogger()
-logging.basicConfig(format='[%(lineno)s - %(funcName)s() ] %(message)s')
+logging.basicConfig(format='[%(pathname)s - %(funcName)s() - %(lineno)s] %(message)s')
 
 ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.')
 ARGS.add_argument('infile', nargs='?', default=None,
