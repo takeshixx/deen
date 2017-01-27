@@ -63,15 +63,18 @@ def main():
     args = ARGS.parse_args()
     content = None
     if args.infile:
-        if args.infile == '-':
-            try:
-                stdin = sys.stdin.buffer
-            except AttributeError:
-                stdin = sys.stdin
-            content = stdin.read()
-        else:
-            with open(args.infile, 'rb') as f:
-                content = f.read()
+        try:
+            if args.infile == '-':
+                try:
+                    stdin = sys.stdin.buffer
+                except AttributeError:
+                    stdin = sys.stdin
+                content = stdin.read()
+            else:
+                with open(args.infile, 'rb') as f:
+                    content = f.read()
+        except KeyboardInterrupt:
+            return
     elif args.data:
         content = bytearray(args.data, 'utf8')
     if any([args.encode, args.decode, args.uncompress,
