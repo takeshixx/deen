@@ -51,6 +51,8 @@ class DeenTransformer(object):
             'Unknown encoding %s' % enc
         if enc == 'base64':
             output = base64.b64encode(data)
+        elif enc == 'base64 url':
+            output = base64.urlsafe_b64encode(data)
         elif enc == 'hex':
             output = codecs.encode(data, 'hex')
         elif enc == 'url':
@@ -85,6 +87,15 @@ class DeenTransformer(object):
             data = data.replace(b'\n', b'').replace(b'\r', b'')
             try:
                 output = base64.b64decode(data)
+            except binascii.Error as e:
+                decode_error = e
+                output = data
+        elif enc == 'base64 url':
+            # Remove new lines and carriage returns from
+            # Base64 encoded data.
+            data = data.replace(b'\n', b'').replace(b'\r', b'')
+            try:
+                output = base64.urlsafe_b64decode(data)
             except binascii.Error as e:
                 decode_error = e
                 output = data
