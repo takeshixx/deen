@@ -67,6 +67,34 @@ class TestTransformers(unittest.TestCase):
             self._transformer.decode, 'base64', data_str),
                         'Unexpected exception raised')
 
+    def test_encode_base64_url(self):
+        data_bytes = self._random_bytes()
+        encoded_bytes = base64.urlsafe_b64encode(data_bytes)
+        result_bytes = self._transformer.encode('base64 url', data_bytes)
+        self.assertIsInstance(result_bytes, bytes,
+            'Base64 URLsafe encoding result should be bytes or bytearray, ' \
+            'got %s instead' % type(result_bytes))
+        self.assertEqual(encoded_bytes, result_bytes)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            self._transformer.encode, 'base64 url', data_str),
+                          'Unexpected exception raised')
+
+    def test_decode_base64_url(self):
+        data_bytes = self._random_bytes()
+        encoded_bytes = base64.urlsafe_b64encode(data_bytes)
+        result = self._transformer.decode('base64 url', encoded_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during Base64 URLsafe decoding'
+        self.assertIsInstance(result[0], bytes,
+            'Base64 URLsafe decoding result should be bytes or bytearray, ' \
+            'got %s instead' % type(result[0]))
+        self.assertEqual(data_bytes, result[0])
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            self._transformer.decode, 'base64 url', data_str),
+                        'Unexpected exception raised')
+
     def test_encode_hex(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'hex')

@@ -1,6 +1,7 @@
 __version__ = '0.7.2'
 
 ENCODINGS = ['Base64',
+             'Base64 URL',
              'Hex',
              'URL',
              'HTML',
