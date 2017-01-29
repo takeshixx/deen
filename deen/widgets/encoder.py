@@ -233,7 +233,7 @@ class DeenWidget(QWidget):
         matches = regex.globalMatch(self.text_field.toPlainText())
         _matches = []
         while matches.hasNext():
-            _matches.append(matches.next)
+            _matches.append(matches.next())
         self.search_matches = _matches
         self.search_field_matches.setText('Matches: ' + str(len(self.search_matches)))
         self.search_field_matches.show()

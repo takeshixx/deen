@@ -10,9 +10,19 @@ The GUI should run on most operating systems supported by Python. It was tested 
 
 ## Installation
 
+Install via `pip`:
+
 ```bash
-python setup.py install
+pip install .
 ```
+
+After installation, just run:
+    
+```bash
+deen
+```
+
+*Note*: It is recommended to use Python 3. So instead of `pip` you might have to use `pip3`.
 
 ## GUI
 
