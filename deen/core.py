@@ -20,6 +20,7 @@ HASHS = ['MD5',
          'SHA512',
          'RIPEMD160',
          'MD4',
+         'NTLM',
          'MDC2',
          'Whirlpool']
 

@@ -191,6 +191,11 @@ class DeenTransformer(object):
                 h.update(data)
                 output.extend(h.hexdigest().encode())
                 output.extend(b'\n')
+        elif hash_algo == 'ntlm':
+            h = hashlib.new('md4')
+            data = data.decode()
+            h.update(data.encode('utf-16-le'))
+            output = h.hexdigest().encode()
         elif self._in_dict(hash_algo, HASHS):
             h = hashlib.new(hash_algo)
             h.update(data)
