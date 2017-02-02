@@ -186,6 +186,8 @@ class DeenTransformer(object):
         if hash_algo == 'all':
             output = bytearray()
             for _hash in HASHS:
+                if _hash == 'NTLM':
+                    continue
                 output.extend(_hash.encode() + b':\t')
                 h = hashlib.new(_hash.lower())
                 h.update(data)
