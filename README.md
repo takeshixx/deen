@@ -13,7 +13,7 @@ The GUI should run on most operating systems supported by Python. It was tested 
 Install via `pip`:
 
 ```bash
-pip install .
+pip3 install .
 ```
 
 After installation, just run:
@@ -22,7 +22,9 @@ After installation, just run:
 deen
 ```
 
-*Note*: It is recommended to use Python 3. So instead of `pip` you might have to use `pip3`.
+*Note*: If you want to run deen on older versions of Python like Python 2, you have to use `pip` instead of `pip3`.
+
+*Note*: If the installation fails with an error like "Could not find a version that satisfies the requirement PyQt5", then you are trying to install deen on a version of Python < 3.5. In this case, you cannot install PyQt5 via `pip`. You have to install PyQt5 separately, e.g. via your package manager (e.g. `pacman -S python2-pyqt5` on Arch Linux for Python 2).
 
 ## GUI
 
