@@ -243,6 +243,9 @@ class TestTransformers(unittest.TestCase):
     def test_hashs(self):
         data_bytes = self._random_bytes()
         for hash in HASHS:
+            if hash == 'NTLM':
+                # Skip NTLM hash for byte input
+                continue
             data_hashed = self._transformer.hash(hash, data_bytes)
             self.assertIsInstance(data_hashed, (bytes, bytearray),
               'Hashing result should be bytes or bytearray, ' \
@@ -250,6 +253,16 @@ class TestTransformers(unittest.TestCase):
             h = hashlib.new(hash.lower())
             h.update(data_bytes)
             self.assertEqual(h.hexdigest().encode(), data_hashed)
+
+    def test_hashs_ntlm(self):
+        data_str = self._random_str()
+        data_hashed = self._transformer.hash('ntlm', data_str.encode())
+        self.assertIsInstance(data_hashed, (bytes, bytearray),
+                              'Hashing result should be bytes or bytearray, ' \
+                              'got %s instead' % type(data_hashed))
+        h = hashlib.new('md4')
+        h.update(data_str.encode('utf-16-le'))
+        self.assertEqual(h.hexdigest().encode(), data_hashed)
 
 
 if __name__ == '__main__':
