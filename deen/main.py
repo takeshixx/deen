@@ -9,7 +9,7 @@ from PyQt5.QtGui import QIcon
 from deen.widgets.core import Deen
 from deen.core import *
 
-ICON = os.path.dirname(os.path.abspath(__file__)) + '/icon.png'
+ICON = os.path.dirname(os.path.abspath(__file__)) + '/media/icon.png'
 LOGGER = logging.getLogger()
 logging.basicConfig(format='[%(pathname)s - %(funcName)s() - %(lineno)s] %(message)s')
 
