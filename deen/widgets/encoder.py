@@ -1,3 +1,4 @@
+import os
 import logging
 import string
 try:
@@ -17,6 +18,7 @@ from deen.transformers.core import DeenTransformer, X509Certificate
 from deen.transformers.formats import HtmlFormat, JsonFormat
 from deen.core import *
 
+MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
 LOGGER = logging.getLogger(__name__)
 
 
@@ -161,19 +163,19 @@ class DeenWidget(QWidget):
         hex.setChecked(False)
         hex.stateChanged.connect(self.view_hex)
         clear = QToolButton()
-        clear.setIcon(QIcon.fromTheme('edit-clear'))
+        clear.setIcon(QIcon(MEDIA_PATH + 'edit-clear.svg'))
         clear.setToolTip('Clear widget content')
         clear.clicked.connect(self.clear_content)
         save = QToolButton()
-        save.setIcon(QIcon.fromTheme('document-save-as'))
+        save.setIcon(QIcon(MEDIA_PATH + 'document-save-as.svg'))
         save.setToolTip('Save content to file')
         save.clicked.connect(self.save_content)
         copy = QToolButton()
-        copy.setIcon(QIcon.fromTheme('edit-copy'))
+        copy.setIcon(QIcon(MEDIA_PATH + 'edit-copy.svg'))
         copy.setToolTip('Copy content to clipboard')
         copy.clicked.connect(self.copy_to_clipboard)
         move = QToolButton()
-        move.setIcon(QIcon.fromTheme('go-up'))
+        move.setIcon(QIcon(MEDIA_PATH + 'go-up.svg'))
         move.setToolTip('Move content to root widget')
         move.clicked.connect(self.move_content_to_root)
         self.length_field = QLabel()
