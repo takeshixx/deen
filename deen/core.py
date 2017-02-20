@@ -20,8 +20,8 @@ HASHS = ['MD5',
          'SHA512',
          'RIPEMD160',
          'MD4',
+         'MD2',
          'NTLM',
-         'MDC2',
          'Whirlpool']
 
 MISC = ['X509Certificate']
