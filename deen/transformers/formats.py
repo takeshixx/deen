@@ -64,8 +64,7 @@ class JsonFormat(object):
         assert isinstance(data, (bytes, bytearray))
         try:
             data = json.loads(data)
-        except json.JSONDecodeError as e:
-            LOGGER.error(e)
+        except json.JSONDecodeError:
             return
         data = pprint.pformat(data)
         self._content = bytearray(data.encode())
