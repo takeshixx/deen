@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLa
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
 from deen.transformers.core import DeenTransformer, X509Certificate
-from deen.transformers.formats import HtmlFormat, JsonFormat
+from deen.transformers.formats import XmlFormat, HtmlFormat, JsonFormat
 from deen.core import *
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
@@ -449,16 +449,14 @@ class DeenWidget(QWidget):
         if self._content:
             transformer = DeenTransformer()
             if self.current_pick in FORMATTERS:
-                if self.current_pick == 'HTML':
+                formatter = None
+                if self.current_pick == 'XML':
+                    formatter = XmlFormat()
+                elif self.current_pick == 'HTML':
                     formatter = HtmlFormat()
-                    formatter.content = self._content
-                    if formatter.content:
-                        self.formatted_view = True
-                        self.text_field.setPlainText(
-                            self.codec.toUnicode(formatter.content))
-                        self.text_field.moveCursor(QTextCursor.End)
                 elif self.current_pick == 'JSON':
                     formatter = JsonFormat()
+                if formatter:
                     formatter.content = self._content
                     if formatter.content:
                         self.formatted_view = True

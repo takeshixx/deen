@@ -3,8 +3,7 @@ import deen.core
 
 setup(name='deen',
       version=deen.core.__version__,
-      install_requires=['PyQt5',
-                        'lxml'],
+      install_requires=['PyQt5'],
       extras_require={'X509': 'pyOpenSSL'},
       packages=['deen',
                 'deen.widgets',
