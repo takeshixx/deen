@@ -1,14 +1,30 @@
 import logging
-import json
 import pprint
-try:
-    import lxml.html
-    import lxml.etree
-    LXML = True
-except ImportError:
-    LXML = False
+import json
+import xml.dom.minidom
+from xml.parsers.expat import ExpatError
 
 LOGGER = logging.getLogger(__name__)
+
+
+class XmlFormat(object):
+    def __init__(self):
+        self._content = None
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, data):
+        assert isinstance(data, (bytes, bytearray))
+        try:
+            parser = xml.dom.minidom.parseString(data)
+        except ExpatError:
+            return
+        document = parser.toprettyxml(indent='  ',
+                                      encoding='utf8')
+        self._content = bytearray(document)
 
 
 class HtmlFormat(object):
@@ -21,13 +37,17 @@ class HtmlFormat(object):
 
     @content.setter
     def content(self, data):
-        if not LXML:
-            return
         assert isinstance(data, (bytes, bytearray))
-        document = lxml.html.fromstring(data.decode())
-        document = lxml.etree.tostring(document,
-                                       encoding='utf8',
-                                       pretty_print=True)
+        try:
+            parser = xml.dom.minidom.parseString(data)
+        except ExpatError:
+            return
+        document = parser.toprettyxml(indent='  ',
+                                      encoding='utf8')
+        if document.startswith(b'<?xml version="1.0" encoding="utf8"?>\n') and \
+                not data.startswith(b'<?xml version="1.0" encoding="utf8"?>'):
+            index = document.index(b'\n')
+            document = document[index+1:]
         self._content = bytearray(document)
 
 

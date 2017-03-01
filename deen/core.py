@@ -26,5 +26,6 @@ HASHS = ['MD5',
 
 MISC = ['X509Certificate']
 
-FORMATTERS = ['HTML',
+FORMATTERS = ['XML',
+              'HTML',
               'JSON']
