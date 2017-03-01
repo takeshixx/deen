@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
 from deen.widgets.core import Deen
+from deen.transformers.core import DeenTransformer, X509Certificate
+from deen.transformers.formats import XmlFormat, HtmlFormat, JsonFormat
 from deen.core import *
 
 ICON = os.path.dirname(os.path.abspath(__file__)) + '/media/icon.png'
@@ -26,6 +28,8 @@ ARGS.add_argument('-u', '--uncompress', action='store', dest='uncompress',
                   metavar='COMPRESSION', default=None, help='uncompress data witn COMPRESSION')
 ARGS.add_argument('-c', '--compress', action='store', dest='compress',
                   metavar='COMPRESSION', default=None, help='compress data with COMPRESSION')
+ARGS.add_argument('-f', '--format', action='store', dest='format',
+                  metavar='FORMATTER', default=None, help='format data with FORMATTER')
 ARGS.add_argument('--hash', action='store', dest='hash',
                   default=None, help='hash data with hash algorithm')
 ARGS.add_argument('--x509', action='store_true', dest='x509_certificate',
@@ -57,6 +61,10 @@ def list_supported_transformers():
         print('Misc')
         for m in MISC:
             print('\t' + m)
+    print()
+    print('Formatters:')
+    for f in FORMATTERS:
+        print('\t' + f)
 
 
 def main():
@@ -79,7 +87,7 @@ def main():
         content = bytearray(args.data, 'utf8')
     if any([args.encode, args.decode, args.uncompress,
             args.compress, args.hash, args.list,
-            args.x509_certificate]):
+            args.x509_certificate, args.format]):
         # We are in command line mode
         if args.list:
             list_supported_transformers()
@@ -87,7 +95,6 @@ def main():
         if not content:
             LOGGER.error('Please provide a file or pipe into STDIN')
             sys.exit(1)
-        from deen.transformers.core import DeenTransformer
         transformer = DeenTransformer()
         try:
             # Python 3
@@ -112,8 +119,20 @@ def main():
         elif args.hash:
             hashed = transformer.hash(args.hash, content)
             stdout.write(hashed)
+        elif args.format:
+            if args.format in FORMATTERS:
+                formatter = None
+                if args.format == 'XML':
+                    formatter = XmlFormat()
+                elif args.format == 'HTML':
+                    formatter = HtmlFormat()
+                elif args.format == 'JSON':
+                    formatter = JsonFormat()
+                if formatter:
+                    formatter.content = content
+                    if formatter.content:
+                        stdout.write(formatter.content)
         elif args.x509_certificate:
-            from deen.transformers.core import X509Certificate
             certificate = X509Certificate()
             certificate.certificate = content
             stdout.write(certificate.decode())
