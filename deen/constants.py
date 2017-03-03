@@ -1,4 +1,4 @@
-__version__ = '0.7.8'
+__version__ = '0.7.9'
 
 ENCODINGS = ['Base64',
              'Base64 URL',

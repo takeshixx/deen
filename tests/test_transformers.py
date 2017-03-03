@@ -23,8 +23,9 @@ except ImportError:
     html = HTMLParser()
     html_decode = html.unescape
 
-from deen.transformers.core import DeenTransformer, X509Certificate
-from deen.core import HASHS
+from deen.transformers.core import DeenTransformer
+from deen.transformers.x509 import X509Certificate
+from deen.constants import HASHS
 
 
 class TestTransformers(unittest.TestCase):

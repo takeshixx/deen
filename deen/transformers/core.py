@@ -1,9 +1,10 @@
-import logging
-import hashlib
 import base64
-import codecs
 import binascii
+import codecs
+import hashlib
+import logging
 import zlib
+
 try:
     # Python 3
     import urllib.parse as urllibparse
@@ -22,13 +23,8 @@ except ImportError:
     from HTMLParser import HTMLParser
     html = HTMLParser()
     html_decode = html.unescape
-try:
-    import OpenSSL.crypto
-    OPENSSL = True
-except ImportError:
-    OPENSSL = False
 
-from deen.core import *
+from deen.constants import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -213,36 +209,3 @@ class DeenTransformer(object):
         else:
             output = data
         return output, hash_error
-
-
-class X509Certificate():
-    def __init__(self):
-        self._certificate = None
-
-    @property
-    def certificate(self):
-        return self._certificate
-
-    @certificate.setter
-    def certificate(self, data):
-        if not OPENSSL:
-            return
-        data = data.strip()
-        if not b'-----BEGIN CERTIFICATE-----' in data:
-            LOGGER.warning('Missing certificate prefix')
-            data = b'-----BEGIN CERTIFICATE-----\n' + data
-        if not b'-----END CERTIFICATE-----' in data:
-            LOGGER.warning('Missing certificate suffix')
-            data = data + b'\n-----END CERTIFICATE-----'
-        self._certificate = OpenSSL.crypto.load_certificate(
-            OpenSSL.crypto.FILETYPE_PEM, data.decode())
-
-    def decode(self):
-        if OPENSSL:
-            out = bytearray()
-            out.extend(OpenSSL.crypto.dump_certificate(
-                OpenSSL.crypto.FILETYPE_TEXT, self.certificate))
-            out.extend(b'\n')
-            out.extend(OpenSSL.crypto.dump_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, self.certificate))
-            return out

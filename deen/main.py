@@ -7,9 +7,10 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
 from deen.widgets.core import Deen
-from deen.transformers.core import DeenTransformer, X509Certificate
+from deen.transformers.core import DeenTransformer
+from deen.transformers.x509 import X509Certificate
 from deen.transformers.formats import XmlFormat, HtmlFormat, JsonFormat
-from deen.core import *
+from deen.constants import *
 
 ICON = os.path.dirname(os.path.abspath(__file__)) + '/media/icon.png'
 LOGGER = logging.getLogger()
