@@ -22,7 +22,7 @@ class XmlFormat(object):
             parser = xml.dom.minidom.parseString(data)
         except ExpatError:
             return
-        document = parser.toprettyxml(indent='  ',
+        document = parser.toprettyxml(indent=' ' * 4,
                                       encoding='utf8')
         self._content = bytearray(document)
 
