@@ -118,7 +118,8 @@ def main():
             stdout.write(uncompressed[0])
         elif args.hash:
             hashed = transformer.hash(args.hash, content)
-            stdout.write(hashed)
+            assert isinstance(hashed, tuple)
+            stdout.write(hashed[0])
         elif args.format:
             if args.format in FORMATTERS:
                 formatter = None

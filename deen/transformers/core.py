@@ -180,6 +180,7 @@ class DeenTransformer(object):
 
     def hash(self, hash_algo, data):
         hash_algo = hash_algo.lower()
+        hash_error = None
         assert data is not None, 'Data is None'
         assert isinstance(data, (bytes, bytearray)),\
             'Wrong data type %s' % type(data)
@@ -189,22 +190,30 @@ class DeenTransformer(object):
                 if _hash == 'NTLM':
                     continue
                 output.extend(_hash.encode() + b':\t')
-                h = hashlib.new(_hash.lower())
-                h.update(data)
-                output.extend(h.hexdigest().encode())
-                output.extend(b'\n')
+                try:
+                    h = hashlib.new(_hash.lower())
+                    h.update(data)
+                    output.extend(h.hexdigest().encode())
+                    output.extend(b'\n')
+                except ValueError as e:
+                    hash_error = e
+                    output = data
         elif hash_algo == 'ntlm':
             h = hashlib.new('md4')
             data = data.decode()
             h.update(data.encode('utf-16-le'))
             output = h.hexdigest().encode()
         elif self._in_dict(hash_algo, HASHS):
-            h = hashlib.new(hash_algo)
-            h.update(data)
-            output = h.hexdigest().encode()
+            try:
+                h = hashlib.new(hash_algo)
+                h.update(data)
+                output = h.hexdigest().encode()
+            except ValueError as e:
+                hash_error = e
+                output = data
         else:
             output = data
-        return output
+        return output, hash_error
 
 
 class X509Certificate():

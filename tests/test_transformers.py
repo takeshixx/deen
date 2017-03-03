@@ -246,7 +246,8 @@ class TestTransformers(unittest.TestCase):
             if hash == 'NTLM':
                 # Skip NTLM hash for byte input
                 continue
-            data_hashed = self._transformer.hash(hash, data_bytes)
+            data_hashed, error = self._transformer.hash(hash, data_bytes)
+            self.assertIsNone(error, 'An error occured: ' + str(error))
             self.assertIsInstance(data_hashed, (bytes, bytearray),
               'Hashing result should be bytes or bytearray, ' \
               'got %s instead' % type(data_hashed))
@@ -256,7 +257,8 @@ class TestTransformers(unittest.TestCase):
 
     def test_hashs_ntlm(self):
         data_str = self._random_str()
-        data_hashed = self._transformer.hash('ntlm', data_str.encode())
+        data_hashed, error = self._transformer.hash('ntlm', data_str.encode())
+        self.assertIsNone(error, 'An error occured: ' + str(error))
         self.assertIsInstance(data_hashed, (bytes, bytearray),
                               'Hashing result should be bytes or bytearray, ' \
                               'got %s instead' % type(data_hashed))
