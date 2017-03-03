@@ -117,11 +117,9 @@ def main():
             assert isinstance(uncompressed, tuple)
             stdout.write(uncompressed[0])
         elif args.hash:
-            hashed, error = transformer.hash(args.hash, content)
-            if error:
-                LOGGER.error(error)
-            else:
-                stdout.write(hashed)
+            hashed = transformer.hash(args.hash, content)
+            assert isinstance(hashed, tuple)
+            stdout.write(hashed[0])
         elif args.format:
             if args.format in FORMATTERS:
                 formatter = None
