@@ -486,7 +486,11 @@ class DeenWidget(QWidget):
                         self.next.set_error_message(str(error))
                     self.next.content = uncompressed
             elif self.current_pick in HASHS or self.current_pick == 'ALL':
-                hashed = transformer.hash(self.current_pick, self._content)
+                hashed, error = transformer.hash(self.current_pick, self._content)
+                if error:
+                    LOGGER.error(error)
+                    self.next.set_error()
+                    self.next.set_error_message(str(error))
                 self.next.content = hashed
             elif self.current_pick in MISC:
                 if self.current_pick == 'X509Certificate' and crypto:
