@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
 from PyQt5.QtTest import QTest
 
-from deen.core import *
+from deen.constants import *
 from deen.widgets.core import Deen
 
 app = QApplication(sys.argv)

@@ -3,7 +3,7 @@ import logging
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import (QMainWindow, QAction, QScrollArea, QApplication, QMessageBox, QFileDialog)
 
-import deen.core
+import deen.constants
 from deen.widgets.encoder import EncoderWidget
 from deen.widgets.log import DeenLogger, DeenStatusConsole
 
@@ -49,7 +49,7 @@ class Deen(QMainWindow):
         about = QMessageBox(self)
         about.setWindowTitle('About')
         about.setText(('deen (DEcoderENcoder) v%s\n\nA decoding/encoding application for arbitrary data.\n\n'
-                      'https://github.com/takeshixx/deen') % deen.core.__version__)
+                      'https://github.com/takeshixx/deen') % deen.constants.__version__)
         about.resize(100, 75)
         about.show()
 

@@ -6,17 +6,18 @@ try:
 except ImportError:
     crypto = None
 
-from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
+from PyQt5.QtCore import QTextCodec, QRegularExpression
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLayout, QComboBox,
-                             QButtonGroup, QCheckBox, QPushButton, QLineEdit, QProgressBar,
-                             QFileDialog, QToolButton)
+from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLayout,QComboBox,
+                             QButtonGroup, QCheckBox, QLineEdit, QProgressBar, QFileDialog,
+                             QToolButton)
 
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
-from deen.transformers.core import DeenTransformer, X509Certificate
+from deen.transformers.core import DeenTransformer
+from deen.transformers.x509 import X509Certificate
 from deen.transformers.formats import XmlFormat, HtmlFormat, JsonFormat
-from deen.core import *
+from deen.constants import *
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
 LOGGER = logging.getLogger(__name__)
