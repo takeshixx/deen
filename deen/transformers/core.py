@@ -189,15 +189,14 @@ class DeenTransformer(object):
             for _hash in HASHS:
                 if _hash == 'NTLM':
                     continue
-                output.extend(_hash.encode() + b':\t')
                 try:
                     h = hashlib.new(_hash.lower())
                     h.update(data)
+                    output.extend(_hash.encode() + b':\t')
                     output.extend(h.hexdigest().encode())
                     output.extend(b'\n')
-                except ValueError as e:
-                    hash_error = e
-                    output = data
+                except ValueError:
+                    continue
         elif hash_algo == 'ntlm':
             h = hashlib.new('md4')
             data = data.decode()
