@@ -76,7 +76,7 @@ class JsonFormat(object):
     def content(self, data):
         assert isinstance(data, (bytes, bytearray))
         try:
-            data = json.loads(data)
+            data = json.loads(data.decode())
         except (json.JSONDecodeError, TypeError) as e:
             self._error = e
             return
