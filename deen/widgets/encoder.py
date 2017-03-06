@@ -279,6 +279,7 @@ class DeenWidget(QWidget):
         widget = widget or self
         widget.error_message.clear()
         widget.error_message.hide()
+        widget.text_field.setStyleSheet('border: 1px solid lightgrey;')
 
     def create_action_panel(self, enable_actions=True):
         self.encoding_combo = QComboBox(self)
@@ -366,6 +367,7 @@ class DeenWidget(QWidget):
         widget. This will also remove all widgets
         that follow widget."""
         widget = widget or self
+        self.clear_error_message(widget=widget)
         if self.parent.widgets[0] == widget:
             widget.text_field.clear()
             widget.hex_field.content = bytearray()
@@ -464,6 +466,12 @@ class DeenWidget(QWidget):
                         self.text_field.setPlainText(
                             self.codec.toUnicode(formatter.content))
                         self.text_field.moveCursor(QTextCursor.End)
+                    if formatter.error:
+                        LOGGER.error(formatter.error)
+                        self.set_error()
+                        self.set_error_message(str(formatter.error))
+                    else:
+                        self.clear_error_message()
             elif self.current_pick in ENCODINGS:
                 if self.current_combo.model().item(0).text() == 'Encode':
                     encoded = transformer.encode(self.current_pick, self._content)
@@ -510,7 +518,6 @@ class DeenWidget(QWidget):
                     self.next.codec_field.setText('Transformer: ' + self.current_pick)
                     self.next.codec_field.show()
                 if not error:
-                    self.next.text_field.setStyleSheet('border: none;')
                     self.next.clear_error_message()
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
