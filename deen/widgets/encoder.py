@@ -464,6 +464,10 @@ class DeenWidget(QWidget):
                         self.text_field.setPlainText(
                             self.codec.toUnicode(formatter.content))
                         self.text_field.moveCursor(QTextCursor.End)
+                    elif formatter.error:
+                        LOGGER.error(formatter.error)
+                        self.set_error()
+                        self.set_error_message(str(formatter.error))
             elif self.current_pick in ENCODINGS:
                 if self.current_combo.model().item(0).text() == 'Encode':
                     encoded = transformer.encode(self.current_pick, self._content)

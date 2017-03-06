@@ -10,6 +10,7 @@ LOGGER = logging.getLogger(__name__)
 class XmlFormat(object):
     def __init__(self):
         self._content = None
+        self._error = None
 
     @property
     def content(self):
@@ -20,16 +21,22 @@ class XmlFormat(object):
         assert isinstance(data, (bytes, bytearray))
         try:
             parser = xml.dom.minidom.parseString(data)
-        except ExpatError:
+        except ExpatError as e:
+            self._error = e
             return
         document = parser.toprettyxml(indent=' ' * 4,
                                       encoding='utf8')
         self._content = bytearray(document)
 
+    @property
+    def error(self):
+        return self._error
+
 
 class HtmlFormat(object):
     def __init__(self):
         self._content = None
+        self._error = None
 
     @property
     def content(self):
@@ -40,7 +47,8 @@ class HtmlFormat(object):
         assert isinstance(data, (bytes, bytearray))
         try:
             parser = xml.dom.minidom.parseString(data)
-        except ExpatError:
+        except ExpatError as e:
+            self._error = e
             return
         document = parser.toprettyxml(indent='  ',
                                       encoding='utf8')
@@ -50,10 +58,15 @@ class HtmlFormat(object):
             document = document[index+1:]
         self._content = bytearray(document)
 
+    @property
+    def error(self):
+        return self._error
+
 
 class JsonFormat(object):
     def __init__(self):
         self._content = None
+        self._error = None
 
     @property
     def content(self):
@@ -64,7 +77,12 @@ class JsonFormat(object):
         assert isinstance(data, (bytes, bytearray))
         try:
             data = json.loads(data)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, TypeError) as e:
+            self._error = e
             return
         data = pprint.pformat(data)
         self._content = bytearray(data.encode())
+
+    @property
+    def error(self):
+        return self._error
