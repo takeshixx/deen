@@ -3,7 +3,6 @@ import deen.constants
 
 setup(name='deen',
       version=deen.constants.__version__,
-      install_requires=['PyQt5'],
       extras_require={'X509': 'pyOpenSSL'},
       packages=['deen',
                 'deen.widgets',
