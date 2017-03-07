@@ -34,7 +34,7 @@ There is a [deen-git](https://aur.archlinux.org/packages/deen-git) package avail
 
 By invoking deen without any command line arguments, the graphical interface will start.
 
-![deen](https://i.imgur.com/cLT5wgE.png)
+![deen](https://i.imgur.com/522iUtH.png)
 
 The GUI also supports reading input from files:
 
