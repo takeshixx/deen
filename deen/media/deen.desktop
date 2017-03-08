@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=deen
+Exec=/usr/bin/deen
+Icon=deen.png
