@@ -1,5 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=deen
+GenericName=Decode/Encode Data
+Category=Utility;Qt;
 Exec=/usr/bin/deen
 Icon=deen.png
