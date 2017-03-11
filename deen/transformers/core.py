@@ -203,13 +203,14 @@ class DeenTransformer(object):
             'Wrong data type %s' % type(data)
         if hash_algo == 'all':
             output = bytearray()
+            pad = len(max(HASHS, key=len))
             for _hash in HASHS:
                 if _hash == 'NTLM':
                     continue
                 try:
                     h = hashlib.new(_hash.lower())
                     h.update(data)
-                    output.extend(_hash.encode() + b':\t')
+                    output.extend(_hash.encode().ljust(pad) + b'\t')
                     output.extend(h.hexdigest().encode())
                     output.extend(b'\n')
                 except ValueError:
