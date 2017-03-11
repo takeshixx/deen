@@ -32,7 +32,11 @@ deen
 
 There is a [deen-git](https://aur.archlinux.org/packages/deen-git) package available in the Arch User Repository (AUR).
 
-## GUI
+## Usage
+
+See the [wiki](https://github.com/takeshixx/deen/wiki) for basic and more advanced usage examples.
+
+### GUI
 
 By invoking deen without any command line arguments, the graphical interface will start.
 
@@ -50,7 +54,7 @@ and from STDIN:
 cat /bin/ls | deen -
 ```
 
-## CLI
+### CLI
 
 Some functionality is also available via a CLI. A list of available operations and supported transfomers is available in the help page (`-h`/`--help`) and with the list command (`-l`/`--list`). The command line can read input either from a file:
 
