@@ -20,18 +20,23 @@ class X509Certificate():
     def certificate(self, data):
         if not OPENSSL:
             return
+        try:
+            data = data.decode()
+        except UnicodeDecodeError:
+            LOGGER.error('Invalid certificate encoding')
+            return
         data = data.strip()
-        if not b'-----BEGIN CERTIFICATE-----' in data:
+        if not '-----BEGIN CERTIFICATE-----' in data:
             LOGGER.warning('Missing certificate prefix')
-            data = b'-----BEGIN CERTIFICATE-----\n' + data
-        if not b'-----END CERTIFICATE-----' in data:
+            data = '-----BEGIN CERTIFICATE-----\n' + data
+        if not '-----END CERTIFICATE-----' in data:
             LOGGER.warning('Missing certificate suffix')
-            data = data + b'\n-----END CERTIFICATE-----'
+            data = data + '\n-----END CERTIFICATE-----'
         self._certificate = OpenSSL.crypto.load_certificate(
-            OpenSSL.crypto.FILETYPE_PEM, data.decode())
+            OpenSSL.crypto.FILETYPE_PEM, data)
 
     def decode(self):
-        if OPENSSL:
+        if OPENSSL and self._certificate is not None:
             out = bytearray()
             out.extend(OpenSSL.crypto.dump_certificate(
                 OpenSSL.crypto.FILETYPE_TEXT, self.certificate))
