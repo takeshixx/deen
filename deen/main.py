@@ -124,11 +124,11 @@ def main():
         elif args.format:
             if args.format in FORMATTERS:
                 formatter = None
-                if args.format == 'XML':
+                if args.format.lower() == 'xml':
                     formatter = XmlFormat()
-                elif args.format == 'HTML':
+                elif args.format.lower() == 'html':
                     formatter = HtmlFormat()
-                elif args.format == 'JSON':
+                elif args.format.lower() == 'json':
                     formatter = JsonFormat()
                 if formatter:
                     formatter.content = content
