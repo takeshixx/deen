@@ -32,23 +32,24 @@ LOGGER = logging.getLogger(__name__)
 class DeenTransformer(object):
     """A generic wrapper class that provides
     various transformation functions."""
-    def _in_dict(self, data, core_dict):
-        included = False
-        for item in core_dict:
+    def _in_list(self, data, const_list):
+        for item in const_list:
             if data.lower() == item.lower():
-                included = True
-                break
-        return included
+                return True
+        else:
+            return False
 
     def encode(self, enc, data):
         assert isinstance(data, (bytearray, bytes))
         enc = enc.lower()
-        assert self._in_dict(enc, ENCODINGS),\
+        assert self._in_list(enc, ENCODINGS),\
             'Unknown encoding %s' % enc
         if enc == 'base64':
             output = base64.b64encode(data)
         elif enc == 'base64 url':
             output = base64.urlsafe_b64encode(data)
+        elif enc == 'base32':
+            output = base64.b32encode(data)
         elif enc == 'hex':
             output = codecs.encode(data, 'hex')
         elif enc == 'url':
@@ -71,7 +72,7 @@ class DeenTransformer(object):
 
     def decode(self, enc, data):
         enc = enc.lower()
-        assert self._in_dict(enc, ENCODINGS),\
+        assert self._in_list(enc, ENCODINGS),\
             'Unknown encoding %s' % enc
         assert data is not None, 'Data is None'
         assert isinstance(data, (bytes, bytearray)),\
@@ -92,6 +93,15 @@ class DeenTransformer(object):
             data = data.replace(b'\n', b'').replace(b'\r', b'')
             try:
                 output = base64.urlsafe_b64decode(data)
+            except binascii.Error as e:
+                decode_error = e
+                output = data
+        elif enc == 'base32':
+            # Remove new lines and carriage returns from
+            # Base32 encoded data.
+            data = data.replace(b'\n', b'').replace(b'\r', b'')
+            try:
+                output = base64.b32decode(data)
             except binascii.Error as e:
                 decode_error = e
                 output = data
@@ -126,7 +136,7 @@ class DeenTransformer(object):
 
     def compress(self, comp, data):
         comp = comp.lower()
-        assert self._in_dict(comp, COMPRESSIONS),\
+        assert self._in_list(comp, COMPRESSIONS),\
             'Unknown compression %s' % comp
         assert data is not None, 'Data is None'
         assert isinstance(data, (bytes, bytearray)),\
@@ -145,7 +155,7 @@ class DeenTransformer(object):
 
     def uncompress(self, comp, data):
         comp = comp.lower()
-        assert self._in_dict(comp, COMPRESSIONS),\
+        assert self._in_list(comp, COMPRESSIONS),\
             'Unknown compression %s' % comp
         assert data is not None, 'Data is None'
         assert isinstance(data, (bytes, bytearray)),\
@@ -198,7 +208,7 @@ class DeenTransformer(object):
             data = data.decode()
             h.update(data.encode('utf-16-le'))
             output = h.hexdigest().encode()
-        elif self._in_dict(hash_algo, HASHS):
+        elif self._in_list(hash_algo, HASHS):
             try:
                 h = hashlib.new(hash_algo)
                 h.update(data)
