@@ -1,4 +1,5 @@
 import os
+import sys
 import unittest
 import codecs
 import base64
@@ -122,6 +123,40 @@ class TestTransformers(unittest.TestCase):
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             self._transformer.decode, 'base32', data_str),
+                        'Unexpected exception raised')
+
+    def test_encode_base85(self):
+        if sys.version_info.major != 3 or \
+                sys.version_info.minor < 4:
+            return
+        data_bytes = self._random_bytes()
+        encoded_bytes = base64.b85encode(data_bytes)
+        result_bytes = self._transformer.encode('base85', data_bytes)
+        self.assertIsInstance(result_bytes, bytes,
+            'Base85 encoding result should be bytes or bytearray, ' \
+            'got %s instead' % type(result_bytes))
+        self.assertEqual(encoded_bytes, result_bytes)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            self._transformer.encode, 'base85', data_str),
+                          'Unexpected exception raised')
+
+    def test_decode_base85(self):
+        if sys.version_info.major != 3 or \
+                sys.version_info.minor < 4:
+            return
+        data_bytes = self._random_bytes()
+        encoded_bytes = base64.b85encode(data_bytes)
+        result = self._transformer.decode('base85', encoded_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during Base85 decoding'
+        self.assertIsInstance(result[0], bytes,
+            'Base85 decoding result should be bytes or bytearray, ' \
+            'got %s instead' % type(result[0]))
+        self.assertEqual(data_bytes, result[0])
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            self._transformer.decode, 'base85', data_str),
                         'Unexpected exception raised')
 
     def test_encode_hex(self):

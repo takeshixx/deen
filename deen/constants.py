@@ -1,4 +1,6 @@
-__version__ = '0.8.0'
+import sys
+
+__version__ = '0.9.0'
 
 ENCODINGS = ['Base64',
              'Base64 URL',
@@ -30,3 +32,11 @@ MISC = ['X509Certificate']
 FORMATTERS = ['XML',
               'HTML',
               'JSON']
+
+# Add features based on Python version
+if sys.version_info.major == 3:
+    if sys.version_info.minor >= 6:
+        HASHS.append('BLAKE2b')
+        HASHS.append('BLAKE2s')
+    if sys.version_info.minor >= 4:
+        ENCODINGS.insert(3, 'Base85')
