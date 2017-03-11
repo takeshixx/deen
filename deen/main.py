@@ -14,7 +14,7 @@ from deen.constants import *
 
 ICON = os.path.dirname(os.path.abspath(__file__)) + '/media/icon.png'
 LOGGER = logging.getLogger()
-logging.basicConfig(format='[%(pathname)s - %(funcName)s() - %(lineno)s] %(message)s')
+VERBOSE_FORMAT = '[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s'
 
 ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.')
 ARGS.add_argument('infile', nargs='?', default=None,
@@ -39,6 +39,8 @@ ARGS.add_argument('--data', action='store', dest='data',
                   default=None, help='instead of a file, provide an input string')
 ARGS.add_argument('-n', action='store_true', dest='nonewline',
                   default=False, help='omit new line character at the end of the output')
+ARGS.add_argument('-v', '--verbose', action='count', dest='level',
+                  default=0, help='verbose logging (repeat for more verbosity)')
 
 
 def list_supported_transformers():
@@ -90,6 +92,9 @@ def main():
             args.compress, args.hash, args.list,
             args.x509_certificate, args.format]):
         # We are in command line mode
+        log_format = VERBOSE_FORMAT if args.level > 0 else '%(message)s'
+        levels = [logging.WARN, logging.DEBUG]
+        logging.basicConfig(level=levels[min(args.level, len(levels) - 1)], format=log_format)
         if args.list:
             list_supported_transformers()
             return
@@ -124,11 +129,11 @@ def main():
         elif args.format:
             if args.format in FORMATTERS:
                 formatter = None
-                if args.format == 'XML':
+                if args.format.lower() == 'xml':
                     formatter = XmlFormat()
-                elif args.format == 'HTML':
+                elif args.format.lower() == 'html':
                     formatter = HtmlFormat()
-                elif args.format == 'JSON':
+                elif args.format.lower() == 'json':
                     formatter = JsonFormat()
                 if formatter:
                     formatter.content = content
@@ -137,11 +142,14 @@ def main():
         elif args.x509_certificate:
             certificate = X509Certificate()
             certificate.certificate = content
-            stdout.write(certificate.decode())
+            decoded= certificate.decode()
+            if decoded:
+                stdout.write(decoded)
         if not args.nonewline:
             stdout.write(b'\n')
     else:
         # We are in GUI mode
+        logging.basicConfig(format=VERBOSE_FORMAT)
         app = QApplication(sys.argv)
         ex = Deen()
         if content:

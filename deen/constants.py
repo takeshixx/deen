@@ -1,6 +1,6 @@
 import sys
 
-__version__ = '0.9.0'
+__version__ = '0.9.1'
 
 ENCODINGS = ['Base64',
              'Base64 URL',
