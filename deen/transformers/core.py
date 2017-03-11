@@ -50,6 +50,8 @@ class DeenTransformer(object):
             output = base64.urlsafe_b64encode(data)
         elif enc == 'base32':
             output = base64.b32encode(data)
+        elif enc == 'base85':
+            output = base64.b85encode(data)
         elif enc == 'hex':
             output = codecs.encode(data, 'hex')
         elif enc == 'url':
@@ -102,6 +104,15 @@ class DeenTransformer(object):
             data = data.replace(b'\n', b'').replace(b'\r', b'')
             try:
                 output = base64.b32decode(data)
+            except binascii.Error as e:
+                decode_error = e
+                output = data
+        elif enc == 'base85':
+            # Remove new lines and carriage returns from
+            # Base85 encoded data.
+            data = data.replace(b'\n', b'').replace(b'\r', b'')
+            try:
+                output = base64.b85decode(data)
             except binascii.Error as e:
                 decode_error = e
                 output = data
