@@ -96,6 +96,34 @@ class TestTransformers(unittest.TestCase):
             self._transformer.decode, 'base64 url', data_str),
                         'Unexpected exception raised')
 
+    def test_encode_base32(self):
+        data_bytes = self._random_bytes()
+        encoded_bytes = base64.b32encode(data_bytes)
+        result_bytes = self._transformer.encode('base32', data_bytes)
+        self.assertIsInstance(result_bytes, bytes,
+            'Base32 encoding result should be bytes or bytearray, ' \
+            'got %s instead' % type(result_bytes))
+        self.assertEqual(encoded_bytes, result_bytes)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            self._transformer.encode, 'base32', data_str),
+                          'Unexpected exception raised')
+
+    def test_decode_base32(self):
+        data_bytes = self._random_bytes()
+        encoded_bytes = base64.b32encode(data_bytes)
+        result = self._transformer.decode('base32', encoded_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during Base32 decoding'
+        self.assertIsInstance(result[0], bytes,
+            'Base32 decoding result should be bytes or bytearray, ' \
+            'got %s instead' % type(result[0]))
+        self.assertEqual(data_bytes, result[0])
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            self._transformer.decode, 'base32', data_str),
+                        'Unexpected exception raised')
+
     def test_encode_hex(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'hex')
