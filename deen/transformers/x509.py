@@ -19,6 +19,7 @@ class X509Certificate():
     @certificate.setter
     def certificate(self, data):
         if not OPENSSL:
+            LOGGER.warning('pyOpenSSL is not available')
             return
         try:
             data = data.decode()
@@ -44,3 +45,5 @@ class X509Certificate():
             out.extend(OpenSSL.crypto.dump_certificate(
                 OpenSSL.crypto.FILETYPE_PEM, self.certificate))
             return out
+        elif not OPENSSL:
+            LOGGER.warning('pyOpenSSL is not available')
