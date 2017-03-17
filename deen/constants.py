@@ -1,6 +1,6 @@
 import sys
 
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 
 ENCODINGS = ['Base64',
              'Base64 URL',
@@ -27,7 +27,14 @@ HASHS = ['MD5',
          'NTLM',
          'Whirlpool']
 
-MISC = ['X509Certificate']
+MISC = []
+
+try:
+    import OpenSSL.crypto
+except ImportError:
+    pass
+else:
+    MISC.append('X509Certificate')
 
 FORMATTERS = ['XML',
               'HTML',
