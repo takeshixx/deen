@@ -1,4 +1,6 @@
 import logging
+import base64
+import binascii
 try:
     import OpenSSL.crypto
     OPENSSL = True
@@ -23,6 +25,15 @@ class X509Certificate():
         if not OPENSSL:
             LOGGER.warning('pyOpenSSL is not available')
             return
+        if not b'-----BEGIN' in data or \
+            not b'-----END' in data:
+            # Check if data is Base64 encoded
+            try:
+                base64.b64decode(data.replace(b'\n', b''), validate=True)
+            except binascii.Error as e:
+                LOGGER.error(e)
+                # If data is not encoded, encode it
+                data = base64.b64encode(data)
         try:
             data = data.decode()
         except UnicodeDecodeError:
