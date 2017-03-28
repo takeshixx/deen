@@ -1,4 +1,3 @@
-import sys
 import os
 import unittest
 import tempfile
@@ -9,8 +8,6 @@ import codecs
 import base64
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import Qt
-from PyQt5.QtTest import QTest
 
 from deen.constants import *
 from deen.widgets.core import Deen

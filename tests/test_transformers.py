@@ -23,6 +23,12 @@ except ImportError:
     from HTMLParser import HTMLParser
     html = HTMLParser()
     html_decode = html.unescape
+try:
+    from OpenSSL import crypto
+except Exception:
+    OPENSSL = False
+else:
+    OPENSSL = True
 
 from deen.transformers.core import DeenTransformer
 from deen.transformers.x509 import X509Certificate
@@ -128,7 +134,7 @@ class TestTransformers(unittest.TestCase):
     def test_encode_base85(self):
         if sys.version_info.major != 3 or \
                 sys.version_info.minor < 4:
-            return
+            self.fail('Base85 support not available for the current Python version!')
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b85encode(data_bytes)
         result_bytes = self._transformer.encode('base85', data_bytes)
@@ -144,7 +150,7 @@ class TestTransformers(unittest.TestCase):
     def test_decode_base85(self):
         if sys.version_info.major != 3 or \
                 sys.version_info.minor < 4:
-            return
+            self.fail('Base85 support not available for the current Python version!')
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b85encode(data_bytes)
         result = self._transformer.decode('base85', encoded_bytes)
@@ -331,7 +337,8 @@ class TestTransformers(unittest.TestCase):
         self.assertEqual(h.hexdigest().encode(), data_hashed)
 
     def test_x509_format(self):
-        certificate = """-----BEGIN CERTIFICATE-----
+        self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
+        certificate = b"""-----BEGIN CERTIFICATE-----
 MIIHeTCCBmGgAwIBAgIQC/20CQrXteZAwwsWyVKaJzANBgkqhkiG9w0BAQsFADB1
 MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
 d3cuZGlnaWNlcnQuY29tMTQwMgYDVQQDEytEaWdpQ2VydCBTSEEyIEV4dGVuZGVk
@@ -373,12 +380,7 @@ RDS4BF+EEFQ4l5GY+yp4WJA/xSvYsTHWeWxRD1/nl62/Rd9FN2NkacRVozCxRVle
 FrBHTFxqIP6kDnxiLElBrZngtY07ietaYZVLQN/ETyqLQftsf8TecwTklbjvm8NT
 JqbaIVifYwqwNN+4lRxS3F5lNlA/il12IOgbRioLI62o8G0DaEUQgHNf8vSG
 -----END CERTIFICATE-----"""
-        try:
-            from OpenSSL import crypto
-        except ImportError:
-            return
         transformer = X509Certificate()
-        formatted = None
         try:
             transformer.certificate = certificate
             formatted = transformer.decode()
@@ -387,14 +389,16 @@ JqbaIVifYwqwNN+4lRxS3F5lNlA/il12IOgbRioLI62o8G0DaEUQgHNf8vSG
         self.assertIsNotNone(formatted)
 
     def test_x509_format_invalid(self):
+        self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
         certificate = self._random_bytes(32)
-        try:
-            from OpenSSL import crypto
-        except ImportError:
-            return
         transformer = X509Certificate()
         transformer.certificate = certificate
-        self.assertRaises(TransformException, transformer.decode())
+        try:
+            transformer.decode()
+        except TransformException:
+            pass
+        else:
+            self.fail('Invalid certificate does not raise TransformException!')
 
 
 if __name__ == '__main__':
