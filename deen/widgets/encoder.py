@@ -18,6 +18,7 @@ from deen.transformers.core import DeenTransformer
 from deen.transformers.x509 import X509Certificate
 from deen.transformers.formats import XmlFormat, HtmlFormat, JsonFormat
 from deen.constants import *
+from deen.exceptions import *
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
 LOGGER = logging.getLogger(__name__)
@@ -507,7 +508,7 @@ class DeenWidget(QWidget):
                         transformer = X509Certificate()
                         transformer.certificate = self._content
                         self.next.content = transformer.decode()
-                    except crypto.Error as e:
+                    except (crypto.Error, TransformException) as e:
                         LOGGER.error(e)
                         error = e
                         self.next.set_error()

@@ -5,6 +5,8 @@ try:
 except ImportError:
     OPENSSL = False
 
+from deen.exceptions import *
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -37,6 +39,8 @@ class X509Certificate():
             OpenSSL.crypto.FILETYPE_PEM, data)
 
     def decode(self):
+        if not self._certificate:
+            raise TransformException('Invalid certificate')
         if OPENSSL and self._certificate is not None:
             out = bytearray()
             out.extend(OpenSSL.crypto.dump_certificate(
