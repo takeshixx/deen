@@ -390,31 +390,31 @@ class TestTransformers(unittest.TestCase):
             self.fail(e)
         self.assertIsNotNone(formatted)
 
-        def test_x509_format_incomplete(self):
-            self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
-            certificate = CERTIFICATE.replace(b'-----BEGIN CERTIFICATE-----\n', b'') \
-                                     .replace(b'\n-----END CERTIFICATE-----', b'')
-            transformer = X509Certificate()
-            try:
-                transformer.certificate = certificate
-                formatted = transformer.decode()
-            except Exception as e:
-                self.fail(e)
-            self.assertIsNotNone(formatted)
+    def test_x509_format_incomplete(self):
+        self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
+        certificate = CERTIFICATE.replace(b'-----BEGIN CERTIFICATE-----\n', b'') \
+                                 .replace(b'\n-----END CERTIFICATE-----', b'')
+        transformer = X509Certificate()
+        try:
+            transformer.certificate = certificate
+            formatted = transformer.decode()
+        except Exception as e:
+            self.fail(e)
+        self.assertIsNotNone(formatted)
 
-            def test_x509_format_der(self):
-                self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
-                certificate = CERTIFICATE.replace(b'-----BEGIN CERTIFICATE-----\n', b'') \
-                                         .replace(b'\n-----END CERTIFICATE-----', b'') \
-                                         .replace(b'\n', b'')
-                certificate = base64.b64decode(certificate)
-                transformer = X509Certificate()
-                try:
-                    transformer.certificate = certificate
-                    formatted = transformer.decode()
-                except Exception as e:
-                    self.fail(e)
-                self.assertIsNotNone(formatted)
+    def test_x509_format_der(self):
+        self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
+        certificate = CERTIFICATE.replace(b'-----BEGIN CERTIFICATE-----\n', b'') \
+                                 .replace(b'\n-----END CERTIFICATE-----', b'') \
+                                 .replace(b'\n', b'')
+        certificate = base64.b64decode(certificate)
+        transformer = X509Certificate()
+        try:
+            transformer.certificate = certificate
+            formatted = transformer.decode()
+        except Exception as e:
+            self.fail(e)
+        self.assertIsNotNone(formatted)
 
     def test_x509_format_invalid(self):
         self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
