@@ -3,10 +3,6 @@ import logging
 import os.path
 import argparse
 
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QIcon
-
-from deen.widgets.core import Deen
 from deen.transformers.core import DeenTransformer
 from deen.transformers.x509 import X509Certificate
 from deen.transformers.formats import XmlFormat, HtmlFormat, JsonFormat
@@ -149,6 +145,11 @@ def main():
             stdout.write(b'\n')
     else:
         # We are in GUI mode
+        # Import GUI related modules only in GUI
+        # mode to speed up CLI mode.
+        from PyQt5.QtWidgets import QApplication
+        from PyQt5.QtGui import QIcon
+        from deen.widgets.core import Deen
         logging.basicConfig(format=VERBOSE_FORMAT)
         app = QApplication(sys.argv)
         ex = Deen()
