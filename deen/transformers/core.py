@@ -113,7 +113,7 @@ class DeenTransformer(object):
             data = data.replace(b'\n', b'').replace(b'\r', b'')
             try:
                 output = base64.b85decode(data)
-            except binascii.Error as e:
+            except (binascii.Error, ValueError) as e:
                 decode_error = e
                 output = data
         elif enc == 'hex':

@@ -7,6 +7,7 @@ import random
 import string
 import functools
 import hashlib
+import binascii
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -32,7 +33,7 @@ else:
 
 from deen.transformers.core import DeenTransformer
 from deen.transformers.x509 import X509Certificate
-from deen.constants import HASHS
+from deen.constants import HASHS, ENCODINGS
 from deen.exceptions import *
 
 CERTIFICATE = b"""-----BEGIN CERTIFICATE-----
@@ -296,6 +297,16 @@ class TestTransformers(unittest.TestCase):
         self.assertRaises(TypeError, functools.partial(
             self._transformer.decode, 'html', data_str),
                         'Unexpected exception raised')
+
+    def test_decode_random_bytes(self):
+        data_bytes = self._random_bytes()
+        for e in ENCODINGS:
+            try:
+                self._transformer.decode(e, data_bytes)
+            except (binascii.Error, ValueError) as e:
+                pass
+            except Exception as e:
+                self.fail(e)
 
     def test_compress_gzip(self):
         data_bytes = self._random_bytes()
