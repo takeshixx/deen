@@ -48,6 +48,9 @@ class DeenWidget(QWidget):
         self.readonly = readonly
         self.current_pick = None
         self.current_combo = None
+        # assume dark theme if background color is below 50% brightness
+        back_color = self.palette().color(self.backgroundRole())
+        self.is_dark = back_color.value() < 128
         self.text_field = TextViewWidget(self, readonly=self.readonly)
         self.text_field.textChanged.connect(self.field_content_changed)
         self.hex_field = HexViewWidget(read_only=self.readonly, parent=self)
@@ -165,19 +168,31 @@ class DeenWidget(QWidget):
         hex.setChecked(False)
         hex.stateChanged.connect(self.view_hex)
         clear = QToolButton()
-        clear.setIcon(QIcon(MEDIA_PATH + 'edit-clear.svg'))
+        if self.is_dark:
+            clear.setIcon(QIcon(MEDIA_PATH + 'dark/edit-clear.svg'))
+        else:
+            clear.setIcon(QIcon(MEDIA_PATH + 'edit-clear.svg'))
         clear.setToolTip('Clear widget content')
         clear.clicked.connect(self.clear_content)
         save = QToolButton()
-        save.setIcon(QIcon(MEDIA_PATH + 'document-save-as.svg'))
+        if self.is_dark:
+            save.setIcon(QIcon(MEDIA_PATH + 'dark/document-save-as.svg'))
+        else:
+            save.setIcon(QIcon(MEDIA_PATH + 'document-save-as.svg'))
         save.setToolTip('Save content to file')
         save.clicked.connect(self.save_content)
         copy = QToolButton()
-        copy.setIcon(QIcon(MEDIA_PATH + 'edit-copy.svg'))
+        if self.is_dark:
+            copy.setIcon(QIcon(MEDIA_PATH + 'dark/edit-copy.svg'))
+        else:
+            copy.setIcon(QIcon(MEDIA_PATH + 'edit-copy.svg'))
         copy.setToolTip('Copy content to clipboard')
         copy.clicked.connect(self.copy_to_clipboard)
         move = QToolButton()
-        move.setIcon(QIcon(MEDIA_PATH + 'go-up.svg'))
+        if self.is_dark:
+            move.setIcon(QIcon(MEDIA_PATH + 'dark/go-up.svg'))
+        else:
+            move.setIcon(QIcon(MEDIA_PATH + 'go-up.svg'))
         move.setToolTip('Move content to root widget')
         move.clicked.connect(self.move_content_to_root)
         self.length_field = QLabel()

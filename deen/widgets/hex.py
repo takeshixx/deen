@@ -61,6 +61,7 @@ class HexViewWidget(QTableWidget):
             block = row[i:i+self._width]
             item = QTableWidgetItem(codecs.encode(block, 'hex').decode())
             item.setBackground(QBrush(QColor('lightgray')))
+            item.setForeground(QBrush(QColor('black')))
             item.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
             item.setData(Qt.UserRole, block)  # store original data
             if self._read_only:
@@ -82,6 +83,7 @@ class HexViewWidget(QTableWidget):
         item.setData(Qt.UserRole, row)  # store original data
         item.setTextAlignment(Qt.AlignLeft| Qt.AlignVCenter)
         item.setBackground(QBrush(QColor('lightblue')))
+        item.setForeground(QBrush(QColor('black')))
         if self._read_only:
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
         else:
