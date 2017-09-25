@@ -64,6 +64,7 @@ class DeenTransformer(object):
             output = output.encode()
         elif enc == 'rot13':
             output = codecs.encode(data.decode(), 'rot_13')
+            output = output.encode()
         elif enc == 'utf8':
             output = codecs.encode(data.decode(), 'utf8')
         elif enc == 'utf16':
@@ -141,6 +142,7 @@ class DeenTransformer(object):
                 output = data
         elif enc == 'rot13':
             output = codecs.decode(data.decode(), 'rot_13')
+            output = output.encode()
         else:
             output = data
         return output, decode_error
