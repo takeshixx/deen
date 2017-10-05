@@ -130,19 +130,23 @@ class DeenTransformer(object):
             try:
                 output = urllibparse.unquote_plus(data.decode())
                 output = output.encode()
-            except TypeError as e:
+            except (UnicodeDecodeError, TypeError) as e:
                 decode_error = e
                 output = data
         elif enc == 'html':
             try:
                 output = html_decode(data.decode())
                 output = output.encode()
-            except TypeError as e:
+            except (UnicodeDecodeError, TypeError) as e:
                 decode_error = e
                 output = data
         elif enc == 'rot13':
-            output = codecs.decode(data.decode(), 'rot_13')
-            output = output.encode()
+            try:
+                output = codecs.decode(data.decode(), 'rot_13')
+                output = output.encode()
+            except UnicodeDecodeError as e:
+                decode_error = e
+                output = data
         else:
             output = data
         return output, decode_error
@@ -219,9 +223,13 @@ class DeenTransformer(object):
                     continue
         elif hash_algo == 'ntlm':
             h = hashlib.new('md4')
-            data = data.decode()
-            h.update(data.encode('utf-16-le'))
-            output = h.hexdigest().encode()
+            try:
+                data = data.decode()
+                h.update(data.encode('utf-16-le'))
+                output = h.hexdigest().encode()
+            except UnicodeDecodeError as e:
+                hash_error = e
+                output = data
         elif self._in_list(hash_algo, HASHS):
             try:
                 h = hashlib.new(hash_algo)
