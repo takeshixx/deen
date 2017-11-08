@@ -184,14 +184,14 @@ class DeenTransformer(object):
         decode_error = None
         if comp == 'gzip':
             try:
-                output = codecs.decode(data, 'zlib')
+                output = zlib.decompress(data, zlib.MAX_WBITS | 32)
             except zlib.error as e:
                 decode_error = e
                 output = data
             except TypeError:
                 try:
                     # Python 2 does not like bytearrays
-                    output = codecs.decode(buffer(data), 'zlib')
+                    output = zlib.decompress(buffer(data), zlib.MAX_WBITS | 32)
                 except zlib.error as e:
                     decode_error = e
                     output = data
