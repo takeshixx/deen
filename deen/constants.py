@@ -30,7 +30,8 @@ HASHS = ['MD5',
          'MD4',
          'MDC2',
          'NTLM',
-         'Whirlpool']
+         'Whirlpool',
+         'MySQL']
 
 MISC = []
 

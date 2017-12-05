@@ -215,7 +215,8 @@ class DeenTransformer(object):
             output = bytearray()
             pad = len(max(HASHS, key=len))
             for _hash in HASHS:
-                if _hash == 'NTLM':
+                if _hash == 'NTLM' or \
+                        _hash == 'MySQL':
                     continue
                 try:
                     h = hashlib.new(_hash.lower())
@@ -232,6 +233,16 @@ class DeenTransformer(object):
                 h.update(data.encode('utf-16-le'))
                 output = h.hexdigest().encode()
             except UnicodeDecodeError as e:
+                hash_error = e
+                output = data
+        elif hash_algo == 'mysql':
+            h1 = hashlib.new('sha1')
+            h2 = hashlib.new('sha1')
+            try:
+                h1.update(data)
+                h2.update(h1.digest())
+                output = h2.hexdigest().encode()
+            except Exception as e:
                 hash_error = e
                 output = data
         elif self._in_list(hash_algo, HASHS):
