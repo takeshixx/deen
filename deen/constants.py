@@ -15,7 +15,8 @@ ENCODINGS = ['Base64',
              'HTML',
              'Rot13',
              'UTF8',
-             'UTF16']
+             'UTF16',
+             'Unix Timestamp']
 
 COMPRESSIONS = ['Gzip',
                 'Bz2']

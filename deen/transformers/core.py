@@ -4,6 +4,8 @@ import codecs
 import hashlib
 import logging
 import zlib
+import time
+import datetime
 
 try:
     # Python 3
@@ -69,6 +71,15 @@ class DeenTransformer(object):
             output = codecs.encode(data.decode(), 'utf8')
         elif enc == 'utf16':
             output = codecs.encode(data.decode(), 'utf16')
+        elif enc == 'unix timestamp':
+            # Try to Convert ctime string to Unix Timestamp
+            try:
+                output = str(int(time.mktime(datetime.datetime.strptime("".join(map(chr, data)), "%Y-%m-%d %H:%M:%S").timetuple())))
+                output = output.encode()
+            except ValueError as e:
+                # No encode error yet specified #TODO
+                # Hence returning data without user notification
+                output = data
         else:
             output = data
         return output
@@ -149,6 +160,13 @@ class DeenTransformer(object):
                 output = codecs.decode(data.decode(), 'rot_13')
                 output = output.encode()
             except UnicodeDecodeError as e:
+                decode_error = e
+                output = data
+        elif enc == 'unix timestamp':
+            try:
+                output = datetime.datetime.fromtimestamp(int(data)).strftime('%Y-%m-%d %H:%M:%S')
+                output = output.encode()
+            except (UnboundLocalError, ValueError) as e:
                 decode_error = e
                 output = data
         else:
