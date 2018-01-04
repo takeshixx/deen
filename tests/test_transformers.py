@@ -381,8 +381,9 @@ class TestTransformers(unittest.TestCase):
     def test_hashs(self):
         data_bytes = self._random_bytes()
         for hash in HASHS:
-            if hash == 'NTLM':
-                # Skip NTLM hash for byte input
+            if hash == 'NTLM' or hash == 'MySQL':
+                # Skip some hash formats that are not part
+                # of the hashlib module.
                 continue
             data_hashed, error = self._transformer.hash(hash, data_bytes)
             self.assertIsNone(error, 'An error occured: ' + str(error))
@@ -398,11 +399,24 @@ class TestTransformers(unittest.TestCase):
         data_hashed, error = self._transformer.hash('ntlm', data_str.encode())
         self.assertIsNone(error, 'An error occured: ' + str(error))
         self.assertIsInstance(data_hashed, (bytes, bytearray),
-                              'Hashing result should be bytes or bytearray, ' \
+                              'Hashing result should be bytes or bytearray, '
                               'got %s instead' % type(data_hashed))
         h = hashlib.new('md4')
         h.update(data_str.encode('utf-16-le'))
         self.assertEqual(h.hexdigest().encode(), data_hashed)
+
+    def test_hashs_mysql(self):
+        data = self._random_bytes()
+        data_hashed, error = self._transformer.hash('mysql', data)
+        self.assertIsNone(error, 'An error occured: ' + str(error))
+        self.assertIsInstance(data_hashed, (bytes, bytearray),
+                              'Hashing result should be bytes or bytearray, '
+                              'got %s instead' % type(data_hashed))
+        h1 = hashlib.new('sha1')
+        h2 = hashlib.new('sha1')
+        h1.update(data)
+        h2.update(h1.digest())
+        self.assertEqual(h2.hexdigest().encode(), data_hashed)
 
     def test_x509_format(self):
         self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
