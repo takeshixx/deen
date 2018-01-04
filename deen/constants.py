@@ -1,6 +1,6 @@
 import sys
 
-__version__ = '0.9.9'
+__version__ = '0.9.11'
 __all__ = ['ENCODINGS',
            'COMPRESSIONS',
            'HASHS',
@@ -15,7 +15,8 @@ ENCODINGS = ['Base64',
              'HTML',
              'Rot13',
              'UTF8',
-             'UTF16']
+             'UTF16',
+             'Unix Timestamp']
 
 COMPRESSIONS = ['Gzip',
                 'Bz2']
