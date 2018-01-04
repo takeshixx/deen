@@ -490,7 +490,11 @@ class DeenWidget(QWidget):
                         self.clear_error_message()
             elif self.current_pick in ENCODINGS:
                 if self.current_combo.model().item(0).text() == 'Encode':
-                    encoded = transformer.encode(self.current_pick, self._content)
+                    encoded, error = transformer.encode(self.current_pick, self._content)
+                    if error:
+                        LOGGER.error(error)
+                        self.next.set_error()
+                        self.next.set_error_message(str(error))
                     self.next.content = encoded
                 else:
                     decoded, error = transformer.decode(self.current_pick, self._content)

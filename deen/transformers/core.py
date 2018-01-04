@@ -46,6 +46,7 @@ class DeenTransformer(object):
         enc = enc.lower()
         assert self._in_list(enc, ENCODINGS),\
             'Unknown encoding %s' % enc
+        encode_error = None
         if enc == 'base64':
             output = base64.b64encode(data)
         elif enc == 'base64 url':
@@ -79,10 +80,11 @@ class DeenTransformer(object):
             except ValueError as e:
                 # No encode error yet specified #TODO
                 # Hence returning data without user notification
+                encode_error = e
                 output = data
         else:
             output = data
-        return output
+        return output, encode_error
 
     def decode(self, enc, data):
         enc = enc.lower()

@@ -110,7 +110,8 @@ def main():
             stdout.write(decoded[0])
         elif args.encode:
             encoded = transformer.encode(args.encode, content)
-            stdout.write(encoded)
+            assert isinstance(encoded, tuple)
+            stdout.write(encoded[0])
         elif args.compress:
             compressed = transformer.compress(args.compress, content)
             stdout.write(compressed)

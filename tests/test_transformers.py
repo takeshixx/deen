@@ -94,11 +94,13 @@ class TestTransformers(unittest.TestCase):
     def test_encode_base64(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b64encode(data_bytes)
-        result_bytes = self._transformer.encode('base64', data_bytes)
-        self.assertIsInstance(result_bytes, bytes,
-            'Base64 encoding result should be bytes or bytearray, ' \
-            'got %s instead' % type(result_bytes))
-        self.assertEqual(encoded_bytes, result_bytes)
+        result = self._transformer.encode('base64', data_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during Base64 encoding'
+        self.assertIsInstance(result[0], bytes,
+            'Base64 encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result[0]))
+        self.assertEqual(encoded_bytes, result[0])
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             self._transformer.encode, 'base64', data_str),
@@ -111,7 +113,7 @@ class TestTransformers(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during Base64 decoding'
         self.assertIsInstance(result[0], bytes,
-            'Base64 decoding result should be bytes or bytearray, ' \
+            'Base64 decoding result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
@@ -122,11 +124,13 @@ class TestTransformers(unittest.TestCase):
     def test_encode_base64_url(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.urlsafe_b64encode(data_bytes)
-        result_bytes = self._transformer.encode('base64 url', data_bytes)
-        self.assertIsInstance(result_bytes, bytes,
-            'Base64 URLsafe encoding result should be bytes or bytearray, ' \
-            'got %s instead' % type(result_bytes))
-        self.assertEqual(encoded_bytes, result_bytes)
+        result = self._transformer.encode('base64 url', data_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during Base64 URLsafe encoding'
+        self.assertIsInstance(result[0], bytes,
+            'Base64 URLsafe encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result[0]))
+        self.assertEqual(encoded_bytes, result[0])
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             self._transformer.encode, 'base64 url', data_str),
@@ -139,7 +143,7 @@ class TestTransformers(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during Base64 URLsafe decoding'
         self.assertIsInstance(result[0], bytes,
-            'Base64 URLsafe decoding result should be bytes or bytearray, ' \
+            'Base64 URLsafe decoding result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
@@ -150,11 +154,13 @@ class TestTransformers(unittest.TestCase):
     def test_encode_base32(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b32encode(data_bytes)
-        result_bytes = self._transformer.encode('base32', data_bytes)
-        self.assertIsInstance(result_bytes, bytes,
-            'Base32 encoding result should be bytes or bytearray, ' \
-            'got %s instead' % type(result_bytes))
-        self.assertEqual(encoded_bytes, result_bytes)
+        result = self._transformer.encode('base32', data_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during Base32 encoding'
+        self.assertIsInstance(result[0], bytes,
+            'Base32 encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result[0]))
+        self.assertEqual(encoded_bytes, result[0])
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             self._transformer.encode, 'base32', data_str),
@@ -167,7 +173,7 @@ class TestTransformers(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during Base32 decoding'
         self.assertIsInstance(result[0], bytes,
-            'Base32 decoding result should be bytes or bytearray, ' \
+            'Base32 decoding result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
@@ -181,11 +187,13 @@ class TestTransformers(unittest.TestCase):
             self.fail('Base85 support not available for the current Python version!')
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b85encode(data_bytes)
-        result_bytes = self._transformer.encode('base85', data_bytes)
-        self.assertIsInstance(result_bytes, bytes,
-            'Base85 encoding result should be bytes or bytearray, ' \
-            'got %s instead' % type(result_bytes))
-        self.assertEqual(encoded_bytes, result_bytes)
+        result = self._transformer.encode('base85', data_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during Base85 encoding'
+        self.assertIsInstance(result[0], bytes,
+            'Base85 encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result[0]))
+        self.assertEqual(encoded_bytes, result[0])
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             self._transformer.encode, 'base85', data_str),
@@ -201,7 +209,7 @@ class TestTransformers(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during Base85 decoding'
         self.assertIsInstance(result[0], bytes,
-            'Base85 decoding result should be bytes or bytearray, ' \
+            'Base85 decoding result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
@@ -212,11 +220,13 @@ class TestTransformers(unittest.TestCase):
     def test_encode_hex(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'hex')
-        result_bytes = self._transformer.encode('hex', data_bytes)
-        self.assertIsInstance(result_bytes, bytes,
-            'Hex encoding result should be bytes or bytearray, ' \
-            'got %s instead' % type(result_bytes))
-        self.assertEqual(encoded_bytes, result_bytes)
+        result = self._transformer.encode('hex', data_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during hex encoding'
+        self.assertIsInstance(result[0], bytes,
+            'Hex encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result[0]))
+        self.assertEqual(encoded_bytes, result[0])
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             self._transformer.encode, 'hex', data_str),
@@ -229,7 +239,7 @@ class TestTransformers(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during hex decoding'
         self.assertIsInstance(result[0], bytes,
-            'Hex decoding result should be bytes or bytearray, ' \
+            'Hex decoding result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
@@ -241,11 +251,13 @@ class TestTransformers(unittest.TestCase):
         data_bytes = b'a b  c/d?'
         # urllib requires str?
         encoded_bytes = urllibparse.quote_plus(data_bytes.decode())
-        result_bytes = self._transformer.encode('url', data_bytes)
-        self.assertIsInstance(result_bytes, bytes,
-            'URL encoding result should be bytes or bytearray, ' \
-            'got %s instead' % type(result_bytes))
-        self.assertEqual(encoded_bytes.encode(), result_bytes)
+        result = self._transformer.encode('url', data_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during URL encoding'
+        self.assertIsInstance(result[0], bytes,
+            'URL encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result[0]))
+        self.assertEqual(encoded_bytes.encode(), result[0])
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             self._transformer.encode, 'url', data_str),
@@ -257,9 +269,9 @@ class TestTransformers(unittest.TestCase):
         encoded_bytes = urllibparse.quote_plus(data_bytes.decode())
         result = self._transformer.decode('url', encoded_bytes.encode())
         self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during hex decoding'
+        self.assertIsNone(result[1]), 'An error occurred during URL decoding'
         self.assertIsInstance(result[0], bytes,
-            'URL decoding result should be bytes or bytearray, ' \
+            'URL decoding result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
@@ -271,11 +283,13 @@ class TestTransformers(unittest.TestCase):
         data_bytes = b'<script>alert(1)</script>'
         # html module requires str?
         encoded_bytes = html_encode(data_bytes.decode())
-        result_bytes = self._transformer.encode('html', data_bytes)
-        self.assertIsInstance(result_bytes, bytes,
-            'HTML encoding result should be bytes or bytearray, ' \
-            'got %s instead' % type(result_bytes))
-        self.assertEqual(encoded_bytes.encode(), result_bytes)
+        result = self._transformer.encode('html', data_bytes)
+        self.assertIsInstance(result, tuple)
+        self.assertIsNone(result[1]), 'An error occurred during HTML encoding'
+        self.assertIsInstance(result[0], bytes,
+            'HTML encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result[0]))
+        self.assertEqual(encoded_bytes.encode(), result[0])
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             self._transformer.encode, 'html', data_str),
@@ -290,7 +304,7 @@ class TestTransformers(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during HTML decoding'
         self.assertIsInstance(result[0], bytes,
-            'HTML decoding result should be bytes or bytearray, ' \
+            'HTML decoding result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
@@ -313,7 +327,7 @@ class TestTransformers(unittest.TestCase):
         encoded_bytes = codecs.encode(data_bytes, 'zlib')
         result_bytes = self._transformer.compress('gzip', data_bytes)
         self.assertIsInstance(result_bytes, bytes,
-            'Gzip compression result should be bytes or bytearray, ' \
+            'Gzip compression result should be bytes or bytearray, '
             'got %s instead' % type(result_bytes))
         self.assertEqual(encoded_bytes, result_bytes)
         data_str = self._random_str()
@@ -328,7 +342,7 @@ class TestTransformers(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during Gzip uncompression'
         self.assertIsInstance(result[0], bytes,
-            'Gzip uncompression result should be bytes or bytearray, ' \
+            'Gzip uncompression result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
@@ -341,7 +355,7 @@ class TestTransformers(unittest.TestCase):
         encoded_bytes = codecs.encode(data_bytes, 'bz2')
         result_bytes = self._transformer.compress('bz2', data_bytes)
         self.assertIsInstance(result_bytes, bytes,
-            'bz2 compression result should be bytes or bytearray, ' \
+            'bz2 compression result should be bytes or bytearray, '
             'got %s instead' % type(result_bytes))
         self.assertEqual(encoded_bytes, result_bytes)
         data_str = self._random_str()
@@ -356,7 +370,7 @@ class TestTransformers(unittest.TestCase):
         self.assertIsInstance(result, tuple)
         self.assertIsNone(result[1]), 'An error occurred during bz2 uncompression'
         self.assertIsInstance(result[0], bytes,
-            'bz2 uncompression result should be bytes or bytearray, ' \
+            'bz2 uncompression result should be bytes or bytearray, '
             'got %s instead' % type(result[0]))
         self.assertEqual(data_bytes, result[0])
         data_str = self._random_str()
