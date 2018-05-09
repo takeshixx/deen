@@ -5,7 +5,7 @@ import argparse
 
 from deen.transformers.core import DeenTransformer
 from deen.transformers.x509 import X509Certificate
-from deen.transformers.formats import XmlFormat, HtmlFormat, JsonFormat
+from deen.transformers.formats import *
 from deen.constants import *
 
 ICON = os.path.dirname(os.path.abspath(__file__)) + '/media/icon.png'
@@ -54,7 +54,8 @@ def list_supported_transformers():
     try:
         import OpenSSL.crypto
     except ImportError:
-        MISC.remove('X509Certificate')
+        if 'X509Certificate' in MISC:
+            MISC.remove('X509Certificate')
     if MISC:
         print()
         print('Misc')
@@ -132,6 +133,8 @@ def main():
                     formatter = HtmlFormat()
                 elif args.format.lower() == 'json':
                     formatter = JsonFormat()
+                elif args.format.lower() == 'js-beautifier':
+                    formatter = JsBeautifierFormat()
                 if formatter:
                     formatter.content = content
                     if formatter.content:

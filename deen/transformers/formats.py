@@ -4,6 +4,13 @@ import json
 import xml.dom.minidom
 from xml.parsers.expat import ExpatError
 
+try:
+    import jsbeautifier
+except ImportError:
+    JSBEAUTIFIER = False
+else:
+    JSBEAUTIFIER = True
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -81,6 +88,35 @@ class JsonFormat(object):
             self._error = e
             return
         data = pprint.pformat(data)
+        self._content = bytearray(data.encode())
+
+    @property
+    def error(self):
+        return self._error
+
+
+class JsBeautifierFormat(object):
+    def __init__(self):
+        self._content = None
+        self._error = None
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, data):
+        assert isinstance(data, (bytes, bytearray))
+        if not JSBEAUTIFIER:
+            LOGGER.warning('jsbeautifier is not available')
+            return
+        opts = jsbeautifier.default_options()
+        opts.unescape_strings = True
+        try:
+            data = jsbeautifier.beautify(data.decode(), opts)
+        except (UnicodeDecodeError, TypeError) as e:
+            self._error = e
+            return
         self._content = bytearray(data.encode())
 
     @property

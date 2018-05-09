@@ -3,7 +3,8 @@ import deen.constants
 
 setup(name='deen',
       version=deen.constants.__version__,
-      extras_require={'X509': 'pyOpenSSL'},
+      extras_require={'X509': 'pyOpenSSL',
+                      'JS-Beautifier': 'jsbeautifier'},
       packages=['deen',
                 'deen.widgets',
                 'deen.transformers'],

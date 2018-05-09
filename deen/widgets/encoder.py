@@ -16,7 +16,7 @@ from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
 from deen.transformers.core import DeenTransformer
 from deen.transformers.x509 import X509Certificate
-from deen.transformers.formats import XmlFormat, HtmlFormat, JsonFormat
+from deen.transformers.formats import *
 from deen.constants import *
 from deen.exceptions import *
 
@@ -469,12 +469,14 @@ class DeenWidget(QWidget):
             transformer = DeenTransformer()
             if self.current_pick in FORMATTERS:
                 formatter = None
-                if self.current_pick == 'XML':
+                if self.current_pick.lower() == 'xml':
                     formatter = XmlFormat()
-                elif self.current_pick == 'HTML':
+                elif self.current_pick.lower() == 'html':
                     formatter = HtmlFormat()
-                elif self.current_pick == 'JSON':
+                elif self.current_pick.lower() == 'json':
                     formatter = JsonFormat()
+                elif self.current_pick.lower() == 'js-beautifier':
+                    formatter = JsBeautifierFormat()
                 if formatter:
                     formatter.content = self._content
                     if formatter.content:

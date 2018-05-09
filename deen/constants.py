@@ -47,6 +47,13 @@ FORMATTERS = ['XML',
               'HTML',
               'JSON']
 
+try:
+    import jsbeautifier
+except ImportError:
+    pass
+else:
+    FORMATTERS.append('JS-Beautifier')
+
 # Add features based on Python version
 if sys.version_info.major == 3:
     if sys.version_info.minor >= 6:
