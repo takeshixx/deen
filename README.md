@@ -28,6 +28,15 @@ deen
 
 *Note*: If the installation fails with an error like "Could not find a version that satisfies the requirement PyQt5", then you are trying to install deen via pip on a version of Python < 3.5. In this case, you cannot install PyQt5 via `pip`. You have to install PyQt5 separately, e.g. via your package manager (e.g. `pacman -S python2-pyqt5` on Arch Linux for Python 2).
 
+### Optional Dependencies
+
+There are several optional dependencies that can be installed via pip with the following command:
+
+```
+pip3 install .[X509]
+pip3 install .[JS-Beautifier]
+```
+
 ### Packages
 
 There is a [deen-git](https://aur.archlinux.org/packages/deen-git) package available in the Arch User Repository (AUR).
