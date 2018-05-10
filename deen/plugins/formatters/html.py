@@ -6,7 +6,7 @@ from .. import DeenPlugin
 
 class DeenPluginHtmlFormatter(DeenPlugin):
     name = 'html_formatter'
-    display_name = 'HTML'
+    display_name = 'HTML (f)'
 
     def __init__(self):
         super(DeenPluginHtmlFormatter, self).__init__()

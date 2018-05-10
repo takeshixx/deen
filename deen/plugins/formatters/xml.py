@@ -6,7 +6,7 @@ from .. import DeenPlugin
 
 class DeenPluginXmlFormatter(DeenPlugin):
     name = 'xml_formatter'
-    display_name = 'XML'
+    display_name = 'XML (f)'
 
     def __init__(self):
         super(DeenPluginXmlFormatter, self).__init__()
