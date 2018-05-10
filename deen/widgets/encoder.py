@@ -14,12 +14,7 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLa
 
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
-from deen.transformers.core import DeenTransformer
-from deen.transformers.x509 import X509Certificate
-from deen.transformers.formats import *
 from deen.loader import DeenPluginLoader
-from deen.constants import *
-from deen.exceptions import *
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
 LOGGER = logging.getLogger(__name__)
@@ -469,12 +464,10 @@ class DeenWidget(QWidget):
             self.current_pick = combo.currentText()
         if self._content:
             if not self.plugins.plugin_available(self.current_pick):
-                print('Pluging {} not found'.format(self.current_pick))
+                LOGGER.warn('Pluging {} not found'.format(self.current_pick))
                 return
             else:
                 plugin = self.plugins.get_plugin_instance(self.current_pick)
-                print(plugin)
-
             combo_choice = self.current_combo.model().item(0).text()
             if combo_choice == 'Format':
                 data = plugin.process(self._content)
@@ -489,7 +482,7 @@ class DeenWidget(QWidget):
                 else:
                     self.clear_error_message()
             elif combo_choice == 'Encode' or combo_choice == 'Compress' or \
-                            combo_choice == 'Hash' or combo_choice == 'Misc':
+                            combo_choice == 'Hash' or combo_choice == 'Miscellaneous':
                 data = plugin.process(self._content)
                 if plugin.error:
                     LOGGER.error(plugin.error)
