@@ -1,3 +1,4 @@
+import sys
 import base64
 import binascii
 
@@ -107,6 +108,15 @@ class DeenPluginBase85(DeenPlugin):
 
     def __init__(self):
         super(DeenPluginBase85, self).__init__()
+
+    @staticmethod
+    def prerequisites():
+        if sys.version_info.major < 3 or \
+            (sys.version_info.major == 3 and
+                sys.version_info.minor < 4):
+            return False
+        else:
+            return True
 
     def process(self, data):
         super(DeenPluginBase85, self).process(data)

@@ -1,3 +1,4 @@
+import sys
 import hashlib
 
 from .. import DeenPlugin
@@ -12,6 +13,15 @@ class DeenPluginBlake2b(DeenPlugin):
 
     def __init__(self):
         super(DeenPluginBlake2b, self).__init__()
+
+    @staticmethod
+    def prerequisites():
+        if sys.version_info.major < 3 or \
+            (sys.version_info.major == 3 and
+                sys.version_info.minor < 6):
+            return False
+        else:
+            return True
 
     def process(self, data):
         super(DeenPluginBlake2b, self).process(data)
@@ -30,6 +40,15 @@ class DeenPluginBlake2s(DeenPlugin):
 
     def __init__(self):
         super(DeenPluginBlake2s, self).__init__()
+
+    @staticmethod
+    def prerequisites():
+        if sys.version_info.major < 3 or \
+            (sys.version_info.major == 3 and
+                sys.version_info.minor < 6):
+            return False
+        else:
+            return True
 
     def process(self, data):
         super(DeenPluginBlake2s, self).process(data)

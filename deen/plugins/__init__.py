@@ -19,6 +19,16 @@ class DeenPlugin(object):
     def __init__(self):
         pass
 
+    @staticmethod
+    def prerequisites():
+        """A function that should return True if all
+        prerequisites for this plugin are met or False
+        if not. Here a plugin can e.g. check if the
+        current Python version is suitable for the
+        functionality or if required third party modules
+        are installed."""
+        return True
+
     def process(self, data):
         assert data is not None
         assert isinstance(data, (bytes, bytearray))

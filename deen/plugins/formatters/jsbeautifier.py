@@ -19,6 +19,15 @@ class DeenPluginJsBeautifierFormatter(DeenPlugin):
     def __init__(self):
         super(DeenPluginJsBeautifierFormatter, self).__init__()
 
+    @staticmethod
+    def prerequisites():
+        try:
+            import jsbeautifier
+        except ImportError:
+            return False
+        else:
+            return True
+
     def process(self, data):
         super(DeenPluginJsBeautifierFormatter, self).process(data)
         if not JSBEAUTIFIER:

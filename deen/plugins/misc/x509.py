@@ -21,6 +21,15 @@ class DeenPluginX509Certificate(DeenPlugin):
     def __init__(self):
         super(DeenPluginX509Certificate, self).__init__()
 
+    @staticmethod
+    def prerequisites():
+        try:
+            import OpenSSL.crypto
+        except ImportError:
+            return False
+        else:
+            return True
+
     @property
     def certificate(self):
         return self._certificate

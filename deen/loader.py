@@ -43,7 +43,8 @@ class DeenPluginLoader(object):
             for c in inspect.getmembers(m[1], inspect.isclass):
                 if c[0].startswith('DeenPlugin') and \
                         len(c[0].replace('DeenPlugin', '')) != 0:
-                    output.append(c)
+                    if c[1].prerequisites():
+                        output.append(c)
         else:
             return output
 
