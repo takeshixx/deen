@@ -50,35 +50,3 @@ See the [wiki](https://github.com/takeshixx/deen/wiki) for basic and more advanc
 By invoking deen without any command line arguments, the graphical interface will start.
 
 ![deen](https://i.imgur.com/522iUtH.png)
-
-The GUI also supports reading input from files:
-
-```
-deen /bin/ls
-```
-
-and from STDIN:
-
-```
-cat /bin/ls | deen -
-```
-
-### CLI
-
-Some functionality is also available via a CLI. A list of available operations and supported transfomers is available in the help page (`-h`/`--help`) and with the list command (`-l`/`--list`). The command line can read input either from a file:
-
-```
-deen -p sha256 /bin/ls
-```
-
-or from STDIN by using `-` as a file name:
-
-```
-cat /bin/ls | deen -p sha256 -
-```
-
-Alternatively an input string can also be supplied with the `-d`/`--data` argument:
-
-```
-deen -p base64 -d admin:admin
-```
