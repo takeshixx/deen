@@ -1,0 +1,41 @@
+try:
+    # Python 3
+    import html
+    html_encode = html.escape
+    html_decode = html.unescape
+except ImportError:
+    # Python 2
+    import cgi
+    html_encode = cgi.escape
+    from HTMLParser import HTMLParser
+    html = HTMLParser()
+    html_decode = html.unescape
+
+from .. import DeenPlugin
+
+
+class DeenPluginHtml(DeenPlugin):
+    name = 'html'
+    display_name = 'HTML'
+
+    def __init__(self):
+        super(DeenPluginHtml, self).__init__()
+
+    def process(self, data):
+        super(DeenPluginHtml, self).process(data)
+        try:
+            # html module requires str?
+            data = html_encode(data.decode())
+            data = data.encode()
+        except Exception as e:
+            self.error = e
+        return data
+
+    def unprocess(self, data):
+        super(DeenPluginHtml, self).unprocess(data)
+        try:
+            data = html_decode(data.decode())
+            data = data.encode()
+        except (UnicodeDecodeError, TypeError) as e:
+            self.error = e
+        return data

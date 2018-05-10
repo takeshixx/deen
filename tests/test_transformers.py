@@ -31,9 +31,7 @@ except Exception:
 else:
     OPENSSL = True
 
-from deen.transformers.core import DeenTransformer
-from deen.transformers.x509 import X509Certificate
-from deen.constants import HASHS, ENCODINGS
+from deen.loader import DeenPluginLoader
 from deen.exceptions import *
 
 CERTIFICATE = b"""-----BEGIN CERTIFICATE-----
@@ -82,7 +80,7 @@ JqbaIVifYwqwNN+4lRxS3F5lNlA/il12IOgbRioLI62o8G0DaEUQgHNf8vSG
 
 class TestTransformers(unittest.TestCase):
     def setUp(self):
-        self._transformer = DeenTransformer()
+        self._plugins = DeenPluginLoader()
 
     def _random_str(self, length=16):
         return ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -94,92 +92,86 @@ class TestTransformers(unittest.TestCase):
     def test_encode_base64(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b64encode(data_bytes)
-        result = self._transformer.encode('base64', data_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Base64 encoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('base64')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during Base64 encoding'
+        self.assertIsInstance(result, bytes,
             'Base64 encoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(encoded_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.encode, 'base64', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_decode_base64(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b64encode(data_bytes)
-        result = self._transformer.decode('base64', encoded_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Base64 decoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('base64')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during Base64 decoding'
+        self.assertIsInstance(result, bytes,
             'Base64 decoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.decode, 'base64', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_encode_base64_url(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.urlsafe_b64encode(data_bytes)
-        result = self._transformer.encode('base64 url', data_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Base64 URLsafe encoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('base64url')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during Base64 URLsafe encoding'
+        self.assertIsInstance(result, bytes,
             'Base64 URLsafe encoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(encoded_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.encode, 'base64 url', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_decode_base64_url(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.urlsafe_b64encode(data_bytes)
-        result = self._transformer.decode('base64 url', encoded_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Base64 URLsafe decoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('base64url')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during Base64 URLsafe decoding'
+        self.assertIsInstance(result, bytes,
             'Base64 URLsafe decoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.decode, 'base64 url', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_encode_base32(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b32encode(data_bytes)
-        result = self._transformer.encode('base32', data_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Base32 encoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('base32')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during Base32 encoding'
+        self.assertIsInstance(result, bytes,
             'Base32 encoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(encoded_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.encode, 'base32', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_decode_base32(self):
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b32encode(data_bytes)
-        result = self._transformer.decode('base32', encoded_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Base32 decoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('base32')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during Base32 decoding'
+        self.assertIsInstance(result, bytes,
             'Base32 decoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.decode, 'base32', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_encode_base85(self):
         if sys.version_info.major != 3 or \
@@ -187,17 +179,16 @@ class TestTransformers(unittest.TestCase):
             self.fail('Base85 support not available for the current Python version!')
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b85encode(data_bytes)
-        result = self._transformer.encode('base85', data_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Base85 encoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('base85')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during Base85 encoding'
+        self.assertIsInstance(result, bytes,
             'Base85 encoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(encoded_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.encode, 'base85', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_decode_base85(self):
         if sys.version_info.major != 3 or \
@@ -205,118 +196,112 @@ class TestTransformers(unittest.TestCase):
             self.fail('Base85 support not available for the current Python version!')
         data_bytes = self._random_bytes()
         encoded_bytes = base64.b85encode(data_bytes)
-        result = self._transformer.decode('base85', encoded_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Base85 decoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('base85')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during Base85 decoding'
+        self.assertIsInstance(result, bytes,
             'Base85 decoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.decode, 'base85', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_encode_hex(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'hex')
-        result = self._transformer.encode('hex', data_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during hex encoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('hex')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during hex encoding'
+        self.assertIsInstance(result, bytes,
             'Hex encoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(encoded_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.encode, 'hex', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_decode_hex(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'hex')
-        result = self._transformer.decode('hex', encoded_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during hex decoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('hex')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during hex decoding'
+        self.assertIsInstance(result, bytes,
             'Hex decoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.decode, 'hex', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_encode_url(self):
         data_bytes = b'a b  c/d?'
         # urllib requires str?
         encoded_bytes = urllibparse.quote_plus(data_bytes.decode())
-        result = self._transformer.encode('url', data_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during URL encoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('url')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during URL encoding'
+        self.assertIsInstance(result, bytes,
             'URL encoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(encoded_bytes.encode(), result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes.encode(), result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.encode, 'url', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_decode_url(self):
         data_bytes = b'a b  c/d?'
         # urllib requires str?
-        encoded_bytes = urllibparse.quote_plus(data_bytes.decode())
-        result = self._transformer.decode('url', encoded_bytes.encode())
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during URL decoding'
-        self.assertIsInstance(result[0], bytes,
+        encoded_bytes = urllibparse.quote_plus(data_bytes.decode()).encode()
+        plugin = self._plugins.get_plugin_instance('url')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during URL decoding'
+        self.assertIsInstance(result, bytes,
             'URL decoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.decode, 'url', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_encode_html(self):
         data_bytes = b'<script>alert(1)</script>'
         # html module requires str?
         encoded_bytes = html_encode(data_bytes.decode())
-        result = self._transformer.encode('html', data_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during HTML encoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('html')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during HTML encoding'
+        self.assertIsInstance(result, bytes,
             'HTML encoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(encoded_bytes.encode(), result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes.encode(), result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.encode, 'html', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_decode_html(self):
         data_bytes = b'<script>alert(1)</script>'
         # html module requires str?
-        encoded_bytes = html_encode(data_bytes.decode())
+        encoded_bytes = html_encode(data_bytes.decode()).encode()
         # Transformer requires bytes
-        result = self._transformer.decode('html', encoded_bytes.encode())
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during HTML decoding'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('html')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during HTML decoding'
+        self.assertIsInstance(result, bytes,
             'HTML decoding result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.decode, 'html', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_decode_random_bytes(self):
         data_bytes = self._random_bytes()
-        for e in ENCODINGS:
+        for p in self._plugins.codecs:
             try:
-                self._transformer.decode(e, data_bytes)
+                plugin = self._plugins.get_plugin_instance(p[0])
+                plugin.unprocess(data_bytes)
             except (binascii.Error, ValueError) as e:
                 pass
             except Exception as e:
@@ -325,79 +310,81 @@ class TestTransformers(unittest.TestCase):
     def test_compress_gzip(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'zlib')
-        result_bytes = self._transformer.compress('gzip', data_bytes)
+        plugin = self._plugins.get_plugin_instance('gzip')
+        result_bytes = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during gzip compression'
         self.assertIsInstance(result_bytes, bytes,
             'Gzip compression result should be bytes or bytearray, '
             'got %s instead' % type(result_bytes))
         self.assertEqual(encoded_bytes, result_bytes)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.compress, 'gzip', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_uncompress_gzip(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'zlib')
-        result = self._transformer.uncompress('gzip', encoded_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during Gzip uncompression'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('gzip')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during gzip uncompression'
+        self.assertIsInstance(result, bytes,
             'Gzip uncompression result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.uncompress, 'gzip', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_compress_bz2(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'bz2')
-        result_bytes = self._transformer.compress('bz2', data_bytes)
+        plugin = self._plugins.get_plugin_instance('bzip2')
+        result_bytes = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during bzip2 compression'
         self.assertIsInstance(result_bytes, bytes,
-            'bz2 compression result should be bytes or bytearray, '
+            'bzip2 compression result should be bytes or bytearray, '
             'got %s instead' % type(result_bytes))
         self.assertEqual(encoded_bytes, result_bytes)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.compress, 'bz2', data_str),
-                          'Unexpected exception raised')
+            plugin.process, data_str), 'Unexpected exception raised')
 
     def test_uncompress_bz2(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'bz2')
-        result = self._transformer.uncompress('bz2', encoded_bytes)
-        self.assertIsInstance(result, tuple)
-        self.assertIsNone(result[1]), 'An error occurred during bz2 uncompression'
-        self.assertIsInstance(result[0], bytes,
+        plugin = self._plugins.get_plugin_instance('bzip2')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during bzip2 uncompression'
+        self.assertIsInstance(result, bytes,
             'bz2 uncompression result should be bytes or bytearray, '
-            'got %s instead' % type(result[0]))
-        self.assertEqual(data_bytes, result[0])
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
-            self._transformer.uncompress, 'bz2', data_str),
-                        'Unexpected exception raised')
+            plugin.unprocess, data_str), 'Unexpected exception raised')
 
     def test_hashs(self):
         data_bytes = self._random_bytes()
-        for hash in HASHS:
-            if hash == 'NTLM' or hash == 'MySQL':
+        for hash in self._plugins.hashs:
+            if hash[1].name == 'ntlm' or hash[1].name == 'mysql':
                 # Skip some hash formats that are not part
                 # of the hashlib module.
                 continue
-            data_hashed, error = self._transformer.hash(hash, data_bytes)
-            self.assertIsNone(error, 'An error occured: ' + str(error))
+            plugin = self._plugins.get_plugin_instance(hash[0])
+            data_hashed = plugin.process(data_bytes)
+            self.assertIsNone(plugin.error, 'An error occured: ' + str(plugin.error))
             self.assertIsInstance(data_hashed, (bytes, bytearray),
               'Hashing result should be bytes or bytearray, ' \
               'got %s instead' % type(data_hashed))
-            h = hashlib.new(hash.lower())
+            h = hashlib.new(hash[1].name)
             h.update(data_bytes)
-            self.assertEqual(h.hexdigest().encode(), data_hashed)
+            self.assertEqual(h.hexdigest().encode(), data_hashed, 'Hash calculation failed for ' + hash[0])
 
     def test_hashs_ntlm(self):
         data_str = self._random_str()
-        data_hashed, error = self._transformer.hash('ntlm', data_str.encode())
-        self.assertIsNone(error, 'An error occured: ' + str(error))
+        plugin = self._plugins.get_plugin_instance('ntlm')
+        data_hashed = plugin.process(data_str.encode())
+        self.assertIsNone(plugin.error, 'An error occured: ' + str(plugin.error))
         self.assertIsInstance(data_hashed, (bytes, bytearray),
                               'Hashing result should be bytes or bytearray, '
                               'got %s instead' % type(data_hashed))
@@ -407,8 +394,9 @@ class TestTransformers(unittest.TestCase):
 
     def test_hashs_mysql(self):
         data = self._random_bytes()
-        data_hashed, error = self._transformer.hash('mysql', data)
-        self.assertIsNone(error, 'An error occured: ' + str(error))
+        plugin = self._plugins.get_plugin_instance('mysql')
+        data_hashed = plugin.process(data)
+        self.assertIsNone(plugin.error, 'An error occured: ' + str(plugin.error))
         self.assertIsInstance(data_hashed, (bytes, bytearray),
                               'Hashing result should be bytes or bytearray, '
                               'got %s instead' % type(data_hashed))
@@ -421,25 +409,25 @@ class TestTransformers(unittest.TestCase):
     def test_x509_format(self):
         self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
         certificate = CERTIFICATE
-        transformer = X509Certificate()
+        plugin = self._plugins.get_plugin_instance('x509certificate')
         try:
-            transformer.certificate = certificate
-            formatted = transformer.decode()
+            formatted = plugin.process(certificate)
         except Exception as e:
             self.fail(e)
         self.assertIsNotNone(formatted)
+        self.assertIsNone(plugin.error)
 
     def test_x509_format_incomplete(self):
         self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
         certificate = CERTIFICATE.replace(b'-----BEGIN CERTIFICATE-----\n', b'') \
                                  .replace(b'\n-----END CERTIFICATE-----', b'')
-        transformer = X509Certificate()
+        plugin = self._plugins.get_plugin_instance('x509certificate')
         try:
-            transformer.certificate = certificate
-            formatted = transformer.decode()
+            formatted = plugin.process(certificate)
         except Exception as e:
             self.fail(e)
         self.assertIsNotNone(formatted)
+        self.assertIsNone(plugin.error)
 
     def test_x509_format_der(self):
         self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
@@ -447,29 +435,30 @@ class TestTransformers(unittest.TestCase):
                                  .replace(b'\n-----END CERTIFICATE-----', b'') \
                                  .replace(b'\n', b'')
         certificate = base64.b64decode(certificate)
-        transformer = X509Certificate()
+        plugin = self._plugins.get_plugin_instance('x509certificate')
         try:
-            transformer.certificate = certificate
-            formatted = transformer.decode()
+            formatted = plugin.process(certificate)
         except Exception as e:
             self.fail(e)
         self.assertIsNotNone(formatted)
+        self.assertIsNone(plugin.error)
 
     def test_x509_format_invalid(self):
         self.assertTrue(OPENSSL, 'pyOpenSSL is not available!')
         certificate = self._random_bytes(32)
-        transformer = X509Certificate()
+        plugin = self._plugins.get_plugin_instance('x509certificate')
         try:
-            transformer.certificate = certificate
+            formatted = plugin.process(certificate)
         except crypto.Error:
             pass
         else:
             try:
-                transformer.decode()
+                formatted = plugin.process(certificate)
             except TransformException:
                 pass
             else:
                 self.fail('Invalid certificate does not raise TransformException!')
+        self.assertIsNone(plugin.error)
 
 
 if __name__ == '__main__':

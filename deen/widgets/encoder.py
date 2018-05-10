@@ -17,6 +17,7 @@ from deen.widgets.text import TextViewWidget
 from deen.transformers.core import DeenTransformer
 from deen.transformers.x509 import X509Certificate
 from deen.transformers.formats import *
+from deen.loader import DeenPluginLoader
 from deen.constants import *
 from deen.exceptions import *
 
@@ -44,6 +45,7 @@ class EncoderWidget(QWidget):
 class DeenWidget(QWidget):
     def __init__(self, parent, readonly=False, enable_actions=True):
         super(DeenWidget, self).__init__(parent)
+        self.plugins = DeenPluginLoader()
         self.parent = parent
         self.readonly = readonly
         self.current_pick = None
@@ -301,35 +303,35 @@ class DeenWidget(QWidget):
         self.encoding_combo = QComboBox(self)
         self.encoding_combo.addItem('Encode')
         self.encoding_combo.model().item(0).setEnabled(False)
-        for encoding in ENCODINGS:
+        for encoding in [p[1].display_name for p in self.plugins.codecs]:
             self.encoding_combo.addItem(encoding)
         self.encoding_combo.currentIndexChanged.connect(lambda: self.action(self.encoding_combo))
 
         self.decoding_combo = QComboBox(self)
         self.decoding_combo.addItem('Decode')
         self.decoding_combo.model().item(0).setEnabled(False)
-        for encoding in ENCODINGS:
+        for encoding in [p[1].display_name for p in self.plugins.codecs]:
             self.decoding_combo.addItem(encoding)
         self.decoding_combo.currentIndexChanged.connect(lambda: self.action(self.decoding_combo))
 
         self.compress_combo = QComboBox(self)
         self.compress_combo.addItem('Compress')
         self.compress_combo.model().item(0).setEnabled(False)
-        for compression in COMPRESSIONS:
+        for compression in [p[1].display_name for p in self.plugins.compressions]:
             self.compress_combo.addItem(compression)
         self.compress_combo.currentIndexChanged.connect(lambda: self.action(self.compress_combo))
 
         self.uncompress_combo = QComboBox(self)
         self.uncompress_combo.addItem('Uncompress')
         self.uncompress_combo.model().item(0).setEnabled(False)
-        for compression in COMPRESSIONS:
+        for compression in [p[1].display_name for p in self.plugins.compressions]:
             self.uncompress_combo.addItem(compression)
         self.uncompress_combo.currentIndexChanged.connect(lambda: self.action(self.uncompress_combo))
 
         self.hash_combo = QComboBox(self)
         self.hash_combo.addItem('Hash')
         self.hash_combo.model().item(0).setEnabled(False)
-        for hash in HASHS:
+        for hash in [p[1].display_name for p in self.plugins.hashs]:
             self.hash_combo.addItem(hash)
         self.hash_combo.addItem('ALL')
         self.hash_combo.currentIndexChanged.connect(lambda: self.action(self.hash_combo))
@@ -337,14 +339,14 @@ class DeenWidget(QWidget):
         self.misc_combo = QComboBox(self)
         self.misc_combo.addItem('Miscellaneous')
         self.misc_combo.model().item(0).setEnabled(False)
-        for misc in MISC:
+        for misc in [p[1].display_name for p in self.plugins.misc]:
             self.misc_combo.addItem(misc)
         self.misc_combo.currentIndexChanged.connect(lambda: self.action(self.misc_combo))
 
         self.format_combo = QComboBox(self)
         self.format_combo.addItem('Format')
         self.format_combo.model().item(0).setEnabled(False)
-        for formatter in FORMATTERS:
+        for formatter in [p[1].display_name for p in self.plugins.formatters]:
             self.format_combo.addItem(formatter)
         self.format_combo.currentIndexChanged.connect(lambda: self.action(self.format_combo))
 
@@ -466,75 +468,42 @@ class DeenWidget(QWidget):
             self.current_combo = combo
             self.current_pick = combo.currentText()
         if self._content:
-            transformer = DeenTransformer()
-            if self.current_pick in FORMATTERS:
-                formatter = None
-                if self.current_pick.lower() == 'xml':
-                    formatter = XmlFormat()
-                elif self.current_pick.lower() == 'html':
-                    formatter = HtmlFormat()
-                elif self.current_pick.lower() == 'json':
-                    formatter = JsonFormat()
-                elif self.current_pick.lower() == 'js-beautifier':
-                    formatter = JsBeautifierFormat()
-                if formatter:
-                    formatter.content = self._content
-                    if formatter.content:
-                        self.formatted_view = True
-                        self.text_field.setPlainText(
-                            self.codec.toUnicode(formatter.content))
-                        self.text_field.moveCursor(QTextCursor.End)
-                    if formatter.error:
-                        LOGGER.error(formatter.error)
-                        self.set_error()
-                        self.set_error_message(str(formatter.error))
-                    else:
-                        self.clear_error_message()
-            elif self.current_pick in ENCODINGS:
-                if self.current_combo.model().item(0).text() == 'Encode':
-                    encoded, error = transformer.encode(self.current_pick, self._content)
-                    if error:
-                        LOGGER.error(error)
-                        self.next.set_error()
-                        self.next.set_error_message(str(error))
-                    self.next.content = encoded
+            if not self.plugins.plugin_available(self.current_pick):
+                print('Pluging {} not found'.format(self.current_pick))
+                return
+            else:
+                plugin = self.plugins.get_plugin_instance(self.current_pick)
+                print(plugin)
+
+            combo_choice = self.current_combo.model().item(0).text()
+            if combo_choice == 'Format':
+                data = plugin.process(self._content)
+                self.formatted_view = True
+                self.text_field.setPlainText(
+                    self.codec.toUnicode(data))
+                self.text_field.moveCursor(QTextCursor.End)
+                if plugin.error:
+                    LOGGER.error(plugin.error)
+                    self.set_error()
+                    self.set_error_message(str(plugin.error))
                 else:
-                    decoded, error = transformer.decode(self.current_pick, self._content)
-                    if error:
-                        LOGGER.error(error)
-                        self.next.set_error()
-                        self.next.set_error_message(str(error))
-                    self.next.content = decoded
-            elif self.current_pick in COMPRESSIONS:
-                if self.current_combo.model().item(0).text() == 'Compress':
-                    compressed = transformer.compress(self.current_pick, self._content)
-                    self.next.content = compressed
-                else:
-                    uncompressed, error = transformer.uncompress(self.current_pick, self._content)
-                    if error:
-                        LOGGER.error(error)
-                        self.next.set_error()
-                        self.next.set_error_message(str(error))
-                    self.next.content = uncompressed
-            elif self.current_pick in HASHS or self.current_pick == 'ALL':
-                hashed, error = transformer.hash(self.current_pick, self._content)
-                if error:
-                    LOGGER.error(error)
+                    self.clear_error_message()
+            elif combo_choice == 'Encode' or combo_choice == 'Compress' or \
+                            combo_choice == 'Hash' or combo_choice == 'Misc':
+                data = plugin.process(self._content)
+                if plugin.error:
+                    LOGGER.error(plugin.error)
                     self.next.set_error()
-                    self.next.set_error_message(str(error))
-                self.next.content = hashed
-            elif self.current_pick in MISC:
-                if self.current_pick == 'X509Certificate' and crypto:
-                    try:
-                        transformer = X509Certificate()
-                        transformer.certificate = self._content
-                        self.next.content = transformer.decode()
-                    except (crypto.Error, TransformException) as e:
-                        LOGGER.error(e)
-                        error = e
-                        self.next.set_error()
-                        self.next.set_error_message(str(error))
-                        self.next.content = self._content
+                    self.next.set_error_message(str(plugin.error))
+                self.next.content = data
+            elif combo_choice == 'Decode' or combo_choice == 'Uncompress':
+                data = plugin.unprocess(self._content)
+                if plugin.error:
+                    LOGGER.error(plugin.error)
+                    self.next.set_error()
+                    self.next.set_error_message(str(plugin.error))
+                self.next.content = data
+
             if self.current_combo.model().item(0).text() != 'Format':
                 if self.next.text_field.isReadOnly() and self.current_pick:
                     self.next.codec_field.setText('Transformer: ' + self.current_pick)

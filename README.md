@@ -68,17 +68,17 @@ cat /bin/ls | deen -
 Some functionality is also available via a CLI. A list of available operations and supported transfomers is available in the help page (`-h`/`--help`) and with the list command (`-l`/`--list`). The command line can read input either from a file:
 
 ```
-deen --hash sha256 /bin/ls
+deen -p sha256 /bin/ls
 ```
 
 or from STDIN by using `-` as a file name:
 
 ```
-cat /bin/ls | deen --hash sha256 -
+cat /bin/ls | deen -p sha256 -
 ```
 
-Alternatively an input string can also be supplied with the `--data` argument:
+Alternatively an input string can also be supplied with the `-d`/`--data` argument:
 
 ```
-deen --encode base64 --data admin:admin
+deen -p base64 -d admin:admin
 ```
