@@ -30,9 +30,18 @@ class DeenPlugin(object):
         return True
 
     def process(self, data):
+        """Every plugin must have a process method
+        that e.g. encodes, compresses, hashs, formats,
+        whatsoever."""
         assert data is not None
         assert isinstance(data, (bytes, bytearray))
 
     def unprocess(self, data):
+        """Depending of the category of a plugin, it
+        could also have an unprocess function. This
+        applies to e.g. codecs and compressions.
+        However, e.g. hash functions will not require
+        an unprocess function as they are not (easily)
+        reversible."""
         assert data is not None
         assert isinstance(data, (bytes, bytearray))
