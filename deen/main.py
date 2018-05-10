@@ -9,7 +9,28 @@ ICON = os.path.dirname(os.path.abspath(__file__)) + '/media/icon.png'
 LOGGER = logging.getLogger()
 VERBOSE_FORMAT = '[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s'
 
-ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.')
+EPILOG = """examples:
+  open a file in the deen GUI:
+    $ deen /bin/ls
+    
+  open file from STDIN in deen GUI:
+    $ cat /bin/ls | deen -
+
+  base64 encode a string:
+    $ deen -b base64 -d admin:admin
+    YWRtaW46YWRtaW4=
+    
+  decode Base64 string:
+    $ deen -b base64 -r -d YWRtaW46YWRtaW4=
+    admin:admin
+    
+  calculate the SHA256 hash of file:
+    $ deen -p sha256 /bin/ls
+    df285ab34ad10d8b641e65f39fa11a7d5b44571a37f94314debbfe7233021755
+"""
+
+ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.',
+                               formatter_class=argparse.RawDescriptionHelpFormatter, epilog=EPILOG)
 ARGS.add_argument('infile', nargs='?', default=None,
                   help="file name or - for STDIN")
 ARGS.add_argument('-l', '--list', action='store_true', dest='list',
@@ -20,7 +41,7 @@ ARGS.add_argument('-r', '--revert', action='store_true', dest='revert',
                   default=False, help='revert plugin process (e.g. decode or uncompress')
 ARGS.add_argument('-d', '--data', action='store', dest='data',
                   default=None, help='instead of a file, provide an input string')
-ARGS.add_argument('-n', action='store_true', dest='nonewline',
+ARGS.add_argument('-n', '--no-new-line', action='store_true', dest='nonewline',
                   default=False, help='omit new line character at the end of the output')
 ARGS.add_argument('-v', '--verbose', action='count', dest='level',
                   default=0, help='verbose logging (repeat for more verbosity)')
