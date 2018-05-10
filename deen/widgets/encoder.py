@@ -328,7 +328,6 @@ class DeenWidget(QWidget):
         self.hash_combo.model().item(0).setEnabled(False)
         for hash in [p[1].display_name for p in self.plugins.hashs]:
             self.hash_combo.addItem(hash)
-        self.hash_combo.addItem('ALL')
         self.hash_combo.currentIndexChanged.connect(lambda: self.action(self.hash_combo))
 
         self.misc_combo = QComboBox(self)
