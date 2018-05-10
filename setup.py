@@ -11,6 +11,7 @@ setup(name='deen',
                 'deen.plugins.codecs',
                 'deen.plugins.compressions',
                 'deen.plugins.hashs',
+                'deen.plugins.formatters',
                 'deen.plugins.misc'],
       entry_points = {
             'console_scripts': ['deen=deen.main:main']},
