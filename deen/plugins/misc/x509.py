@@ -135,14 +135,23 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         if (args.CA_CERT and not args.CA_KEY) or (not args.CA_CERT and args.CA_KEY):
             LOGGER.error('CA_CERT and CA_KEY required')
             sys.exit(1)
-        if args.signature_algorithm and \
-                not args.signature_algorithm in hashlib.algorithms_available:
-            LOGGER.error('Invalid signature algorithm')
-            sys.exit(1)
         with open(args.CERT_TO_CLONE) as f:
             original_cert = f.read()
         original_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, original_cert)
-        new_cert, new_key = self._clone(original_cert, args.self_signed, args.out, args.signature_algorithm)
+        if args.signature_algorithm:
+            signature_algo = args.signature_algorithm
+        else:
+            signature_algo = original_cert.get_signature_algorithm().decode()
+        new_cert, new_key = self._clone(original_cert, args.self_signed, args.out, signature_algo)
+        if args.CA_CERT:
+            with open(args.CA_CERT) as f:
+                ca_cert = f.read()
+            ca_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
+            new_cert.set_issuer(ca_cert.get_issuer())
+            with open(args.CA_KEY) as f:
+                ca_pkey = f.read()
+            ca_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, ca_pkey)
+            new_cert.sign(ca_pkey, signature_algo)
         self._save_to_file(new_cert, new_key, args.out)
         ret = 'Saved new certificate as {}.cert'.format(args.out)
         return ret.encode()
