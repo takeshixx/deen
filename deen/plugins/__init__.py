@@ -80,7 +80,7 @@ class DeenPlugin(object):
         if not self.content:
             if not args.plugindata:
                 if not args.plugininfile:
-                    return
+                    self.content = self.read_content_from_file('-')
                 else:
                     self.content = self.read_content_from_file(args.plugininfile)
             else:
