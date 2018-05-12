@@ -8,6 +8,8 @@ import string
 import functools
 import hashlib
 import binascii
+import zlib
+
 try:
     import urllib.parse as urllibparse
 except ImportError:
@@ -390,6 +392,37 @@ class TestTransformers(unittest.TestCase):
         data_str = self._random_str()
         self.assertRaises(TypeError, functools.partial(
             plugin.unprocess, data_str), 'Unexpected exception raised')
+
+    def test_compress_deflate(self):
+        data_bytes = self._random_bytes()
+        zlib_compress = zlib.compressobj(-1, zlib.DEFLATED, -15)
+        encoded_bytes = zlib_compress.compress(data_bytes)
+        plugin = self._plugins.get_plugin_instance('deflate')
+        result_bytes = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during deflate compression'
+        self.assertIsInstance(result_bytes, bytes,
+            'Deflate compression result should be bytes or bytearray, '
+            'got %s instead' % type(result_bytes))
+        self.assertEqual(encoded_bytes, result_bytes)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            plugin.process, data_str), 'Unexpected exception raised')
+
+    def test_uncompress_deflate(self):
+        data_bytes = self._random_bytes()
+        zlib_compress = zlib.compressobj(-1, zlib.DEFLATED, -15)
+        encoded_bytes = zlib_compress.compress(data_bytes)
+        plugin = self._plugins.get_plugin_instance('deflate')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during deflate uncompression'
+        self.assertIsInstance(result, bytes,
+            'Deflate uncompression result should be bytes or bytearray, '
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            plugin.unprocess, data_str), 'Unexpected exception raised')
+
 
     def test_compress_bz2(self):
         data_bytes = self._random_bytes()
