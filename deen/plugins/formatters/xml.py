@@ -1,5 +1,12 @@
-import xml.dom.minidom
+from __future__ import absolute_import
 from xml.parsers.expat import ExpatError
+
+try:
+    # Python 3
+    import xml.dom.minidom as minidom
+except ImportError:
+    # Python 2
+    from xml.dom import minidom
 
 from .. import DeenPlugin
 
@@ -16,7 +23,7 @@ class DeenPluginXmlFormatter(DeenPlugin):
     def process(self, data):
         super(DeenPluginXmlFormatter, self).process(data)
         try:
-            parser = xml.dom.minidom.parseString(data)
+            parser = minidom.parseString(data)
             data = parser.toprettyxml(indent=' ' * 4,
                                       encoding='utf8')
         except ExpatError as e:

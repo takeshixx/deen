@@ -116,9 +116,16 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
 
     @staticmethod
     def add_argparser(argparser, *args):
-        parser = argparser.add_parser(DeenPluginX509CertificateCloner.cmd_name,
-                                      help=DeenPluginX509CertificateCloner.cmd_help,
-                                      aliases=DeenPluginX509CertificateCloner.aliases)
+        # Python 2 argparse does not support aliases
+        if sys.version_info.major < 3 or \
+            (sys.version_info.major == 3 and
+                sys.version_info.minor < 2):
+            parser = argparser.add_parser(DeenPluginX509CertificateCloner.cmd_name,
+                                          help=DeenPluginX509CertificateCloner.cmd_help)
+        else:
+            parser = argparser.add_parser(DeenPluginX509CertificateCloner.cmd_name,
+                                          help=DeenPluginX509CertificateCloner.cmd_help,
+                                          aliases=DeenPluginX509CertificateCloner.aliases)
         parser.add_argument('CERT_TO_CLONE')
         parser.add_argument('-o', '--out', help="name of output files (w/o extension)", default="cloned_cert")
         parser.add_argument('-a', '--signature-algorithm', help="hash algorithm for signature", default=None,

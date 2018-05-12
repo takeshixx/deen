@@ -65,7 +65,13 @@ class DeenPlugin(object):
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
         if not cmd_aliases:
             cmd_aliases = []
-        parser = argparser.add_parser(cmd_name, help=cmd_help, aliases=cmd_aliases)
+        # Python 2 argparse does not support aliases
+        if sys.version_info.major < 3 or \
+            (sys.version_info.major == 3 and
+                sys.version_info.minor < 2):
+            parser = argparser.add_parser(cmd_name, help=cmd_help)
+        else:
+            parser = argparser.add_parser(cmd_name, help=cmd_help, aliases=cmd_aliases)
         parser.add_argument('plugindata', action='store',
                             help='input data', nargs='?')
         parser.add_argument('-r', '--revert', action='store_true', dest='revert',
