@@ -73,7 +73,10 @@ def main():
             plugin.content = content
             processed = plugin.process_cli(args)
             if not processed:
-                LOGGER.error('Plugin {} did not return any data'.format(plugin.cmd_name))
+                if plugin.error:
+                    LOGGER.exception(plugin.error)
+                else:
+                    LOGGER.error('Plugin {} did not return any data'.format(plugin.cmd_name))
                 sys.exit(1)
         else:
             if not pl.plugin_available(args.plugin):
