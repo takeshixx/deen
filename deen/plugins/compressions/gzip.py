@@ -15,10 +15,10 @@ class DeenPluginGzip(DeenPlugin):
     def process(self, data):
         super(DeenPluginGzip, self).process(data)
         try:
-            data = zlib.compress(data, 'zlib')
+            data = zlib.compress(data)
         except TypeError:
             # Python 2 does not like bytearrays
-            data = zlib.compress(buffer(data), 'zlib')
+            data = zlib.compress(buffer(data))
         except Exception as e:
             self.error = e
         return data
