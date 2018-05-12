@@ -5,3 +5,4 @@ from .url import DeenPluginUrl
 from .html import DeenPluginHtml
 from .rot13 import DeenPluginRot13
 from .timestamps import DeenPluginUnixTimestamp
+from .quopri import DeenPluginQuopri
