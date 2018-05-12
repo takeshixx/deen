@@ -296,6 +296,62 @@ class TestTransformers(unittest.TestCase):
         self.assertRaises(TypeError, functools.partial(
             plugin.unprocess, data_str), 'Unexpected exception raised')
 
+    def test_encode_quopri(self):
+        data_bytes = self._random_bytes()
+        encoded_bytes = codecs.encode(data_bytes, 'quopri')
+        plugin = self._plugins.get_plugin_instance('quopri')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during quopri encoding'
+        self.assertIsInstance(result, bytes,
+            'Quopri encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes, result)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            plugin.process, data_str), 'Unexpected exception raised')
+
+    def test_decode_quopri(self):
+        data_bytes = self._random_bytes()
+        encoded_bytes = codecs.encode(data_bytes, 'quopri')
+        plugin = self._plugins.get_plugin_instance('quopri')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during quopri decoding'
+        self.assertIsInstance(result, bytes,
+            'Quopri decoding result should be bytes or bytearray, '
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            plugin.unprocess, data_str), 'Unexpected exception raised')
+
+    def test_encode_uuencode(self):
+        data_bytes = self._random_bytes()
+        encoded_bytes = codecs.encode(data_bytes, 'uu')
+        plugin = self._plugins.get_plugin_instance('uuencode')
+        result = plugin.process(data_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during uuencode encoding'
+        self.assertIsInstance(result, bytes,
+            'Uuencode encoding result should be bytes or bytearray, '
+            'got %s instead' % type(result))
+        self.assertEqual(encoded_bytes, result)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            plugin.process, data_str), 'Unexpected exception raised')
+
+    def test_decode_uuencode(self):
+        data_bytes = self._random_bytes()
+        encoded_bytes = codecs.encode(data_bytes, 'uu')
+        plugin = self._plugins.get_plugin_instance('uuencode')
+        result = plugin.unprocess(encoded_bytes)
+        self.assertIsNone(plugin.error), 'An error occurred during uuencode decoding'
+        self.assertIsInstance(result, bytes,
+            'Uuencode decoding result should be bytes or bytearray, '
+            'got %s instead' % type(result))
+        self.assertEqual(data_bytes, result)
+        data_str = self._random_str()
+        self.assertRaises(TypeError, functools.partial(
+            plugin.unprocess, data_str), 'Unexpected exception raised')
+
     def test_decode_random_bytes(self):
         data_bytes = self._random_bytes()
         for p in self._plugins.codecs:
