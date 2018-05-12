@@ -14,11 +14,12 @@ class DeenPluginDeflate(DeenPlugin):
 
     def process(self, data):
         super(DeenPluginDeflate, self).process(data)
+        zlib_encode = zlib.compressobj(-1, zlib.DEFLATED, -15)
         try:
-            data = zlib.compress(data, 'zlib')
+            data = zlib_encode.compress(data)
         except TypeError:
             # Python 2 does not like bytearrays
-            data = zlib.compress(buffer(data), 'zlib')
+            data = zlib_encode.compress(buffer(data))
         except Exception as e:
             self.error = e
         return data
