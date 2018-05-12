@@ -6,6 +6,8 @@ from .. import DeenPlugin
 class DeenPluginNtlm(DeenPlugin):
     name = 'ntlm'
     display_name = 'NTLM'
+    cmd_name = 'ntlm'
+    cmd_help = 'Hash password with NTLM'
 
     def __init__(self):
         super(DeenPluginNtlm, self).__init__()

@@ -10,6 +10,8 @@ __all__ = ['DeenPluginBlake2b',
 class DeenPluginBlake2b(DeenPlugin):
     name = 'blake2b'
     display_name = 'BLAKE2b'
+    cmd_name = 'blake2b'
+    cmd_help = 'Hash data with BLAKE2b'
 
     def __init__(self):
         super(DeenPluginBlake2b, self).__init__()
@@ -37,6 +39,8 @@ class DeenPluginBlake2b(DeenPlugin):
 class DeenPluginBlake2s(DeenPlugin):
     name = 'blake2s'
     display_name = 'BLAKE2s'
+    cmd_name = 'blake2s'
+    cmd_help = 'Hash data with BLAKE2s'
 
     def __init__(self):
         super(DeenPluginBlake2s, self).__init__()

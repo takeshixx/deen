@@ -6,6 +6,8 @@ from .. import DeenPlugin
 class DeenPluginBzip2(DeenPlugin):
     name = 'bzip2'
     display_name = 'bzip2'
+    cmd_name = 'bzip2'
+    cmd_help='bzip2 compress/decompress data'
 
     def __init__(self):
         super(DeenPluginBzip2, self).__init__()

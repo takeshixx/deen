@@ -7,6 +7,8 @@ from .. import DeenPlugin
 class DeenPluginXmlFormatter(DeenPlugin):
     name = 'xml_formatter'
     display_name = 'XML (f)'
+    cmd_name = 'xml-format'
+    cmd_help = 'Reformat XML data'
 
     def __init__(self):
         super(DeenPluginXmlFormatter, self).__init__()

@@ -6,6 +6,8 @@ from .. import DeenPlugin
 class DeenPluginMysql(DeenPlugin):
     name = 'mysql'
     display_name = 'MySQL'
+    cmd_name = 'mysql'
+    cmd_help = 'Hash password with MySQL hash'
 
     def __init__(self):
         super(DeenPluginMysql, self).__init__()

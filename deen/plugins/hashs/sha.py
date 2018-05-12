@@ -12,6 +12,8 @@ __all__ = ['DeenPluginSha1',
 class DeenPluginSha1(DeenPlugin):
     name = 'sha1'
     display_name = 'SHA1'
+    cmd_name = 'sha1'
+    cmd_help = 'Hash data with SHA1'
 
     def __init__(self):
         super(DeenPluginSha1, self).__init__()
@@ -30,6 +32,8 @@ class DeenPluginSha1(DeenPlugin):
 class DeenPluginSha224(DeenPlugin):
     name = 'sha224'
     display_name = 'SHA224'
+    cmd_name = 'sha224'
+    cmd_help = 'Hash data with SHA224'
 
     def __init__(self):
         super(DeenPluginSha224, self).__init__()
@@ -48,6 +52,8 @@ class DeenPluginSha224(DeenPlugin):
 class DeenPluginSha256(DeenPlugin):
     name = 'sha256'
     display_name = 'SHA256'
+    cmd_name = 'sha256'
+    cmd_help = 'Hash data with SHA256'
 
     def __init__(self):
         super(DeenPluginSha256, self).__init__()
@@ -66,6 +72,8 @@ class DeenPluginSha256(DeenPlugin):
 class DeenPluginSha384(DeenPlugin):
     name = 'sha384'
     display_name = 'SHA384'
+    cmd_name = 'sha384'
+    cmd_help = 'Hash data with SHA384'
 
     def __init__(self):
         super(DeenPluginSha384, self).__init__()
@@ -84,6 +92,8 @@ class DeenPluginSha384(DeenPlugin):
 class DeenPluginSha512(DeenPlugin):
     name = 'sha512'
     display_name = 'SHA512'
+    cmd_name = 'sha512'
+    cmd_help = 'Hash data with SHA512'
 
     def __init__(self):
         super(DeenPluginSha512, self).__init__()

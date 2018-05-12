@@ -17,6 +17,8 @@ from .. import DeenPlugin
 class DeenPluginHtml(DeenPlugin):
     name = 'html'
     display_name = 'HTML'
+    cmd_name = 'html'
+    cmd_help='HTML encode/decode data'
 
     def __init__(self):
         super(DeenPluginHtml, self).__init__()

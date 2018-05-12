@@ -23,6 +23,7 @@ LOGGER = logging.getLogger(__name__)
 class EncoderWidget(QWidget):
     def __init__(self, parent):
         super(EncoderWidget, self).__init__(parent)
+        self.parent = parent
         self.widgets = []
         self.widgets.append(DeenWidget(self))
         self.encoder_layout = QVBoxLayout(self)
@@ -40,7 +41,6 @@ class EncoderWidget(QWidget):
 class DeenWidget(QWidget):
     def __init__(self, parent, readonly=False, enable_actions=True):
         super(DeenWidget, self).__init__(parent)
-        self.plugins = DeenPluginLoader()
         self.parent = parent
         self.readonly = readonly
         self.current_pick = None
@@ -298,49 +298,49 @@ class DeenWidget(QWidget):
         self.encoding_combo = QComboBox(self)
         self.encoding_combo.addItem('Encode')
         self.encoding_combo.model().item(0).setEnabled(False)
-        for encoding in [p[1].display_name for p in self.plugins.codecs]:
+        for encoding in [p[1].display_name for p in self.parent.parent.plugins.codecs]:
             self.encoding_combo.addItem(encoding)
         self.encoding_combo.currentIndexChanged.connect(lambda: self.action(self.encoding_combo))
 
         self.decoding_combo = QComboBox(self)
         self.decoding_combo.addItem('Decode')
         self.decoding_combo.model().item(0).setEnabled(False)
-        for encoding in [p[1].display_name for p in self.plugins.codecs]:
+        for encoding in [p[1].display_name for p in self.parent.parent.plugins.codecs]:
             self.decoding_combo.addItem(encoding)
         self.decoding_combo.currentIndexChanged.connect(lambda: self.action(self.decoding_combo))
 
         self.compress_combo = QComboBox(self)
         self.compress_combo.addItem('Compress')
         self.compress_combo.model().item(0).setEnabled(False)
-        for compression in [p[1].display_name for p in self.plugins.compressions]:
+        for compression in [p[1].display_name for p in self.parent.parent.plugins.compressions]:
             self.compress_combo.addItem(compression)
         self.compress_combo.currentIndexChanged.connect(lambda: self.action(self.compress_combo))
 
         self.uncompress_combo = QComboBox(self)
         self.uncompress_combo.addItem('Uncompress')
         self.uncompress_combo.model().item(0).setEnabled(False)
-        for compression in [p[1].display_name for p in self.plugins.compressions]:
+        for compression in [p[1].display_name for p in self.parent.parent.plugins.compressions]:
             self.uncompress_combo.addItem(compression)
         self.uncompress_combo.currentIndexChanged.connect(lambda: self.action(self.uncompress_combo))
 
         self.hash_combo = QComboBox(self)
         self.hash_combo.addItem('Hash')
         self.hash_combo.model().item(0).setEnabled(False)
-        for hash in [p[1].display_name for p in self.plugins.hashs]:
+        for hash in [p[1].display_name for p in self.parent.parent.plugins.hashs]:
             self.hash_combo.addItem(hash)
         self.hash_combo.currentIndexChanged.connect(lambda: self.action(self.hash_combo))
 
         self.misc_combo = QComboBox(self)
         self.misc_combo.addItem('Miscellaneous')
         self.misc_combo.model().item(0).setEnabled(False)
-        for misc in [p[1].display_name for p in self.plugins.misc]:
+        for misc in [p[1].display_name for p in self.parent.parent.plugins.misc]:
             self.misc_combo.addItem(misc)
         self.misc_combo.currentIndexChanged.connect(lambda: self.action(self.misc_combo))
 
         self.format_combo = QComboBox(self)
         self.format_combo.addItem('Format')
         self.format_combo.model().item(0).setEnabled(False)
-        for formatter in [p[1].display_name for p in self.plugins.formatters]:
+        for formatter in [p[1].display_name for p in self.parent.parent.plugins.formatters]:
             self.format_combo.addItem(formatter)
         self.format_combo.currentIndexChanged.connect(lambda: self.action(self.format_combo))
 
@@ -462,11 +462,11 @@ class DeenWidget(QWidget):
             self.current_combo = combo
             self.current_pick = combo.currentText()
         if self._content:
-            if not self.plugins.plugin_available(self.current_pick):
+            if not self.parent.parent.plugins.plugin_available(self.current_pick):
                 LOGGER.warn('Pluging {} not found'.format(self.current_pick))
                 return
             else:
-                plugin = self.plugins.get_plugin_instance(self.current_pick)
+                plugin = self.parent.parent.plugins.get_plugin_instance(self.current_pick)
             combo_choice = self.current_combo.model().item(0).text()
             if combo_choice == 'Format':
                 data = plugin.process(self._content)

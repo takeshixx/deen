@@ -7,6 +7,8 @@ from .. import DeenPlugin
 class DeenPluginUnixTimestamp(DeenPlugin):
     name = 'unix_timestamp'
     display_name = 'UNIX Timestamp'
+    cmd_name = 'unix-timestamp'
+    cmd_help='Convert UNIX timestamps'
 
     def __init__(self):
         super(DeenPluginUnixTimestamp, self).__init__()

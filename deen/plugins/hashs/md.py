@@ -9,6 +9,8 @@ __all__ = ['DeenPluginMd4',
 class DeenPluginMd4(DeenPlugin):
     name = 'md4'
     display_name = 'MD4'
+    cmd_name = 'md4'
+    cmd_help = 'Hash data with MD4'
 
     def __init__(self):
         super(DeenPluginMd4, self).__init__()
@@ -27,6 +29,8 @@ class DeenPluginMd4(DeenPlugin):
 class DeenPluginMd5(DeenPlugin):
     name = 'md5'
     display_name = 'MD5'
+    cmd_name = 'md5'
+    cmd_help = 'Hash data with MD5'
 
     def __init__(self):
         super(DeenPluginMd5, self).__init__()

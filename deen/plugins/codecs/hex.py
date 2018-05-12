@@ -7,6 +7,8 @@ from .. import DeenPlugin
 class DeenPluginHex(DeenPlugin):
     name = 'hex'
     display_name = 'Hex'
+    cmd_name = 'hex'
+    cmd_help='Hex encode/decode data'
 
     def __init__(self):
         super(DeenPluginHex, self).__init__()

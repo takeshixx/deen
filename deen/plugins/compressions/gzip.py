@@ -7,6 +7,8 @@ from .. import DeenPlugin
 class DeenPluginGzip(DeenPlugin):
     name = 'gzip'
     display_name = 'gzip'
+    cmd_name = 'gzip'
+    cmd_help='gzip compress/decompress data'
 
     def __init__(self):
         super(DeenPluginGzip, self).__init__()

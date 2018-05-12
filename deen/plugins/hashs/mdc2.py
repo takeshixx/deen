@@ -6,6 +6,8 @@ from .. import DeenPlugin
 class DeenPluginMdc2(DeenPlugin):
     name = 'mdc2'
     display_name = 'MDC-2'
+    cmd_name = 'mdc2'
+    cmd_help = 'Hash data with MDC-2'
 
     def __init__(self):
         super(DeenPluginMdc2, self).__init__()

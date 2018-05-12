@@ -7,6 +7,8 @@ from .. import DeenPlugin
 class DeenPluginJsonFormatter(DeenPlugin):
     name = 'json_formatter'
     display_name = 'JSON (f)'
+    cmd_name = 'json-format'
+    cmd_help = 'Reformat JSON data'
 
     def __init__(self):
         super(DeenPluginJsonFormatter, self).__init__()

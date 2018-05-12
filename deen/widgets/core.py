@@ -10,10 +10,11 @@ from deen.widgets.log import DeenLogger, DeenStatusConsole
 LOGGER = logging.getLogger(__name__)
 
 class Deen(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, plugins=None):
         super(Deen, self).__init__(parent)
         self.create_menubar()
         self.resize(800, 600)
+        self.plugins = plugins
         self.encoder_widget = EncoderWidget(self)
         self.encoder_widget.setGeometry(QRect(0, 0, 1112, 932))
         self.main_scrollable = QScrollArea(self)

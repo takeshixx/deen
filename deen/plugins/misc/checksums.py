@@ -10,6 +10,8 @@ __all__ = ['DeenPluginCrc32',
 class DeenPluginCrc32(DeenPlugin):
     name = 'crc32'
     display_name = 'CRC32'
+    cmd_name = 'crc32'
+    cmd_help = 'Calculate CRC32 checksum of data'
 
     def __init__(self):
         super(DeenPluginCrc32, self).__init__()
@@ -27,6 +29,8 @@ class DeenPluginCrc32(DeenPlugin):
 class DeenPluginAdler32(DeenPlugin):
     name = 'adler32'
     display_name = 'Adler-32'
+    cmd_name = 'adler32'
+    cmd_help = 'Calculate Adler-32 checksum of data'
 
     def __init__(self):
         super(DeenPluginAdler32, self).__init__()

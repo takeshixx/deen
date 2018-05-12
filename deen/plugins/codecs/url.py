@@ -11,6 +11,8 @@ from .. import DeenPlugin
 class DeenPluginUrl(DeenPlugin):
     name = 'url'
     display_name = 'URL'
+    cmd_name = 'url'
+    cmd_help='URL encode/decode data'
 
     def __init__(self):
         super(DeenPluginUrl, self).__init__()

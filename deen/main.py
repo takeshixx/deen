@@ -8,30 +8,37 @@ from deen.loader import DeenPluginLoader
 ICON = os.path.dirname(os.path.abspath(__file__)) + '/media/icon.png'
 LOGGER = logging.getLogger()
 VERBOSE_FORMAT = '[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s'
-
 EPILOG = """examples:
   open a file in the deen GUI:
     $ deen /bin/ls
     
   open file from STDIN in deen GUI:
     $ cat /bin/ls | deen -
-
+    
   base64 encode a string:
     $ deen -b base64 -d admin:admin
+    YWRtaW46YWRtaW4=
+
+  base64 encode a string with subcommand:
+    $ deen base64 admin:admin
     YWRtaW46YWRtaW4=
     
   decode Base64 string:
     $ deen -b base64 -r -d YWRtaW46YWRtaW4=
     admin:admin
     
+  decode Base64 string with subcommand:
+    $ deen base64 -r YWRtaW46YWRtaW4=
+    admin:admin
+    
   calculate the SHA256 hash of file:
-    $ deen -p sha256 /bin/ls
+    $ deen sha256 /bin/ls
     df285ab34ad10d8b641e65f39fa11a7d5b44571a37f94314debbfe7233021755
 """
 
 ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.',
                                formatter_class=argparse.RawDescriptionHelpFormatter, epilog=EPILOG)
-ARGS.add_argument('infile', nargs='?', default=None,
+ARGS.add_argument('-f', '--file', dest='infile', default=None,
                   help="file name or - for STDIN")
 ARGS.add_argument('-l', '--list', action='store_true', dest='list',
                   default=False, help='list available plugins')
@@ -46,57 +53,47 @@ ARGS.add_argument('-n', '--no-new-line', action='store_true', dest='nonewline',
 ARGS.add_argument('-v', '--verbose', action='count', dest='level',
                   default=0, help='verbose logging (repeat for more verbosity)')
 
+
 def main():
+    pl = DeenPluginLoader(argparser=ARGS)
     args = ARGS.parse_args()
-    pl = DeenPluginLoader()
-    content = None
-    if args.infile:
-        try:
-            if args.infile == '-':
-                try:
-                    stdin = sys.stdin.buffer
-                except AttributeError:
-                    stdin = sys.stdin
-                content = stdin.read()
-            else:
-                with open(args.infile, 'rb') as f:
-                    content = f.read()
-        except KeyboardInterrupt:
-            return
-    elif args.data:
-        content = bytearray(args.data, 'utf8')
-    if any([args.list, args.plugin]):
+    content = pl.read_content_from_args()
+    if args.list:
+        print(pl.pprint_available_plugins())
+    elif any([args.plugin_cmd, args.plugin]):
         # We are in command line mode
         log_format = VERBOSE_FORMAT if args.level > 0 else '%(message)s'
         levels = [logging.WARN, logging.DEBUG]
         logging.basicConfig(level=levels[min(args.level, len(levels) - 1)], format=log_format)
-        if args.list:
-            print(pl.pprint_available_plugins())
-            return
-        if not content:
-            LOGGER.error('Please provide a file or pipe into STDIN')
-            sys.exit(1)
+        if args.plugin_cmd:
+            if not pl.get_plugin_cmd_available(args.plugin_cmd):
+                LOGGER.error('Plugin cmd not available')
+                sys.exit(1)
+            plugin = pl.get_plugin_instance(args.plugin_cmd)
+            plugin.content = content
+            processed = plugin.process_cli(args)
+            if not processed:
+                LOGGER.error('Plugin {} did not return any data'.format(plugin.cmd_name))
+                sys.exit(1)
+        else:
+            if not pl.plugin_available(args.plugin):
+                LOGGER.error('Plugin not available')
+                sys.exit(1)
+            plugin = pl.get_plugin_instance(args.plugin)
+            if not args.revert:
+                processed = plugin.process(content)
+            else:
+                unprocess_func = getattr(plugin, 'unprocess', None)
+                if not unprocess_func or not callable(unprocess_func):
+                    LOGGER.error('Plugin cannot unprocess data')
+                    sys.exit(1)
+                processed = plugin.unprocess(content)
         try:
             # Python 3
             stdout = sys.stdout.buffer
         except AttributeError:
             # Python 2
             stdout = sys.stdout
-        if not args.plugin:
-            LOGGER.error('No plugin supplied')
-            sys.exit(1)
-        if not pl.plugin_available(args.plugin):
-            LOGGER.error('Plugin not available')
-            sys.exit(1)
-        plugin = pl.get_plugin_instance(args.plugin)
-        if not args.revert:
-            processed = plugin.process(content)
-        else:
-            unprocess_func = getattr(plugin, 'unprocess', None)
-            if not unprocess_func or not callable(unprocess_func):
-                LOGGER.error('Plugin cannot unprocess data')
-                sys.exit(1)
-            processed = plugin.unprocess(content)
         stdout.write(processed)
         if not args.nonewline:
             stdout.write(b'\n')
@@ -109,7 +106,7 @@ def main():
         from deen.widgets.core import Deen
         logging.basicConfig(format=VERBOSE_FORMAT)
         app = QApplication(sys.argv)
-        ex = Deen()
+        ex = Deen(plugins=pl)
         if content:
             # GUI mode also supports input files and
             # content via STDIN.

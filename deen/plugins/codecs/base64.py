@@ -14,6 +14,8 @@ class DeenPluginBase64(DeenPlugin):
     name = 'base64'
     display_name = 'Base64'
     aliases = ['b64']
+    cmd_name = 'base64'
+    cmd_help = 'Base64 encode/decode data'
 
     def __init__(self):
         super(DeenPluginBase64, self).__init__()
@@ -43,12 +45,11 @@ class DeenPluginBase64(DeenPlugin):
 
 
 class DeenPluginBase64Url(DeenPlugin):
-    name = 'base64'
+    name = 'base64url'
     display_name = 'Base64 URL'
-    aliases = ['base64-url',
-               'base64url',
-               'b64-url',
-               'b64url']
+    aliases = ['b64url']
+    cmd_name = 'base64url'
+    cmd_help='Base64 URL encode/decode data'
 
     def __init__(self):
         super(DeenPluginBase64Url, self).__init__()
@@ -77,6 +78,8 @@ class DeenPluginBase32(DeenPlugin):
     name = 'base32'
     display_name = 'Base32'
     aliases = ['b32']
+    cmd_name = 'base32'
+    cmd_help='Base32 encode/decode data'
 
     def __init__(self):
         super(DeenPluginBase32, self).__init__()
@@ -105,6 +108,8 @@ class DeenPluginBase85(DeenPlugin):
     name = 'base85'
     display_name = 'Base85'
     aliases = ['b85']
+    cmd_name = 'base85'
+    cmd_help='Base85 encode/decode data'
 
     def __init__(self):
         super(DeenPluginBase85, self).__init__()

@@ -6,6 +6,8 @@ from .. import DeenPlugin
 class DeenPluginRot13(DeenPlugin):
     name = 'rot13'
     display_name = 'Rot13'
+    cmd_name = 'rot13'
+    cmd_help='Rot13 encode/decode data'
 
     def __init__(self):
         super(DeenPluginRot13, self).__init__()

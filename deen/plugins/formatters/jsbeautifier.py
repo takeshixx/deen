@@ -15,6 +15,8 @@ LOGGER = logging.getLogger(__name__)
 class DeenPluginJsBeautifierFormatter(DeenPlugin):
     name = 'jsbeautifier_formatter'
     display_name = 'JS Beautifier (f)'
+    cmd_name = 'jsbeautifier-format'
+    cmd_help = 'Deobfuscate JavaScript code with JS Beautifier'
 
     def __init__(self):
         super(DeenPluginJsBeautifierFormatter, self).__init__()
