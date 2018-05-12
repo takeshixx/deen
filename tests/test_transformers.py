@@ -423,7 +423,6 @@ class TestTransformers(unittest.TestCase):
         self.assertRaises(TypeError, functools.partial(
             plugin.unprocess, data_str), 'Unexpected exception raised')
 
-
     def test_compress_bz2(self):
         data_bytes = self._random_bytes()
         encoded_bytes = codecs.encode(data_bytes, 'bz2')
@@ -548,7 +547,7 @@ class TestTransformers(unittest.TestCase):
             else:
                 self.fail('Invalid certificate does not raise TransformException!')
         self.assertIsNone(plugin.error)
-        
+
     def test_format_xml(self):
         doc = (b'<?xml version="1.0" encoding="UTF-8"?><note>'
                b'<to>Tove</to><from>Jani</from><heading>Reminder'
@@ -636,7 +635,6 @@ class TestTransformers(unittest.TestCase):
         except Exception as e:
             self.fail(e)
         self.assertIsNotNone(plugin.error)
-
 
 
 if __name__ == '__main__':
