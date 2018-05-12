@@ -14,7 +14,6 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QVBoxLa
 
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
-from deen.loader import DeenPluginLoader
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
 LOGGER = logging.getLogger(__name__)
@@ -298,49 +297,63 @@ class DeenWidget(QWidget):
         self.encoding_combo = QComboBox(self)
         self.encoding_combo.addItem('Encode')
         self.encoding_combo.model().item(0).setEnabled(False)
-        for encoding in [p[1].display_name for p in self.parent.parent.plugins.codecs]:
+        for encoding in [p[1].display_name for p in self.parent.parent.plugins.codecs
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.encoding_combo.addItem(encoding)
         self.encoding_combo.currentIndexChanged.connect(lambda: self.action(self.encoding_combo))
 
         self.decoding_combo = QComboBox(self)
         self.decoding_combo.addItem('Decode')
         self.decoding_combo.model().item(0).setEnabled(False)
-        for encoding in [p[1].display_name for p in self.parent.parent.plugins.codecs]:
+        for encoding in [p[1].display_name for p in self.parent.parent.plugins.codecs
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.decoding_combo.addItem(encoding)
         self.decoding_combo.currentIndexChanged.connect(lambda: self.action(self.decoding_combo))
 
         self.compress_combo = QComboBox(self)
         self.compress_combo.addItem('Compress')
         self.compress_combo.model().item(0).setEnabled(False)
-        for compression in [p[1].display_name for p in self.parent.parent.plugins.compressions]:
+        for compression in [p[1].display_name for p in self.parent.parent.plugins.compressions
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.compress_combo.addItem(compression)
         self.compress_combo.currentIndexChanged.connect(lambda: self.action(self.compress_combo))
 
         self.uncompress_combo = QComboBox(self)
         self.uncompress_combo.addItem('Uncompress')
         self.uncompress_combo.model().item(0).setEnabled(False)
-        for compression in [p[1].display_name for p in self.parent.parent.plugins.compressions]:
+        for compression in [p[1].display_name for p in self.parent.parent.plugins.compressions
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.uncompress_combo.addItem(compression)
         self.uncompress_combo.currentIndexChanged.connect(lambda: self.action(self.uncompress_combo))
 
         self.hash_combo = QComboBox(self)
         self.hash_combo.addItem('Hash')
         self.hash_combo.model().item(0).setEnabled(False)
-        for hash in [p[1].display_name for p in self.parent.parent.plugins.hashs]:
+        for hash in [p[1].display_name for p in self.parent.parent.plugins.hashs
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.hash_combo.addItem(hash)
         self.hash_combo.currentIndexChanged.connect(lambda: self.action(self.hash_combo))
 
         self.misc_combo = QComboBox(self)
         self.misc_combo.addItem('Miscellaneous')
         self.misc_combo.model().item(0).setEnabled(False)
-        for misc in [p[1].display_name for p in self.parent.parent.plugins.misc]:
+        for misc in [p[1].display_name for p in self.parent.parent.plugins.misc
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.misc_combo.addItem(misc)
         self.misc_combo.currentIndexChanged.connect(lambda: self.action(self.misc_combo))
 
         self.format_combo = QComboBox(self)
         self.format_combo.addItem('Format')
         self.format_combo.model().item(0).setEnabled(False)
-        for formatter in [p[1].display_name for p in self.parent.parent.plugins.formatters]:
+        for formatter in [p[1].display_name for p in self.parent.parent.plugins.formatters
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.format_combo.addItem(formatter)
         self.format_combo.currentIndexChanged.connect(lambda: self.action(self.format_combo))
 

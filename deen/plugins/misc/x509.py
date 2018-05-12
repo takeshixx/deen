@@ -96,6 +96,7 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
     cmd_name = 'x509certificatecloner'
     cmd_help = ('Clone X.509 certificates with a'
                 'randomly generated RSA public key')
+    cmd_only = True
 
     def __init__(self):
         super(DeenPluginX509CertificateCloner, self).__init__()
