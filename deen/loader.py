@@ -57,13 +57,14 @@ class DeenPluginLoader(object):
                 if c[0].startswith('DeenPlugin') and \
                         len(c[0].replace('DeenPlugin', '')) != 0:
                     if c[1].prerequisites():
-                        if getattr(c[1], 'cmd_name', None) and c[1].cmd_name and \
-                                getattr(c[1], 'cmd_help', None) and c[1].cmd_help:
-                            add_argparser_func = getattr(c[1], 'add_argparser', None)
-                            if not self._subargparser and self._argparser:
-                                self._subargparser = self._argparser.add_subparsers(dest='plugin_cmd')
-                            add_argparser_func(self._subargparser, c[1].cmd_name,
-                                               c[1].cmd_help, c[1].aliases)
+                        if self.argparser:
+                            if getattr(c[1], 'cmd_name', None) and c[1].cmd_name and \
+                                    getattr(c[1], 'cmd_help', None) and c[1].cmd_help:
+                                add_argparser_func = getattr(c[1], 'add_argparser', None)
+                                if not self._subargparser and self._argparser:
+                                    self._subargparser = self._argparser.add_subparsers(dest='plugin_cmd')
+                                add_argparser_func(self._subargparser, c[1].cmd_name,
+                                                   c[1].cmd_help, c[1].aliases)
                         output.append(c)
         else:
             return output

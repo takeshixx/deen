@@ -10,15 +10,15 @@ import base64
 
 from PyQt5.QtWidgets import QApplication
 
-from deen.constants import *
 from deen.widgets.core import Deen
+from deen.loader import DeenPluginLoader
 
 app = QApplication(sys.argv)
 
 
 class TestGui(unittest.TestCase):
     def setUp(self):
-        self.deen = Deen()
+        self.deen = Deen(plugins=DeenPluginLoader())
         # The list of sub-widgets
         self.widgets = self.deen.encoder_widget.widgets
 
