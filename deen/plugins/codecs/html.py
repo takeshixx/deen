@@ -3,7 +3,6 @@ from __future__ import absolute_import
 try:
     # Python 3
     import html
-    print(html)
     html_encode = html.escape
     html_decode = html.unescape
 except ImportError:
