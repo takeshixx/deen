@@ -69,7 +69,7 @@ def main():
             if not pl.get_plugin_cmd_available(args.plugin_cmd):
                 LOGGER.error('Plugin cmd not available')
                 sys.exit(1)
-            plugin = pl.get_plugin_instance(args.plugin_cmd)
+            plugin = pl.get_plugin_cmd_name_instance(args.plugin_cmd)
             plugin.content = content
             processed = plugin.process_cli(args)
             if not processed:
