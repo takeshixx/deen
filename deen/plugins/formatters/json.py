@@ -1,5 +1,4 @@
 import json
-import pprint
 
 from .. import DeenPlugin
 
@@ -20,5 +19,7 @@ class DeenPluginJsonFormatter(DeenPlugin):
         except (json.JSONDecodeError, TypeError) as e:
             self.error = e
             return
-        data = pprint.pformat(data).encode()
+        data = json.dumps(data, sort_keys=True,
+                          indent=4, separators=(',', ': '))
+        data = data.encode()
         return data
