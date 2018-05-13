@@ -74,7 +74,9 @@ def main():
             processed = plugin.process_cli(args)
             if not processed:
                 if plugin.error:
-                    LOGGER.exception(plugin.error)
+                    LOGGER.error(('An error occurred during plugin'
+                                  'execution (use -v for more information)'))
+                    LOGGER.debug(plugin.error)
                 else:
                     LOGGER.error('Plugin {} did not return any data'.format(plugin.cmd_name))
                 sys.exit(1)
