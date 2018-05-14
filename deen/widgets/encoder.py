@@ -44,7 +44,7 @@ class DeenWidget(QWidget):
         self.readonly = readonly
         self.current_pick = None
         self.current_combo = None
-        # assume dark theme if background color is below 50% brightness
+        # Assume dark theme if background color is below 50% brightness.
         back_color = self.palette().color(self.backgroundRole())
         self.is_dark = back_color.value() < 128
         self.text_field = TextViewWidget(self, readonly=self.readonly)
@@ -462,11 +462,11 @@ class DeenWidget(QWidget):
             self.parent.widgets.pop()
 
     def action(self, combo=None):
-        """The main function that is responsible for calling transformers
-        on input data. It will use self._content as source and puts the
-        result of each transformer into the next widget in line via the
-        self.set_content_next() function."""
-        error = None
+        """The main function that is responsible for calling plugins
+        on input data. It will use self._content as source and puts
+        the result of each plugin into the next widget in line via
+        the self.set_content_next() function. (except for formatters,
+        which will write their output into the same window)"""
         if not self._content:
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
         if combo:
@@ -476,12 +476,13 @@ class DeenWidget(QWidget):
             self.current_pick = combo.currentText()
         if self._content:
             if not self.parent.parent.plugins.plugin_available(self.current_pick):
-                LOGGER.warn('Pluging {} not found'.format(self.current_pick))
+                LOGGER.warning('Pluging {} not found'.format(self.current_pick))
                 return
             else:
                 plugin = self.parent.parent.plugins.get_plugin_instance(self.current_pick)
             combo_choice = self.current_combo.model().item(0).text()
             if combo_choice == 'Format':
+                # Formatters format data in the current window (self)
                 data = plugin.process(self._content)
                 self.formatted_view = True
                 self.text_field.setPlainText(
@@ -493,23 +494,19 @@ class DeenWidget(QWidget):
                     self.set_error_message(str(plugin.error))
                 else:
                     self.clear_error_message()
-            elif combo_choice == 'Encode' or combo_choice == 'Compress' or \
-                            combo_choice == 'Hash' or combo_choice == 'Miscellaneous':
-                data = plugin.process(self._content)
+            else:
+                # All other plugins will write their output to a new
+                # window (self.next).
+                if combo_choice == 'Encode' or combo_choice == 'Compress' or \
+                        combo_choice == 'Hash' or combo_choice == 'Miscellaneous':
+                    data = plugin.process(self._content)
+                elif combo_choice == 'Decode' or combo_choice == 'Uncompress':
+                    data = plugin.unprocess(self._content)
                 if plugin.error:
                     LOGGER.error(plugin.error)
                     self.next.set_error()
                     self.next.set_error_message(str(plugin.error))
                 self.next.content = data
-            elif combo_choice == 'Decode' or combo_choice == 'Uncompress':
-                data = plugin.unprocess(self._content)
-                if plugin.error:
-                    LOGGER.error(plugin.error)
-                    self.next.set_error()
-                    self.next.set_error_message(str(plugin.error))
-                self.next.content = data
-
-            if self.current_combo.model().item(0).text() != 'Format':
                 if self.next.text_field.isReadOnly() and self.current_pick:
                     self.next.codec_field.setText('Transformer: ' + self.current_pick)
                     self.next.codec_field.show()

@@ -26,6 +26,6 @@ class DeenPluginUuencode(DeenPlugin):
         super(DeenPluginUuencode, self).unprocess(data)
         try:
             data = codecs.decode(data, 'uu')
-        except (binascii.Error, TypeError) as e:
+        except ValueError as e:
             self.error = e
         return data

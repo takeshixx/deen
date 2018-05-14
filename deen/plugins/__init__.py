@@ -63,9 +63,18 @@ class DeenPlugin(object):
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+        """This function allows plugins to add subcommands
+        to argparse in order to be used via a seperate
+        command/alias on the CLI.
+
+        :param argparser: a ArgParser object
+        :param cmd_name: a plugin's cmd_name class variable
+        :param cmd_help: a plugin's cmd_help class variable
+        :param cmd_aliases: a plugin's cmd_aliases class variable
+        """
         if not cmd_aliases:
             cmd_aliases = []
-        # Python 2 argparse does not support aliases
+        # Note: Python 2 argparse does not support aliases.
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 2):
@@ -82,7 +91,11 @@ class DeenPlugin(object):
     def process_cli(self, args):
         """Do whatever the CLI cmd should do. The args
         argument is the return of parse_args(). Must
-        return the processed data."""
+        return the processed data.
+
+        :param args: the output of argparse.parse_args()
+        :return: the return of either process() or unprocess()
+        """
         if not self.content:
             if not args.plugindata:
                 if not args.plugininfile:
@@ -99,6 +112,13 @@ class DeenPlugin(object):
             return self.unprocess(self.content)
 
     def read_content_from_file(self, file):
+        """If file is a filename, it will read and
+        return it's content. If file is '-', read
+        from STDIN instead of a file.
+
+        :param file: filename of '-' for STDIN
+        :return: content of filename or data from STDIN
+        """
         try:
             if file == '-':
                 try:
@@ -112,3 +132,21 @@ class DeenPlugin(object):
         except KeyboardInterrupt:
             return
         return content
+
+    def write_to_stdout(self, data, nonewline=False):
+        """Write processed data to STDOUT. It takes
+        care of whether it's running in Pyton 2 or 3
+        to properly write bytes to STDOUT.
+
+        :param data: data to be written to STDOUT
+        :param nonewline: if True, omit newline at the end
+        """
+        try:
+            # Python 3
+            stdout = sys.stdout.buffer
+        except AttributeError:
+            # Python 2
+            stdout = sys.stdout
+        stdout.write(data)
+        if not nonewline:
+            stdout.write(b'\n')

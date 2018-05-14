@@ -66,21 +66,15 @@ def main():
         levels = [logging.WARN, logging.DEBUG]
         logging.basicConfig(level=levels[min(args.level, len(levels) - 1)], format=log_format)
         if args.plugin_cmd:
+            # Run subcommands
             if not pl.get_plugin_cmd_available(args.plugin_cmd):
                 LOGGER.error('Plugin cmd not available')
                 sys.exit(1)
             plugin = pl.get_plugin_cmd_name_instance(args.plugin_cmd)
             plugin.content = content
             processed = plugin.process_cli(args)
-            if not processed:
-                if plugin.error:
-                    LOGGER.error(('An error occurred during plugin'
-                                  'execution (use -v for more information)'))
-                    LOGGER.debug(plugin.error)
-                else:
-                    LOGGER.error('Plugin {} did not return any data'.format(plugin.cmd_name))
-                sys.exit(1)
         else:
+            # Use plugins via -p/--plugin
             if not pl.plugin_available(args.plugin):
                 LOGGER.error('Plugin not available')
                 sys.exit(1)
@@ -93,15 +87,15 @@ def main():
                     LOGGER.error('Plugin cannot unprocess data')
                     sys.exit(1)
                 processed = plugin.unprocess(content)
-        try:
-            # Python 3
-            stdout = sys.stdout.buffer
-        except AttributeError:
-            # Python 2
-            stdout = sys.stdout
-        stdout.write(processed)
-        if not args.nonewline:
-            stdout.write(b'\n')
+        if not processed:
+            if plugin.error:
+                LOGGER.error(('An error occurred during plugin'
+                              'execution (use -v for more information)'))
+                LOGGER.debug(plugin.error)
+            else:
+                LOGGER.error('Plugin {} did not return any data'.format(plugin.cmd_name))
+            sys.exit(1)
+        plugin.write_to_stdout(processed)
     else:
         # We are in GUI mode
         # Import GUI related modules only in GUI
