@@ -108,7 +108,7 @@ class HexViewWidget(QTableWidget):
         offset = row * self._bytes_per_line
         if col != self.columnCount() - 1:  # hex part
             text = text.strip()
-            fmt = "{{:>0{}}}".format(self._width * 2)
+            fmt = '{{:>0{}}}'.format(self._width * 2)
             text = fmt.format(text)
             if len(text) != self._width * 2:
                 reset_hex_text(orig_data)

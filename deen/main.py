@@ -39,7 +39,7 @@ EPILOG = """examples:
 ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.',
                                formatter_class=argparse.RawDescriptionHelpFormatter, epilog=EPILOG)
 ARGS.add_argument('-f', '--file', dest='infile', default=None,
-                  help="file name or - for STDIN")
+                  help='file name or - for STDIN')
 ARGS.add_argument('-l', '--list', action='store_true', dest='list',
                   default=False, help='list available plugins')
 ARGS.add_argument('-p', '--plugin', action='store', dest='plugin',

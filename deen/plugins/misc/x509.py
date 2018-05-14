@@ -26,6 +26,7 @@ class DeenPluginX509Certificate(DeenPlugin):
 
     def __init__(self):
         super(DeenPluginX509Certificate, self).__init__()
+        self._certificate = None
 
     @staticmethod
     def prerequisites():
@@ -66,15 +67,18 @@ class DeenPluginX509Certificate(DeenPlugin):
         if not '-----END CERTIFICATE-----' in data:
             LOGGER.warning('Missing certificate suffix')
             data = data + '\n-----END CERTIFICATE-----'
-        self._certificate = OpenSSL.crypto.load_certificate(
-            OpenSSL.crypto.FILETYPE_PEM, data)
+        try:
+            self._certificate = OpenSSL.crypto.load_certificate(
+                OpenSSL.crypto.FILETYPE_PEM, data)
+        except OpenSSL.crypto.Error:
+            return
 
     def process(self, data):
         super(DeenPluginX509Certificate, self).process(data)
         self.certificate = data
         if not self._certificate:
-            self.error = TransformException('Invalid certificate')
-            return
+            LOGGER.error('Invalid certificate')
+            sys.exit(1)
         if OPENSSL and self._certificate is not None:
             out = bytearray()
             out.extend(OpenSSL.crypto.dump_certificate(
@@ -127,8 +131,8 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
                                           help=DeenPluginX509CertificateCloner.cmd_help,
                                           aliases=DeenPluginX509CertificateCloner.aliases)
         parser.add_argument('CERT_TO_CLONE')
-        parser.add_argument('-o', '--out', help="name of output files (w/o extension)", default="cloned_cert")
-        parser.add_argument('-a', '--signature-algorithm', help="hash algorithm for signature", default=None,
+        parser.add_argument('-o', '--out', help='name of output files (w/o extension)', default='cloned_cert')
+        parser.add_argument('-a', '--signature-algorithm', help='hash algorithm for signature', default=None,
                             type=str.lower)
         xor = parser.add_mutually_exclusive_group(required=True)
         xor.add_argument('-s', '--self-signed', action='store_true', dest='self_signed')
@@ -142,22 +146,34 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         if (args.CA_CERT and not args.CA_KEY) or (not args.CA_CERT and args.CA_KEY):
             LOGGER.error('CA_CERT and CA_KEY required')
             sys.exit(1)
-        with open(args.CERT_TO_CLONE) as f:
+        with open(args.CERT_TO_CLONE, 'rb') as f:
             original_cert = f.read()
-        original_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, original_cert)
+        try:
+            original_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, original_cert)
+        except OpenSSL.crypto.Error:
+            LOGGER.error('Invalid certificate '+ args.CERT_TO_CLONE)
+            sys.exit(1)
         if args.signature_algorithm:
             signature_algo = args.signature_algorithm
         else:
             signature_algo = original_cert.get_signature_algorithm().decode()
         new_cert, new_key = self._clone(original_cert, args.self_signed, args.out, signature_algo)
         if args.CA_CERT:
-            with open(args.CA_CERT) as f:
+            with open(args.CA_CERT, 'rb') as f:
                 ca_cert = f.read()
-            ca_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
+            try:
+                ca_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
+            except OpenSSL.crypto.Error as e:
+                LOGGER.error('Invalid certificate ' + args.CA_CERT)
+                sys.exit(1)
             new_cert.set_issuer(ca_cert.get_issuer())
-            with open(args.CA_KEY) as f:
+            with open(args.CA_KEY, 'rb') as f:
                 ca_pkey = f.read()
-            ca_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, ca_pkey)
+            try:
+                ca_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, ca_pkey)
+            except OpenSSL.crypto.Error:
+                LOGGER.error('Invalid private key ' + args.CA_KEY)
+                sys.exit(1)
             new_cert.sign(ca_pkey, signature_algo)
         self._save_to_file(new_cert, new_key, args.out)
         ret = 'Saved new certificate as {}.cert'.format(args.out)
