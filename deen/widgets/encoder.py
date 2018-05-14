@@ -513,7 +513,7 @@ class DeenWidget(QWidget):
                 if self.next.text_field.isReadOnly() and self.current_pick:
                     self.next.codec_field.setText('Transformer: ' + self.current_pick)
                     self.next.codec_field.show()
-                if not error:
+                if not plugin.error:
                     self.next.clear_error_message()
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
