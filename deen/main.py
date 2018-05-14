@@ -89,9 +89,7 @@ def main():
                 processed = plugin.unprocess(content)
         if not processed:
             if plugin.error:
-                LOGGER.error(('An error occurred during plugin'
-                              'execution (use -v for more information)'))
-                LOGGER.debug(plugin.error)
+                LOGGER.error(plugin.error)
             else:
                 LOGGER.error('Plugin {} did not return any data'.format(plugin.cmd_name))
             sys.exit(1)

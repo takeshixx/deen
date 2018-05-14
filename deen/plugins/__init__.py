@@ -119,6 +119,7 @@ class DeenPlugin(object):
         :param file: filename of '-' for STDIN
         :return: content of filename or data from STDIN
         """
+        content = b''
         try:
             if file == '-':
                 try:
@@ -127,8 +128,11 @@ class DeenPlugin(object):
                     stdin = sys.stdin
                 content = stdin.read()
             else:
-                with open(file, 'rb') as f:
-                    content = f.read()
+                try:
+                    with open(file, 'rb') as f:
+                        content = f.read()
+                except Exception as e:
+                    self.error = e
         except KeyboardInterrupt:
             return
         return content
