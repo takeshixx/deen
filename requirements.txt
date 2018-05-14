@@ -3,3 +3,4 @@ pyOpenSSL
 jsbeautifier
 dicttoxml
 xmltodict
+pyjwt
