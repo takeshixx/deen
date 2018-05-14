@@ -1,5 +1,4 @@
 import sys
-import hashlib
 import logging
 import base64
 import binascii
@@ -44,7 +43,7 @@ class DeenPluginX509Certificate(DeenPlugin):
     @certificate.setter
     def certificate(self, data):
         if not OPENSSL:
-            LOGGER.warning('pyOpenSSL is not available')
+            self.error = MissingDependencyException('pyOpenSSL is not available')
             return
         if not b'-----BEGIN' in data or \
             not b'-----END' in data:
@@ -58,7 +57,7 @@ class DeenPluginX509Certificate(DeenPlugin):
         try:
             data = data.decode()
         except UnicodeDecodeError:
-            LOGGER.error('Invalid certificate encoding')
+            self.error = TransformException('Invalid certificate encoding')
             return
         data = data.strip()
         if not '-----BEGIN CERTIFICATE-----' in data:
@@ -77,7 +76,8 @@ class DeenPluginX509Certificate(DeenPlugin):
         super(DeenPluginX509Certificate, self).process(data)
         self.certificate = data
         if not self._certificate:
-            self.error = TransformException('Invalid certificate')
+            if not self.error:
+                self.error = TransformException('Invalid certificate')
             return data
         if OPENSSL and self._certificate is not None:
             out = bytearray()
@@ -88,7 +88,7 @@ class DeenPluginX509Certificate(DeenPlugin):
                 OpenSSL.crypto.FILETYPE_PEM, self.certificate))
             return out
         elif not OPENSSL:
-            LOGGER.warning('pyOpenSSL is not available')
+            self.error = MissingDependencyException('pyOpenSSL is not available')
         return data
 
 
@@ -140,6 +140,9 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         parser.add_argument('CA_KEY', nargs='?')
 
     def process_cli(self, args):
+        if not OPENSSL:
+            self.error = MissingDependencyException('pyOpenSSL is not available')
+            return
         if args.self_signed and (args.CA_CERT or args.CA_KEY):
             LOGGER.error('-s and CA_* couldn\'t be used together')
             sys.exit(1)
