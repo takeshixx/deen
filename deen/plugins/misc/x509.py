@@ -77,8 +77,8 @@ class DeenPluginX509Certificate(DeenPlugin):
         super(DeenPluginX509Certificate, self).process(data)
         self.certificate = data
         if not self._certificate:
-            LOGGER.error('Invalid certificate')
-            sys.exit(1)
+            self.error = TransformException('Invalid certificate')
+            return data
         if OPENSSL and self._certificate is not None:
             out = bytearray()
             out.extend(OpenSSL.crypto.dump_certificate(
