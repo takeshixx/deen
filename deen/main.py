@@ -100,14 +100,14 @@ def main():
         # mode to speed up CLI mode.
         from PyQt5.QtWidgets import QApplication
         from PyQt5.QtGui import QIcon
-        from deen.widgets.core import Deen
+        from deen.gui.core import DeenGui
         logging.basicConfig(format=VERBOSE_FORMAT)
         app = QApplication(sys.argv)
-        ex = Deen(plugins=pl)
+        ex = DeenGui(plugins=pl)
         if content:
             # GUI mode also supports input files and
             # content via STDIN.
-            ex.encoder_widget.set_root_content(content)
+            ex.set_root_content(content)
         ex.setWindowIcon(QIcon(ICON))
         LOGGER.addHandler(ex.log)
         return app.exec_()
