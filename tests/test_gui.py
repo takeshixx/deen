@@ -10,7 +10,7 @@ import base64
 
 from PyQt5.QtWidgets import QApplication
 
-from deen.widgets.core import Deen
+from deen.gui.core import DeenGui
 from deen.loader import DeenPluginLoader
 
 app = QApplication(sys.argv)
@@ -18,9 +18,9 @@ app = QApplication(sys.argv)
 
 class TestGui(unittest.TestCase):
     def setUp(self):
-        self.deen = Deen(plugins=DeenPluginLoader())
+        self.deen = DeenGui(plugins=DeenPluginLoader())
         # The list of sub-widgets
-        self.widgets = self.deen.encoder_widget.widgets
+        self.widgets = self.deen.widgets
 
     def _random_str(self, length=16):
         return ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -30,7 +30,7 @@ class TestGui(unittest.TestCase):
         return os.urandom(length)
 
     def test_quit_app(self):
-        self.deen.quit.trigger()
+        self.deen.ui.actionQuit.trigger()
 
     def test_load_frome_file(self):
         test_file = '/bin/id'
@@ -81,30 +81,30 @@ class TestGui(unittest.TestCase):
         transformers or formatters are called without
         any input."""
         root_widget = self.widgets[0]
-        for index in range(root_widget.encoding_combo.count()):
-            root_widget.encoding_combo.setCurrentIndex(index)
-        for index in range(root_widget.decoding_combo.count()):
-            root_widget.decoding_combo.setCurrentIndex(index)
-        for index in range(root_widget.compress_combo.count()):
-            root_widget.compress_combo.setCurrentIndex(index)
-        for index in range(root_widget.uncompress_combo.count()):
-            root_widget.uncompress_combo.setCurrentIndex(index)
-        for index in range(root_widget.hash_combo.count()):
-            root_widget.hash_combo.setCurrentIndex(index)
-        for index in range(root_widget.misc_combo.count()):
-            root_widget.misc_combo.setCurrentIndex(index)
-        for index in range(root_widget.format_combo.count()):
-            root_widget.format_combo.setCurrentIndex(index)
+        for index in range(root_widget.ui.encode_combo.count()):
+            root_widget.ui.encode_combo.setCurrentIndex(index)
+        for index in range(root_widget.ui.decode_combo.count()):
+            root_widget.ui.decode_combo.setCurrentIndex(index)
+        for index in range(root_widget.ui.compress_combo.count()):
+            root_widget.ui.compress_combo.setCurrentIndex(index)
+        for index in range(root_widget.ui.uncompress_combo.count()):
+            root_widget.ui.uncompress_combo.setCurrentIndex(index)
+        for index in range(root_widget.ui.hash_combo.count()):
+            root_widget.ui.hash_combo.setCurrentIndex(index)
+        for index in range(root_widget.ui.misc_combo.count()):
+            root_widget.ui.misc_combo.setCurrentIndex(index)
+        for index in range(root_widget.ui.format_combo.count()):
+            root_widget.ui.format_combo.setCurrentIndex(index)
 
     def test_encodings_hex(self):
         data_bytes = self._random_bytes(256)
         data_bytes_encoded = codecs.encode(data_bytes, 'hex')
         self.widgets[0].text_field.setPlainText(
             data_bytes_encoded.decode())
-        self.widgets[0].decoding_combo.setCurrentText('Hex')
+        self.widgets[0].ui.decode_combo.setCurrentText('Hex')
         self.assertEqual(data_bytes,
                          self.widgets[1].content)
-        self.widgets[1].encoding_combo.setCurrentText('Hex')
+        self.widgets[1].ui.encode_combo.setCurrentText('Hex')
         self.assertEqual(data_bytes_encoded,
                          self.widgets[2].content)
 
@@ -113,10 +113,10 @@ class TestGui(unittest.TestCase):
         data_bytes_encoded = base64.b64encode(data_bytes)
         self.widgets[0].text_field.setPlainText(
             data_bytes_encoded.decode())
-        self.widgets[0].decoding_combo.setCurrentText('Base64')
+        self.widgets[0].ui.decode_combo.setCurrentText('Base64')
         self.assertEqual(data_bytes,
                          self.widgets[1].content)
-        self.widgets[1].encoding_combo.setCurrentText('Base64')
+        self.widgets[1].ui.encode_combo.setCurrentText('Base64')
         self.assertEqual(data_bytes_encoded.strip(),
                          self.widgets[2].content)
 
@@ -127,10 +127,10 @@ class TestGui(unittest.TestCase):
         self.widgets[0].text_field.setPlainText(data_str)
         self.assertEqual(data_str.encode(),
                          self.widgets[0].content)
-        self.widgets[0].hash_combo.setCurrentText('SHA256')
+        self.widgets[0].ui.hash_combo.setCurrentText('SHA256')
         self.assertEqual(hasher.hexdigest().encode(),
                          self.widgets[1].content)
-        self.widgets[1].decoding_combo.setCurrentText('Hex')
+        self.widgets[1].ui.decode_combo.setCurrentText('Hex')
         self.assertEqual(hasher.digest(),
                          self.widgets[2].content)
 
