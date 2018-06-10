@@ -3,7 +3,6 @@ try:
 except ImportError:
     import urllib as urllibparse
 
-from PyQt5.QtCore import QTextCodec
 from PyQt5.QtWidgets import QPlainTextEdit
 
 
@@ -12,4 +11,4 @@ class TextViewWidget(QPlainTextEdit):
         super(TextViewWidget, self).__init__(parent)
         self.parent = parent
         self.setReadOnly(readonly)
-        self.codec = QTextCodec.codecForName('UTF-8')
+        self.codec = self.parent.codec
