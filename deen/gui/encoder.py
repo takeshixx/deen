@@ -8,7 +8,7 @@ except ImportError:
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
-from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
+from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QAbstractSlider
 
 from deen.widgets.hex import HexViewWidget
 from deen.widgets.text import TextViewWidget
@@ -69,7 +69,6 @@ class DeenEncoderWidget(QWidget):
         self.ui.current_plugin_label.hide()
         if not self.readonly:
             self.ui.move_to_root_button.hide()
-
         # Disable the first element in all combo boxes.
         for combo in [self.ui.encode_combo, self.ui.decode_combo, self.ui.uncompress_combo,
                       self.ui.compress_combo, self.ui.hash_combo, self.ui.misc_combo,
@@ -114,12 +113,16 @@ class DeenEncoderWidget(QWidget):
         self.ui.format_combo.currentIndexChanged.connect(lambda: self.action(self.ui.format_combo))
         # Configure search widget
         self.ui.search_area.returnPressed.connect(self.search_highlight)
+        self.ui.search_button.clicked.connect(self.search_highlight)
+        self.ui.search_clear_button.clicked.connect(self.clear_search_highlight)
         self.ui.search_progress_bar.hide()
         self.error_message = QLabel()
         self.error_message.setStyleSheet('border: 2px solid red;')
         self.error_message.hide()
         self.ui.error_message_layout.addWidget(self.error_message)
-
+        # After adding new widgets, we have to update the max scroll range.
+        self.parent.ui.DeenMainWindow.verticalScrollBar().rangeChanged.connect(self.update_vertical_scroll_range)
+        self.parent.ui.DeenMainWindow.horizontalScrollBar().rangeChanged.connect(self.update_horizontal_scroll_range)
 
     @property
     def content(self):
@@ -155,7 +158,7 @@ class DeenEncoderWidget(QWidget):
         """Return the previous widget. If the current widget
         is the root widget, this function returns the root
         widget (self)."""
-        if not self.has_previous() == self:
+        if not self.has_previous():
             return self
         for i, w in enumerate(self.parent.widgets):
             if w == self:
@@ -181,8 +184,6 @@ class DeenEncoderWidget(QWidget):
         of the QTextEdit() will be changed. Whatever will be
         executed here will most likely differ if it will be
         applied on a root widget or any following widget."""
-        #if self.action_panel.isHidden():
-        #    self.action_panel.show()
         if self.has_next() and not self.text_field.isReadOnly() \
                 and not self.formatted_view:
             # If widget count is greater then two,
@@ -204,13 +205,16 @@ class DeenEncoderWidget(QWidget):
                     and self.current_pick:
                 self.action()
 
-
     def search_highlight(self):
+        """The function that will be called whenever the
+        search area is submitted. It will search within
+        the text_field and highlights matches."""
         cursor = self.text_field.textCursor()
-        b_format = cursor.blockFormat()
-        b_format.setBackground(QBrush(QColor('white')))
-        cursor.setBlockFormat(b_format)
         format = QTextCharFormat()
+        format.setBackground(QBrush(QColor('white')))
+        cursor.select(QTextCursor.Document)
+        cursor.mergeCharFormat(format)
+        cursor.clearSelection()
         format.setBackground(QBrush(QColor('yellow')))
         regex = QRegularExpression(self.ui.search_area.text())
         matches = regex.globalMatch(self.text_field.toPlainText())
@@ -236,6 +240,11 @@ class DeenEncoderWidget(QWidget):
 
     def clear_search_highlight(self, widget=None):
         widget = widget or self
+        cursor = self.text_field.textCursor()
+        cursor.select(QTextCursor.Document)
+        format = QTextCharFormat()
+        format.setBackground(QBrush(QColor('white')))
+        cursor.mergeCharFormat(format)
         widget.ui.search_area.clear()
         widget.ui.search_matches_label.setText('Matches: 0')
 
@@ -282,7 +291,7 @@ class DeenEncoderWidget(QWidget):
         that follow widget."""
         widget = widget or self
         self.clear_error_message(widget=widget)
-        self.clear_search_highlight()
+        self.clear_search_highlight(widget=widget)
         if self.parent.widgets[0] == widget:
             widget.text_field.clear()
             widget.hex_field.content = bytearray()
@@ -292,6 +301,13 @@ class DeenEncoderWidget(QWidget):
             widget.update_readonly_field(self)
             widget.current_pick = None
             widget.formatted_view = False
+        else:
+            # Remove the current_combo and current_pick
+            # of the previous widget so that the last
+            # pick doesn't stuck in the previous widget
+            # after deleting one.
+            self.previous.current_combo = None
+            self.previous.current_pick = None
         self.remove_next_widgets(widget=widget)
 
     def copy_to_clipboard(self):
@@ -336,6 +352,20 @@ class DeenEncoderWidget(QWidget):
 
     def update_readonly_field(self, widget):
         widget.ui.widget_mode_label.setText('Mode: Read' if widget.text_field.isReadOnly() else 'Mode: Read/Write')
+
+    def update_vertical_scroll_range(self, min, max):
+        """Update the scroll maximum of the main window scroll
+        are in order to automatically jump to newly created
+        encoder widgets."""
+        sb = self.parent.ui.DeenMainWindow.verticalScrollBar()
+        sb.setValue(max)
+
+    def update_horizontal_scroll_range(self, min, max):
+        """Update the scroll maximum of the main window scroll
+        are in order to automatically jump to newly created
+        encoder widgets."""
+        sb = self.parent.ui.DeenMainWindow.horizontalScrollBar()
+        sb.setValue(max)
 
     def remove_next_widgets(self, widget=None, offset=0):
         """Remove all widgets after widget. If widget is not

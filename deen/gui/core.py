@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QMessageBox, QFileDialog)
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog, QBoxLayout
 
 import deen.constants
 from deen.widgets.log import DeenLogger, DeenStatusConsole
@@ -21,13 +21,17 @@ class DeenGui(QMainWindow):
         self.ui.actionQuit.triggered.connect(QApplication.quit)
         self.ui.actionAbout.triggered.connect(self.show_about)
         self.ui.actionStatus_console.triggered.connect(self.show_status_console)
+        self.ui.actionTop_to_bottom.triggered.connect(self.set_widget_direction_toptobottom)
+        self.ui.actionLeft_to_right.triggered.connect(self.set_widget_direction_lefttoright)
         self.widgets.append(DeenEncoderWidget(self))
         for widget in self.widgets:
             self.ui.encoder_widget_layout.addWidget(widget)
         self.load_from_file_dialog = QFileDialog(self)
         self.setWindowTitle('deen')
         self.log = DeenLogger(self)
-        self.resize(self.widgets[0].sizeHint())
+        # Start Deen GUI maximized with focus on the text field
+        self.showMaximized()
+        self.widgets[0].text_field.setFocus(True)
         self.show()
 
     def set_root_content(self, data):
@@ -35,6 +39,12 @@ class DeenGui(QMainWindow):
             if isinstance(data, (str, bytes)):
                 data = bytearray(data)
             self.widgets[0].content = data
+
+    def set_widget_direction_toptobottom(self):
+        self.ui.encoder_widget_layout.setDirection(QBoxLayout.TopToBottom)
+
+    def set_widget_direction_lefttoright(self):
+        self.ui.encoder_widget_layout.setDirection(QBoxLayout.LeftToRight)
 
     def show_about(self):
         about = QMessageBox(self)
