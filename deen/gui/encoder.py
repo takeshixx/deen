@@ -19,6 +19,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DeenEncoderWidget(QWidget):
+    """For each plugin operation Deen will create
+    an instance of this class to represent an
+    action. self.parent in instances of this
+    class should point to the main window (an
+    instance of DeenGui)."""
     def __init__(self, parent, readonly=False, enable_actions=True):
         super(DeenEncoderWidget, self).__init__(parent)
         self.ui = Ui_DeenEncoderWidget()

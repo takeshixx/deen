@@ -11,6 +11,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DeenGui(QMainWindow):
+    """The main window class that is the core of
+    the Deen GUI. If is basically just the main
+    window with a central element that includes
+    one or more DeenEncoderWidget."""
     def __init__(self, parent=None, plugins=None):
         super(DeenGui, self).__init__(parent)
         self.ui = Ui_MainWindow()
