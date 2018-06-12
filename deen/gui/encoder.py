@@ -406,7 +406,26 @@ class DeenEncoderWidget(QWidget):
             else:
                 plugin = self.parent.plugins.get_plugin_instance(self.current_pick)
             combo_choice = self.current_combo.model().item(0).text()
-            if combo_choice == 'Format':
+            process_gui_func = getattr(plugin, 'process_gui', None)
+            if process_gui_func and callable(process_gui_func):
+                # For plugins that implement a process_gui() function
+                # that adds additional GUI elements.
+                data = plugin.process_gui(self.parent, self._content)
+                if not data:
+                    # plugin.process_gui() returned nothing, so
+                    # don't create a new widget.
+                    return
+                if plugin.error:
+                    LOGGER.error(plugin.error)
+                    self.next.set_error()
+                    self.next.set_error_message(str(plugin.error))
+                self.next.content = data
+                if self.next.text_field.isReadOnly() and self.current_pick:
+                    self.next.ui.current_plugin_label.setText('Plugin: ' + self.current_pick)
+                    self.next.ui.current_plugin_label.show()
+                if not plugin.error:
+                    self.next.clear_error_message()
+            elif combo_choice == 'Format':
                 # Formatters format data in the current window (self)
                 data = plugin.process(self._content)
                 self.formatted_view = True
