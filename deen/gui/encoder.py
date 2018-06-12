@@ -8,7 +8,7 @@ except ImportError:
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
-from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QAbstractSlider
+from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
 
 from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget
@@ -67,6 +67,8 @@ class DeenEncoderWidget(QWidget):
         self.ui.save_button.clicked.connect(self.save_content)
         self.ui.copy_to_clipboard_button.clicked.connect(self.copy_to_clipboard)
         self.ui.move_to_root_button.clicked.connect(self.move_content_to_root)
+        self.ui.hide_side_menu.clicked.connect(self.toggle_side_menu_visibility)
+        self.ui.hide_search_box.clicked.connect(self.toggle_search_box_visibility)
         # Update labels with proper values
         self.update_length_field(self)
         self.update_readonly_field(self)
@@ -125,6 +127,8 @@ class DeenEncoderWidget(QWidget):
         self.error_message.setStyleSheet('border: 2px solid red;')
         self.error_message.hide()
         self.ui.error_message_layout.addWidget(self.error_message)
+        self.ui.error_message_layout_widget.hide()
+        self.ui.search_group.hide()
         # After adding new widgets, we have to update the max scroll range.
         self.parent.ui.DeenMainWindow.verticalScrollBar().rangeChanged.connect(self.update_vertical_scroll_range)
         self.parent.ui.DeenMainWindow.horizontalScrollBar().rangeChanged.connect(self.update_horizontal_scroll_range)
@@ -182,6 +186,26 @@ class DeenEncoderWidget(QWidget):
         for i, w in enumerate(self.parent.widgets):
             if w == self:
                 return self.parent.widgets[i + 1]
+
+    def toggle_side_menu_visibility(self):
+        """Calling this function will either
+        hide or show the sidebar. Hiding the
+        sidebar is a convenient way to make
+        larger content more readable."""
+        if self.ui.side_menu.isVisible():
+            self.ui.side_menu.hide()
+        else:
+            self.ui.side_menu.show()
+
+    def toggle_search_box_visibility(self):
+        """Calling this function will either
+        hide or show the search box. By default
+        it is hidden and can be made visible
+        with the Search button."""
+        if self.ui.search_group.isVisible():
+            self.ui.search_group.hide()
+        else:
+            self.ui.search_group.show()
 
     def field_content_changed(self):
         """The event handler for the textChanged event of the
@@ -263,12 +287,15 @@ class DeenEncoderWidget(QWidget):
 
     def set_error_message(self, message, widget=None):
         widget = widget or self
+        if not self.ui.error_message_layout_widget.isVisible():
+            self.ui.error_message_layout_widget.show()
         widget.error_message.setText('Error: ' + message)
         widget.error_message.setStyleSheet('color: red;')
         widget.error_message.show()
 
     def clear_error_message(self, widget=None):
         widget = widget or self
+        self.ui.error_message_layout_widget.hide()
         widget.error_message.clear()
         widget.error_message.hide()
         widget.text_field.setStyleSheet('border: 1px solid lightgrey;')
@@ -406,7 +433,29 @@ class DeenEncoderWidget(QWidget):
             else:
                 plugin = self.parent.plugins.get_plugin_instance(self.current_pick)
             combo_choice = self.current_combo.model().item(0).text()
-            if combo_choice == 'Format':
+            process_gui_func = getattr(plugin, 'process_gui', None)
+            if process_gui_func and callable(process_gui_func):
+                # For plugins that implement a process_gui() function
+                # that adds additional GUI elements.
+                data = plugin.process_gui(self.parent, self._content)
+                if not data:
+                    # plugin.process_gui() returned nothing, so
+                    # don't create a new widget.
+                    self.current_pick = None
+                    if self.current_combo:
+                        self.current_combo.setCurrentIndex(0)
+                    return
+                if plugin.error:
+                    LOGGER.error(plugin.error)
+                    self.next.set_error()
+                    self.next.set_error_message(str(plugin.error))
+                self.next.content = data
+                if self.next.text_field.isReadOnly() and self.current_pick:
+                    self.next.ui.current_plugin_label.setText('Plugin: ' + self.current_pick)
+                    self.next.ui.current_plugin_label.show()
+                if not plugin.error:
+                    self.next.clear_error_message()
+            elif combo_choice == 'Format':
                 # Formatters format data in the current window (self)
                 data = plugin.process(self._content)
                 self.formatted_view = True
@@ -437,5 +486,7 @@ class DeenEncoderWidget(QWidget):
                     self.next.ui.current_plugin_label.show()
                 if not plugin.error:
                     self.next.clear_error_message()
+        else:
+            self.current_pick = None
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)

@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog, QBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog, QBoxLayout, QErrorMessage
 
 import deen.constants
 from deen.gui.widgets.log import DeenLogger, DeenStatusConsole
@@ -63,6 +63,16 @@ class DeenGui(QMainWindow):
         status.resize(600, 400)
         status.console.show()
         status.show()
+
+    def show_error_msg(self, error_msg, parent=None):
+        """Generic message box for displaying any
+        kind of error message from GUI elements."""
+        widget = parent or self
+        dialog = QMessageBox(widget)
+        dialog.setIcon(QMessageBox.Critical)
+        dialog.setWindowTitle('Error')
+        dialog.setText(error_msg)
+        dialog.show()
 
     def load_from_file(self, file_name=None):
         if file_name:
