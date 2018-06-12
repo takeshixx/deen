@@ -89,3 +89,5 @@ ENV/
 .ropeproject
 
 .idea
+
+deen/gui/widgets/*.ui
