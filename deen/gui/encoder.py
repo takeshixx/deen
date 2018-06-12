@@ -67,6 +67,8 @@ class DeenEncoderWidget(QWidget):
         self.ui.save_button.clicked.connect(self.save_content)
         self.ui.copy_to_clipboard_button.clicked.connect(self.copy_to_clipboard)
         self.ui.move_to_root_button.clicked.connect(self.move_content_to_root)
+        self.ui.hide_side_menu.clicked.connect(self.toggle_side_menu_visibility)
+        self.ui.hide_search_box.clicked.connect(self.toggle_search_box_visibility)
         # Update labels with proper values
         self.update_length_field(self)
         self.update_readonly_field(self)
@@ -125,6 +127,8 @@ class DeenEncoderWidget(QWidget):
         self.error_message.setStyleSheet('border: 2px solid red;')
         self.error_message.hide()
         self.ui.error_message_layout.addWidget(self.error_message)
+        self.ui.error_message_layout_widget.hide()
+        self.ui.search_group.hide()
         # After adding new widgets, we have to update the max scroll range.
         self.parent.ui.DeenMainWindow.verticalScrollBar().rangeChanged.connect(self.update_vertical_scroll_range)
         self.parent.ui.DeenMainWindow.horizontalScrollBar().rangeChanged.connect(self.update_horizontal_scroll_range)
@@ -182,6 +186,26 @@ class DeenEncoderWidget(QWidget):
         for i, w in enumerate(self.parent.widgets):
             if w == self:
                 return self.parent.widgets[i + 1]
+
+    def toggle_side_menu_visibility(self):
+        """Calling this function will either
+        hide or show the sidebar. Hiding the
+        sidebar is a convenient way to make
+        larger content more readable."""
+        if self.ui.side_menu.isVisible():
+            self.ui.side_menu.hide()
+        else:
+            self.ui.side_menu.show()
+
+    def toggle_search_box_visibility(self):
+        """Calling this function will either
+        hide or show the search box. By default
+        it is hidden and can be made visible
+        with the Search button."""
+        if self.ui.search_group.isVisible():
+            self.ui.search_group.hide()
+        else:
+            self.ui.search_group.show()
 
     def field_content_changed(self):
         """The event handler for the textChanged event of the
@@ -263,12 +287,15 @@ class DeenEncoderWidget(QWidget):
 
     def set_error_message(self, message, widget=None):
         widget = widget or self
+        if not self.ui.error_message_layout_widget.isVisible():
+            self.ui.error_message_layout_widget.show()
         widget.error_message.setText('Error: ' + message)
         widget.error_message.setStyleSheet('color: red;')
         widget.error_message.show()
 
     def clear_error_message(self, widget=None):
         widget = widget or self
+        self.ui.error_message_layout_widget.hide()
         widget.error_message.clear()
         widget.error_message.hide()
         widget.text_field.setStyleSheet('border: 1px solid lightgrey;')
