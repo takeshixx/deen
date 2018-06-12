@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog, QBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog, QBoxLayout, QErrorMessage
 
 import deen.constants
 from deen.gui.widgets.log import DeenLogger, DeenStatusConsole

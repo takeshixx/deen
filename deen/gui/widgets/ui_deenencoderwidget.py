@@ -30,7 +30,7 @@ class Ui_DeenEncoderWidget(object):
         self.horizontalLayout_2.addWidget(self.save_button)
         self.gridLayout.addLayout(self.horizontalLayout_2, 6, 0, 1, 3)
         self.groupBox_4 = QtWidgets.QGroupBox(DeenEncoderWidget)
-        self.groupBox_4.setMaximumSize(QtCore.QSize(16777215, 150))
+        self.groupBox_4.setMaximumSize(QtCore.QSize(16777215, 115))
         self.groupBox_4.setTitle("")
         self.groupBox_4.setObjectName("groupBox_4")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.groupBox_4)

@@ -8,7 +8,7 @@ except ImportError:
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
-from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QAbstractSlider
+from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
 
 from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget
