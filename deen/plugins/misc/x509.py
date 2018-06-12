@@ -296,6 +296,7 @@ class X509CloneGui(QDialog):
         super(X509CloneGui, self).__init__(parent)
         self.ui = Ui_X509CloneGui()
         self.ui.setupUi(self)
+        self.setWindowTitle('Clone X509 Certificate')
         self.parent = parent
         self.ui.x509clone_selfsign.setChecked(True)
         self.ui.x509clone_selfsign_groupbox.setEnabled(True)
