@@ -414,6 +414,9 @@ class DeenEncoderWidget(QWidget):
                 if not data:
                     # plugin.process_gui() returned nothing, so
                     # don't create a new widget.
+                    self.current_pick = None
+                    if self.current_combo:
+                        self.current_combo.setCurrentIndex(0)
                     return
                 if plugin.error:
                     LOGGER.error(plugin.error)
@@ -456,5 +459,7 @@ class DeenEncoderWidget(QWidget):
                     self.next.ui.current_plugin_label.show()
                 if not plugin.error:
                     self.next.clear_error_message()
+        else:
+            self.current_pick = None
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
