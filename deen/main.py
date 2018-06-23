@@ -38,15 +38,15 @@ EPILOG = """examples:
 
 ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.',
                                formatter_class=argparse.RawDescriptionHelpFormatter, epilog=EPILOG)
-ARGS.add_argument('-f', '--file', dest='infile', default=None,
+ARGS.add_argument('-f', '--file', dest='infile', default=None, metavar='filename',
                   help='file name or - for STDIN')
 ARGS.add_argument('-l', '--list', action='store_true', dest='list',
                   default=False, help='list available plugins')
 ARGS.add_argument('-p', '--plugin', action='store', dest='plugin',
-                  metavar='PLUGIN', default=None, help='deen plugin to use')
+                  metavar='plugin', default=None, help='deen plugin to use')
 ARGS.add_argument('-r', '--revert', action='store_true', dest='revert',
                   default=False, help='revert plugin process (e.g. decode or uncompress')
-ARGS.add_argument('-d', '--data', action='store', dest='data',
+ARGS.add_argument('-d', '--data', action='store', dest='data', metavar='data',
                   default=None, help='instead of a file, provide an input string')
 ARGS.add_argument('-n', '--no-new-line', action='store_true', dest='nonewline',
                   default=False, help='omit new line character at the end of the output')

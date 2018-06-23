@@ -67,9 +67,9 @@ class DeenPluginJwt(DeenPlugin):
         parser.add_argument('-r', '--revert', action='store_true', dest='revert',
                             default=False, help='revert plugin process')
         parser.add_argument('-f', '--file', dest='plugininfile', default=None,
-                            help='file name or - for STDIN')
+                            help='file name or - for STDIN', metavar='filename')
         parser.add_argument('-s', '--secret', dest='pluginsecret', default=None,
-                            help='JWT secret')
+                            help='JWT secret', metavar='secret')
         parser.add_argument('-m', '--mac', dest='pluginmac', help='JWT MAC algorithm',
                             default='HS256',choices=jwt.algorithms.get_default_algorithms().keys())
         parser.add_argument('-v', '--verify', dest='pluginverify', default=False,

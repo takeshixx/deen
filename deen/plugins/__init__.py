@@ -86,7 +86,7 @@ class DeenPlugin(object):
         parser.add_argument('-r', '--revert', action='store_true', dest='revert',
                             default=False, help='revert plugin process')
         parser.add_argument('-f', '--file', dest='plugininfile', default=None,
-                            help='file name or - for STDIN')
+                            help='file name or - for STDIN', metavar='filename')
 
     def process_cli(self, args):
         """Do whatever the CLI cmd should do. The args

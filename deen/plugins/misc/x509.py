@@ -138,9 +138,10 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
                                           help=DeenPluginX509CertificateCloner.cmd_help,
                                           aliases=DeenPluginX509CertificateCloner.aliases)
         parser.add_argument('CERT_TO_CLONE')
-        parser.add_argument('-o', '--out', help='name of output files (w/o extension)', default='cloned_cert')
+        parser.add_argument('-o', '--out', help='name of output files (w/o extension)',
+                            default='cloned_cert', metavar='filename')
         parser.add_argument('-a', '--signature-algorithm', help='hash algorithm for signature', default=None,
-                            type=str.lower)
+                            type=str.lower, metavar='algorithm')
         xor = parser.add_mutually_exclusive_group(required=True)
         xor.add_argument('-s', '--self-signed', action='store_true', dest='self_signed')
         xor.add_argument('CA_CERT', nargs='?')
