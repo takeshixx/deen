@@ -5,3 +5,4 @@ from .mdc2 import DeenPluginMdc2
 from .ntlm import DeenPluginNtlm
 from .mysql import DeenPluginMysql
 from .blake import DeenPluginBlake2b, DeenPluginBlake2s
+from .bcrypt import DeenPluginBcrypt
