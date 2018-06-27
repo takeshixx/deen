@@ -13,6 +13,7 @@ See the [wiki](https://github.com/takeshixx/deen/wiki) for basic and more advanc
 Install via `pip`:
 
 ```bash
+pip3 install -r requirements.txt
 pip3 install .
 ```
 
