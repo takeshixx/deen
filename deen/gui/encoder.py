@@ -6,7 +6,7 @@ try:
 except ImportError:
     crypto = None
 
-from PyQt5.QtCore import QTextCodec, QRegularExpression
+from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
 
@@ -82,34 +82,55 @@ class DeenEncoderWidget(QWidget):
                       self.ui.format_combo]:
             combo.model().item(0).setEnabled(False)
         # Add all alvailable plugins to the corresponding combo boxes.
-        for encoding in [p[1].display_name for p in self.parent.plugins.codecs
+        for encoding in [p[1] for p in self.parent.plugins.codecs
+                         if (not getattr(p[1], 'cmd_only', None) or
+                            (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+            self.ui.encode_combo.addItem(encoding.display_name)
+            if getattr(encoding, 'cmd_help', None) and encoding.cmd_help:
+                index = self.ui.encode_combo.count()
+                self.ui.encode_combo.setItemData(index-1, encoding.cmd_help, Qt.ToolTipRole)
+        for encoding in [p[1] for p in self.parent.plugins.codecs
                      if (not getattr(p[1], 'cmd_only', None) or
                              (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.encode_combo.addItem(encoding)
-        for encoding in [p[1].display_name for p in self.parent.plugins.codecs
+            self.ui.decode_combo.addItem(encoding.display_name)
+            if getattr(encoding, 'cmd_help', None) and encoding.cmd_help:
+                index = self.ui.decode_combo.count()
+                self.ui.decode_combo.setItemData(index-1, encoding.cmd_help, Qt.ToolTipRole)
+        for compression in [p[1] for p in self.parent.plugins.compressions
                      if (not getattr(p[1], 'cmd_only', None) or
                              (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.decode_combo.addItem(encoding)
-        for compression in [p[1].display_name for p in self.parent.plugins.compressions
+            self.ui.compress_combo.addItem(compression.display_name)
+            if getattr(compression, 'cmd_help', None) and compression.cmd_help:
+                index = self.ui.compress_combo.count()
+                self.ui.compress_combo.setItemData(index-1, compression.cmd_help, Qt.ToolTipRole)
+        for compression in [p[1] for p in self.parent.plugins.compressions
                      if (not getattr(p[1], 'cmd_only', None) or
                              (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.compress_combo.addItem(compression)
-        for compression in [p[1].display_name for p in self.parent.plugins.compressions
+            self.ui.uncompress_combo.addItem(compression.display_name)
+            if getattr(compression, 'cmd_help', None) and compression.cmd_help:
+                index = self.ui.uncompress_combo.count()
+                self.ui.uncompress_combo.setItemData(index-1, compression.cmd_help, Qt.ToolTipRole)
+        for hash in [p[1] for p in self.parent.plugins.hashs
                      if (not getattr(p[1], 'cmd_only', None) or
                              (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.uncompress_combo.addItem(compression)
-        for hash in [p[1].display_name for p in self.parent.plugins.hashs
+            self.ui.hash_combo.addItem(hash.display_name)
+            if getattr(hash, 'cmd_help', None) and hash.cmd_help:
+                index = self.ui.hash_combo.count()
+                self.ui.hash_combo.setItemData(index - 1, hash.cmd_help, Qt.ToolTipRole)
+        for misc in [p[1] for p in self.parent.plugins.misc
                      if (not getattr(p[1], 'cmd_only', None) or
                              (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.hash_combo.addItem(hash)
-        for misc in [p[1].display_name for p in self.parent.plugins.misc
+            self.ui.misc_combo.addItem(misc.display_name)
+            if getattr(misc, 'cmd_help', None) and misc.cmd_help:
+                index = self.ui.misc_combo.count()
+                self.ui.misc_combo.setItemData(index - 1, misc.cmd_help, Qt.ToolTipRole)
+        for formatter in [p[1] for p in self.parent.plugins.formatters
                      if (not getattr(p[1], 'cmd_only', None) or
                              (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.misc_combo.addItem(misc)
-        for formatter in [p[1].display_name for p in self.parent.plugins.formatters
-                     if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.format_combo.addItem(formatter)
+            self.ui.format_combo.addItem(formatter.display_name)
+            if getattr(formatter, 'cmd_help', None) and formatter.cmd_help:
+                index = self.ui.format_combo.count()
+                self.ui.format_combo.setItemData(index - 1, formatter.cmd_help, Qt.ToolTipRole)
         # Add connections for combo boxes
         self.ui.encode_combo.currentIndexChanged.connect(lambda: self.action(self.ui.encode_combo))
         self.ui.decode_combo.currentIndexChanged.connect(lambda: self.action(self.ui.decode_combo))
