@@ -101,7 +101,7 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
     aliases = ['certcloner',
                'x509clone']
     cmd_name = 'x509certificatecloner'
-    cmd_help = ('Clone X.509 certificates with a'
+    cmd_help = ('Clone X.509 certificates with a '
                 'randomly generated RSA public key')
 
     def __init__(self):
