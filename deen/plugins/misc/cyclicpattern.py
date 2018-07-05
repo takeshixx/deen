@@ -15,7 +15,7 @@ class DeenPluginCyclicPatternCreate(DeenPlugin):
     aliases = ['pattern_create',
                'pattern-create',
                'patterncreate']
-    cmd_help = 'Create a cycic pattern for exploit development!'
+    cmd_help = 'Create a cyclic pattern for exploit development'
 
     def __init__(self):
         super(DeenPluginCyclicPatternCreate, self).__init__()
