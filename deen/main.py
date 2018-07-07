@@ -50,6 +50,8 @@ ARGS.add_argument('-d', '--data', action='store', dest='data', metavar='data',
                   default=None, help='instead of a file, provide an input string')
 ARGS.add_argument('-n', '--no-new-line', action='store_true', dest='nonewline',
                   default=False, help='omit new line character at the end of the output')
+ARGS.add_argument('--version', action='store_true', dest='version',
+                  default=False, help='print the current version')
 ARGS.add_argument('-v', '--verbose', action='count', dest='level',
                   default=0, help='verbose logging (repeat for more verbosity)')
 
@@ -60,6 +62,9 @@ def main():
     content = pl.read_content_from_args()
     if args.list:
         print(pl.pprint_available_plugins())
+    elif args.version:
+        import deen.constants
+        print(deen.constants.__version__)
     elif any([args.plugin_cmd, args.plugin]):
         # We are in command line mode
         log_format = VERBOSE_FORMAT if args.level > 0 else '%(message)s'
