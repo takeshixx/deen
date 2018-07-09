@@ -16,7 +16,7 @@ class DeenPluginAsmArm(AsmBase):
                'assemble_arm',
                'assemblearm',
                'arm']
-    cmd_name = 'assembly_x86'
+    cmd_name = 'assembly_arm'
     cmd_help='Assemble/Disassemble for the ARM architecture'
     keystone_arch = keystone.KS_ARCH_ARM
     keystone_mode = keystone.KS_MODE_ARM
