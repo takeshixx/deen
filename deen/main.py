@@ -98,7 +98,7 @@ def main():
             else:
                 LOGGER.error('Plugin {} did not return any data'.format(plugin.cmd_name))
             sys.exit(1)
-        plugin.write_to_stdout(processed)
+        plugin.write_to_stdout(processed, nonewline=args.nonewline)
     else:
         # We are in GUI mode
         # Import GUI related modules only in GUI
