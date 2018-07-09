@@ -183,6 +183,12 @@ class DeenEncoderWidget(QWidget):
         self.formatted_view = False
         if self.hex_view:
             self.hex_field.content = self._content
+        elif not self.hex_view and \
+                not all(chr(c) in string.printable for c in self._content):
+            # If there are non-printable characters,
+            # switch to hex view.
+            self.text_field.setReadOnly(True)
+            self.ui.toggle_hex_view.setChecked(True)
         else:
             # Prevent the field from overwriting itself with invalid
             # characters.
