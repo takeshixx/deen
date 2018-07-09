@@ -23,12 +23,14 @@ class DeenPluginAsmArm(AsmBase):
     capstone_arch = capstone.CS_ARCH_ARM
     capstone_mode = capstone.CS_MODE_ARM
 
-    def __init__(self):
-        super(DeenPluginAsmArm, self).__init__()
-        # Initialize keystone and capstone as soon as an instance
-        # of this plugin will be created.
-        self.ks = keystone.Ks(self.keystone_arch, self.keystone_mode)
-        self.cs = capstone.Cs(self.capstone_arch, self.capstone_mode)
+    @staticmethod
+    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+        # Add an additional argument for big endian mode.
+        parser = AsmBase.add_argparser(argparser, cmd_name,
+                                       cmd_help, cmd_aliases=cmd_aliases)
+        parser.add_argument('-b', '--big-endian', dest='bigendian',
+                            default=False, help='use big endian',
+                            action='store_true')
 
 
 class DeenPluginAsmArmThumb(AsmBase):
@@ -43,9 +45,11 @@ class DeenPluginAsmArmThumb(AsmBase):
     capstone_arch = capstone.CS_ARCH_ARM
     capstone_mode = capstone.CS_MODE_THUMB
 
-    def __init__(self):
-        super(DeenPluginAsmArmThumb, self).__init__()
-        # Initialize keystone and capstone as soon as an instance
-        # of this plugin will be created.
-        self.ks = keystone.Ks(self.keystone_arch, self.keystone_mode)
-        self.cs = capstone.Cs(self.capstone_arch, self.capstone_mode)
+    @staticmethod
+    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+        # Add an additional argument for big endian mode.
+        parser = AsmBase.add_argparser(argparser, cmd_name,
+                                       cmd_help, cmd_aliases=cmd_aliases)
+        parser.add_argument('-b', '--big-endian', dest='bigendian',
+                            default=False, help='use big endian',
+                            action='store_true')
