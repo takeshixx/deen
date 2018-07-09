@@ -29,6 +29,19 @@ class AsmBase(DeenPlugin):
 
     def __init__(self):
         super(AsmBase, self).__init__()
+        # Initialize keystone and capstone as soon as an instance
+        # of this plugin will be created.
+        if getattr(self, 'args', None) and self.args and getattr(self.args, 'bigendian', None) \
+                and self.args.bigendian:
+            self.ks = keystone.Ks(self.keystone_arch,
+                                  self.keystone_mode + keystone.KS_MODE_BIG_ENDIAN)
+            self.cs = capstone.Cs(self.capstone_arch,
+                                  capstone.CS_MODE_BIG_ENDIAN)
+        else:
+            self.ks = keystone.Ks(self.keystone_arch,
+                                  self.keystone_mode + keystone.KS_MODE_LITTLE_ENDIAN)
+            self.cs = capstone.Cs(self.capstone_arch,
+                                  capstone.CS_MODE_LITTLE_ENDIAN)
 
     @staticmethod
     def prerequisites():
@@ -110,6 +123,22 @@ class AsmBase(DeenPlugin):
         # and command history work in the interactive
         # mode.
         import readline
+        try:
+            from pygments import highlight
+            from pygments.lexers import NasmLexer
+            from pygments.formatters import TerminalFormatter, Terminal256Formatter
+            from pygments.styles import get_style_by_name
+            PYGMENTS = True
+            style = get_style_by_name('colorful')
+            import curses
+            curses.setupterm()
+            if curses.tigetnum('colors') >= 256:
+                FORMATTER = Terminal256Formatter(style=style)
+            else:
+                FORMATTER = TerminalFormatter()
+        except ImportError:
+            PYGMENTS = False
+            FORMATTER = False
         while True:
             try:
                 data = input('> ')
@@ -123,6 +152,20 @@ class AsmBase(DeenPlugin):
                             self.write_to_stdout(b'Invalid hex encoding')
                             continue
                         output = self.unprocess(data)
+                        # When pygments is available, we
+                        # can print the disassembled
+                        # instructions with syntax
+                        # highlighting.
+                        if all([PYGMENTS, FORMATTER]):
+                            try:
+                                output = highlight(output, NasmLexer(), FORMATTER)
+                            except Exception:
+                                # When pygment failes, just
+                                # continue printing the raw
+                                # output.
+                                pass
+                            finally:
+                                output = output.encode()
                     else:
                         encoding, count = self.ks.asm(data)
                         if self.args.raw:
