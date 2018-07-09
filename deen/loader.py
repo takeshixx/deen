@@ -1,12 +1,16 @@
 import sys
 import inspect
 import pprint
+import logging
 
 import deen.plugins.codecs
 import deen.plugins.compressions
+import deen.plugins.assemblies
 import deen.plugins.hashs
 import deen.plugins.formatters
 import deen.plugins.misc
+
+LOGGER = logging.getLogger()
 
 
 class DeenPluginLoader(object):
@@ -16,6 +20,7 @@ class DeenPluginLoader(object):
     def __init__(self, argparser=None):
         self.codecs = []
         self.compressions = []
+        self.assemblies = []
         self.hashs = []
         self.formatters = []
         self.misc = []
@@ -38,7 +43,8 @@ class DeenPluginLoader(object):
         """Returns a list of tuples of all available
         plugins in the plugin folder."""
         return self.codecs + self.compressions + \
-                self.hashs + self.formatters + self.misc
+                self.hashs + self.formatters + self.misc + \
+                self.assemblies
 
     def pprint_available_plugins(self):
         """Returns a pprint.pformat representation
@@ -54,9 +60,12 @@ class DeenPluginLoader(object):
         output = []
         for m in inspect.getmembers(module, inspect.ismodule):
             for c in inspect.getmembers(m[1], inspect.isclass):
+                # Only classes that start with DeenPlugin will be loaded.
                 if c[0].startswith('DeenPlugin') and \
                         len(c[0].replace('DeenPlugin', '')) != 0:
+                    # Call the prerequisites() function before loading plugin.
                     if c[1].prerequisites():
+                        # Check if the plugin wants to add additional CLI arguments.
                         if self.argparser:
                             if getattr(c[1], 'cmd_name', None) and c[1].cmd_name and \
                                     getattr(c[1], 'cmd_help', None) and c[1].cmd_help:
@@ -66,6 +75,8 @@ class DeenPluginLoader(object):
                                 add_argparser_func(self._subargparser, c[1].cmd_name,
                                                    c[1].cmd_help, c[1].aliases)
                         output.append(c)
+                    else:
+                        LOGGER.warning('Prerequisits for plugin {} not met'.format(c[0]))
         else:
             return output
 
@@ -76,6 +87,7 @@ class DeenPluginLoader(object):
         in time to reload plugins."""
         self.codecs = self._get_plugin_classes_from_module(deen.plugins.codecs)
         self.compressions = self._get_plugin_classes_from_module(deen.plugins.compressions)
+        self.assemblies = self._get_plugin_classes_from_module(deen.plugins.assemblies)
         self.hashs = self._get_plugin_classes_from_module(deen.plugins.hashs)
         self.formatters = self._get_plugin_classes_from_module(deen.plugins.formatters)
         self.misc = self._get_plugin_classes_from_module(deen.plugins.misc)

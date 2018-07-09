@@ -79,7 +79,7 @@ class DeenEncoderWidget(QWidget):
         # Disable the first element in all combo boxes.
         for combo in [self.ui.encode_combo, self.ui.decode_combo, self.ui.uncompress_combo,
                       self.ui.compress_combo, self.ui.hash_combo, self.ui.misc_combo,
-                      self.ui.format_combo]:
+                      self.ui.format_combo, self.ui.assemble_combo, self.ui.disassemble_combo]:
             combo.model().item(0).setEnabled(False)
         # Add all alvailable plugins to the corresponding combo boxes.
         for encoding in [p[1] for p in self.parent.plugins.codecs
@@ -110,6 +110,20 @@ class DeenEncoderWidget(QWidget):
             if getattr(compression, 'cmd_help', None) and compression.cmd_help:
                 index = self.ui.uncompress_combo.count()
                 self.ui.uncompress_combo.setItemData(index-1, compression.cmd_help, Qt.ToolTipRole)
+        for assembly in [p[1] for p in self.parent.plugins.assemblies
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+            self.ui.assemble_combo.addItem(assembly.display_name)
+            if getattr(assembly, 'cmd_help', None) and assembly.cmd_help:
+                index = self.ui.assemble_combo.count()
+                self.ui.assemble_combo.setItemData(index-1, assembly.cmd_help, Qt.ToolTipRole)
+        for assembly in [p[1] for p in self.parent.plugins.assemblies
+                     if (not getattr(p[1], 'cmd_only', None) or
+                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+            self.ui.disassemble_combo.addItem(assembly.display_name)
+            if getattr(assembly, 'cmd_help', None) and assembly.cmd_help:
+                index = self.ui.disassemble_combo.count()
+                self.ui.disassemble_combo.setItemData(index-1, assembly.cmd_help, Qt.ToolTipRole)
         for hash in [p[1] for p in self.parent.plugins.hashs
                      if (not getattr(p[1], 'cmd_only', None) or
                              (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
@@ -136,6 +150,8 @@ class DeenEncoderWidget(QWidget):
         self.ui.decode_combo.currentIndexChanged.connect(lambda: self.action(self.ui.decode_combo))
         self.ui.compress_combo.currentIndexChanged.connect(lambda: self.action(self.ui.compress_combo))
         self.ui.uncompress_combo.currentIndexChanged.connect(lambda: self.action(self.ui.uncompress_combo))
+        self.ui.assemble_combo.currentIndexChanged.connect(lambda: self.action(self.ui.assemble_combo))
+        self.ui.disassemble_combo.currentIndexChanged.connect(lambda: self.action(self.ui.disassemble_combo))
         self.ui.hash_combo.currentIndexChanged.connect(lambda: self.action(self.ui.hash_combo))
         self.ui.misc_combo.currentIndexChanged.connect(lambda: self.action(self.ui.misc_combo))
         self.ui.format_combo.currentIndexChanged.connect(lambda: self.action(self.ui.format_combo))
@@ -453,6 +469,7 @@ class DeenEncoderWidget(QWidget):
                 return
             else:
                 plugin = self.parent.plugins.get_plugin_instance(self.current_pick)
+            data = None
             combo_choice = self.current_combo.model().item(0).text()
             process_gui_func = getattr(plugin, 'process_gui', None)
             if process_gui_func and callable(process_gui_func):
@@ -493,20 +510,25 @@ class DeenEncoderWidget(QWidget):
                 # All other plugins will write their output to a new
                 # window (self.next).
                 if combo_choice == 'Encode' or combo_choice == 'Compress' or \
-                        combo_choice == 'Hash' or combo_choice == 'Miscellaneous':
+                        combo_choice == 'Hash' or combo_choice == 'Miscellaneous' or \
+                        combo_choice == 'Assemble':
                     data = plugin.process(self._content)
-                elif combo_choice == 'Decode' or combo_choice == 'Uncompress':
+                elif combo_choice == 'Decode' or combo_choice == 'Uncompress' or \
+                        combo_choice == 'Disassemble':
                     data = plugin.unprocess(self._content)
                 if plugin.error:
                     LOGGER.error(plugin.error)
                     self.next.set_error()
                     self.next.set_error_message(str(plugin.error))
-                self.next.content = data
-                if self.next.text_field.isReadOnly() and self.current_pick:
-                    self.next.ui.current_plugin_label.setText('Plugin: ' + self.current_pick)
-                    self.next.ui.current_plugin_label.show()
-                if not plugin.error:
-                    self.next.clear_error_message()
+                if data:
+                    self.next.content = data
+                    if self.next.text_field.isReadOnly() and self.current_pick:
+                        self.next.ui.current_plugin_label.setText('Plugin: ' + self.current_pick)
+                        self.next.ui.current_plugin_label.show()
+                    if not plugin.error:
+                        self.next.clear_error_message()
+                else:
+                    LOGGER.error('Plugin {} did not return any data'.format(plugin.name))
         else:
             self.current_pick = None
         if self.current_combo:
