@@ -95,6 +95,7 @@ class AsmBase(DeenPlugin):
                             help='Interactive mode', action='store_true')
         parser.add_argument('--raw', dest='raw', default=False,
                             help='output raw bytes', action='store_true')
+        return parser
 
     def process_cli(self, args):
         # We should keep the args object so that
