@@ -69,7 +69,8 @@ class AsmBase(DeenPlugin):
             for (address, size, mnemonic, op_str) in self.cs.disasm_lite(bytes(data), 0x1000):
                 if len(output) > 0:
                     output += '\n'
-                output += '0x%x:\t%s\t%s' % (address, mnemonic, op_str)
+                #output += '0x%x:\t%s\t%s' % (address, mnemonic, op_str)
+                output += '%s\t%s' % (mnemonic, op_str)
         except capstone.CsError as e:
             self.error = e
             return b''
