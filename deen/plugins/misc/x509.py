@@ -187,7 +187,7 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
             # If the plugin GUI is cancelled, just
             # return without doing anything.
             return
-        # Decode content because pyOpenSSL failes with bytearray.
+        # Decode content because pyOpenSSL fails with bytearrays.
         content = content.decode()
         try:
             original_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, content)
