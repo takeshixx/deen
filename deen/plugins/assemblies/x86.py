@@ -23,13 +23,6 @@ class DeenPluginAsmX86(AsmBase):
     capstone_arch = capstone.CS_ARCH_X86
     capstone_mode = capstone.CS_MODE_32
 
-    def __init__(self):
-        super(DeenPluginAsmX86, self).__init__()
-        # Initialize keystone and capstone as soon as an instance
-        # of this plugin will be created.
-        self.ks = keystone.Ks(self.keystone_arch, self.keystone_mode)
-        self.cs = capstone.Cs(self.capstone_arch, self.capstone_mode)
-
 
 class DeenPluginAsmX86_64(AsmBase):
     name = 'assembly_x86_64'
@@ -45,9 +38,3 @@ class DeenPluginAsmX86_64(AsmBase):
     capstone_arch = capstone.CS_ARCH_X86
     capstone_mode = capstone.CS_MODE_64
 
-    def __init__(self):
-        super(DeenPluginAsmX86_64, self).__init__()
-        # Initialize keystone and capstone as soon as an instance
-        # of this plugin will be created.
-        self.ks = keystone.Ks(self.keystone_arch, self.keystone_mode)
-        self.cs = capstone.Cs(self.capstone_arch, self.capstone_mode)
