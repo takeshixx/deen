@@ -4,3 +4,6 @@ jsbeautifier
 dicttoxml
 xmltodict
 pyjwt
+bcrypt
+keystone
+capstone
