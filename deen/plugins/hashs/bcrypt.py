@@ -1,5 +1,9 @@
 import sys
-import bcrypt
+try:
+    import bcrypt
+    BCRYPT = True
+except ImportError:
+    BCRYPT = False
 
 from .. import DeenPlugin
 
@@ -25,6 +29,8 @@ class DeenPluginBcrypt(DeenPlugin):
 
     def process(self, data, salt=None, password=None, check=False):
         super(DeenPluginBcrypt, self).process(data)
+        if not BCRYPT:
+            return
         if not salt:
             salt = bcrypt.gensalt()
         if salt and not isinstance(salt, bytes):
