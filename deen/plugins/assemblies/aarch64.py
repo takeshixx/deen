@@ -16,12 +16,13 @@ class DeenPluginAsmAarch64(AsmBase):
                'arm64']
     cmd_name = 'assembly_aarch64'
     cmd_help='Assemble/Disassemble for the AARCH64 architecture'
-    keystone_arch = keystone.KS_ARCH_ARM64
-    capstone_arch = capstone.CS_ARCH_ARM64
+    keystone_arch = keystone.KS_ARCH_ARM64 if KEYSTONE else None
+    capstone_arch = capstone.CS_ARCH_ARM64 if KEYSTONE else None
 
     def __init__(self):
         super(DeenPluginAsmAarch64, self).__init__()
         # Initialize keystone and capstone as soon as an instance
         # of this plugin will be created.
-        self.ks = keystone.Ks(self.keystone_arch, keystone.KS_MODE_LITTLE_ENDIAN)
-        self.cs = capstone.Cs(self.capstone_arch, keystone.KS_MODE_LITTLE_ENDIAN)
+        if KEYSTONE:
+            self.ks = keystone.Ks(self.keystone_arch, keystone.KS_MODE_LITTLE_ENDIAN)
+            self.cs = capstone.Cs(self.capstone_arch, keystone.KS_MODE_LITTLE_ENDIAN)

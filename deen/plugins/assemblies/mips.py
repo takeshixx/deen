@@ -16,10 +16,10 @@ class DeenPluginAsmMips(AsmBase):
                'mips']
     cmd_name = 'assembly_mips'
     cmd_help='Assemble/Disassemble for the MIPS architecture'
-    keystone_arch = keystone.KS_ARCH_MIPS
-    keystone_mode = keystone.KS_MODE_MIPS32
-    capstone_arch = capstone.CS_ARCH_MIPS
-    capstone_mode = capstone.CS_MODE_MIPS32
+    keystone_arch = keystone.KS_ARCH_MIPS if KEYSTONE else None
+    keystone_mode = keystone.KS_MODE_MIPS32 if KEYSTONE else None
+    capstone_arch = capstone.CS_ARCH_MIPS if KEYSTONE else None
+    capstone_mode = capstone.CS_MODE_MIPS32 if KEYSTONE else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
@@ -38,10 +38,10 @@ class DeenPluginAsmMips64(AsmBase):
                'mips64']
     cmd_name = 'assembly_mips64'
     cmd_help='Assemble/Disassemble for the MIPS64 architecture'
-    keystone_arch = keystone.KS_ARCH_MIPS
-    keystone_mode = keystone.KS_MODE_MIPS64
-    capstone_arch = capstone.CS_ARCH_MIPS
-    capstone_mode = capstone.CS_MODE_MIPS64
+    keystone_arch = keystone.KS_ARCH_MIPS if KEYSTONE else None
+    keystone_mode = keystone.KS_MODE_MIPS64 if KEYSTONE else None
+    capstone_arch = capstone.CS_ARCH_MIPS if KEYSTONE else None
+    capstone_mode = capstone.CS_MODE_MIPS64 if KEYSTONE else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):

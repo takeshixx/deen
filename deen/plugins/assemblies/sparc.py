@@ -16,9 +16,9 @@ class DeenPluginAsmSparc(AsmBase):
                'sparc']
     cmd_name = 'assembly_sparc'
     cmd_help='Assemble/Disassemble for the SPARC architecture'
-    keystone_arch = keystone.KS_ARCH_SPARC
-    keystone_mode = keystone.KS_MODE_SPARC32
-    capstone_arch = capstone.CS_ARCH_SPARC
+    keystone_arch = keystone.KS_ARCH_SPARC if KEYSTONE else None
+    keystone_mode = keystone.KS_MODE_SPARC32 if KEYSTONE else None
+    capstone_arch = capstone.CS_ARCH_SPARC if KEYSTONE else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):

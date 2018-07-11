@@ -31,6 +31,8 @@ class AsmBase(DeenPlugin):
         super(AsmBase, self).__init__()
         # Initialize keystone and capstone as soon as an instance
         # of this plugin will be created.
+        if not KEYSTONE:
+            return
         if getattr(self, 'args', None) and self.args and getattr(self.args, 'bigendian', None) \
                 and self.args.bigendian:
             self.ks = keystone.Ks(self.keystone_arch,

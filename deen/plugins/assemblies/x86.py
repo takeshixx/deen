@@ -18,10 +18,10 @@ class DeenPluginAsmX86(AsmBase):
                'x86']
     cmd_name = 'assembly_x86'
     cmd_help='Assemble/Disassemble for the x86 architecture'
-    keystone_arch = keystone.KS_ARCH_X86
-    keystone_mode = keystone.KS_MODE_32
-    capstone_arch = capstone.CS_ARCH_X86
-    capstone_mode = capstone.CS_MODE_32
+    keystone_arch = keystone.KS_ARCH_X86 if KEYSTONE else None
+    keystone_mode = keystone.KS_MODE_32 if KEYSTONE else None
+    capstone_arch = capstone.CS_ARCH_X86 if KEYSTONE else None
+    capstone_mode = capstone.CS_MODE_32 if KEYSTONE else None
 
 
 class DeenPluginAsmX86_64(AsmBase):
@@ -33,8 +33,8 @@ class DeenPluginAsmX86_64(AsmBase):
                'x64']
     cmd_name = 'assembly_x86_64'
     cmd_help='Assemble/Disassemble for the x86_64 architecture'
-    keystone_arch = keystone.KS_ARCH_X86
-    keystone_mode = keystone.KS_MODE_64
-    capstone_arch = capstone.CS_ARCH_X86
-    capstone_mode = capstone.CS_MODE_64
+    keystone_arch = keystone.KS_ARCH_X86 if KEYSTONE else None
+    keystone_mode = keystone.KS_MODE_64 if KEYSTONE else None
+    capstone_arch = capstone.CS_ARCH_X86 if KEYSTONE else None
+    capstone_mode = capstone.CS_MODE_64 if KEYSTONE else None
 

@@ -18,10 +18,10 @@ class DeenPluginAsmArm(AsmBase):
                'arm']
     cmd_name = 'assembly_arm'
     cmd_help='Assemble/Disassemble for the ARM architecture'
-    keystone_arch = keystone.KS_ARCH_ARM
-    keystone_mode = keystone.KS_MODE_ARM
-    capstone_arch = capstone.CS_ARCH_ARM
-    capstone_mode = capstone.CS_MODE_ARM
+    keystone_arch = keystone.KS_ARCH_ARM if KEYSTONE else None
+    keystone_mode = keystone.KS_MODE_ARM if KEYSTONE else None
+    capstone_arch = capstone.CS_ARCH_ARM if KEYSTONE else None
+    capstone_mode = capstone.CS_MODE_ARM if KEYSTONE else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
@@ -40,10 +40,10 @@ class DeenPluginAsmArmThumb(AsmBase):
                'thumb']
     cmd_name = 'assembly_armthumb'
     cmd_help='Assemble/Disassemble for the ARM architecture with Thumb instructions'
-    keystone_arch = keystone.KS_ARCH_ARM
-    keystone_mode = keystone.KS_MODE_THUMB
-    capstone_arch = capstone.CS_ARCH_ARM
-    capstone_mode = capstone.CS_MODE_THUMB
+    keystone_arch = keystone.KS_ARCH_ARM if KEYSTONE else None
+    keystone_mode = keystone.KS_MODE_THUMB if KEYSTONE else None
+    capstone_arch = capstone.CS_ARCH_ARM if KEYSTONE else None
+    capstone_mode = capstone.CS_MODE_THUMB if KEYSTONE else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
