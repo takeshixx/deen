@@ -1,10 +1,15 @@
 from __future__ import absolute_import
 import sys
 import json
-import jwt
-import jwt.algorithms
+try:
+    import jwt
+    import jwt.algorithms
+    PYJWT = True
+except ImportError:
+    PYJWT = False
 
 from .. import DeenPlugin
+from deen.exceptions import MissingDependencyException
 
 
 class DeenPluginJwt(DeenPlugin):
@@ -27,6 +32,9 @@ class DeenPluginJwt(DeenPlugin):
 
     def process(self, data, secret='', algo='HS256'):
         super(DeenPluginJwt, self).process(data)
+        if not PYJWT:
+            self.error = MissingDependencyException('pyjwt module missing')
+            return data
         try:
             json.loads(data)
         except Exception as e:
@@ -43,6 +51,9 @@ class DeenPluginJwt(DeenPlugin):
 
     def unprocess(self, data, secret='', verify=False):
         super(DeenPluginJwt, self).unprocess(data)
+        if not PYJWT:
+            self.error = MissingDependencyException('pyjwt module missing')
+            return data
         try:
             data = jwt.decode(bytes(data), secret, verify=verify)
             data = json.dumps(data)
