@@ -152,7 +152,7 @@ class AsmBase(DeenPlugin):
                             output = bytes(bytearray(encoding))
                         else:
                             output = codecs.encode(bytearray(encoding), 'hex')
-                    self.write_to_stdout(output)
+                    self.write_to_stdout(output, nonewline=True)
                 except keystone.KsError as e:
                     self.write_to_stdout(str(e).encode())
             except (KeyboardInterrupt, EOFError):
