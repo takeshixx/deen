@@ -105,6 +105,7 @@ class AsmBase(DeenPlugin):
         # functions like _interactive_assembly()
         # can access CLI arguments.
         self.args = args
+        self.reinitialize()
         if args.interactive:
             self._interactive_assembly()
         if not self.content:
@@ -121,6 +122,13 @@ class AsmBase(DeenPlugin):
             return self.unprocess(self.content)
         else:
             return self.process(self.content)
+
+    def reinitialize(self):
+        """Subclasses can override this function in order
+        to execute specific tasks before calling process()/
+        unprocess(). E.g. changing options in Keystone/
+        Capstone engines."""
+        pass
 
     def _syntax_highlighting(self, data):
         """This function can be overwritten by plugins
