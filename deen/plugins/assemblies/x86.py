@@ -23,6 +23,30 @@ class DeenPluginAsmX86(AsmBase):
     capstone_arch = capstone.CS_ARCH_X86 if KEYSTONE else None
     capstone_mode = capstone.CS_MODE_32 if KEYSTONE else None
 
+    def __init__(self, atandt=False):
+        super(DeenPluginAsmX86, self).__init__()
+        self.set_syntax(atandt)
+
+    def reinitialize(self):
+        if self.args and getattr(self.args, 'atandt', None) \
+                and self.args.atandt:
+            self.set_syntax(self.args.atandt)
+
+    def set_syntax(self, atandt=False):
+        if atandt:
+            self.ks.syntax = keystone.KS_OPT_SYNTAX_ATT
+        else:
+            self.ks.syntax = keystone.KS_OPT_SYNTAX_INTEL
+
+    @staticmethod
+    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+        # Add an additional argument for AT&T syntax.
+        parser = AsmBase.add_argparser(argparser, cmd_name,
+                                       cmd_help, cmd_aliases=cmd_aliases)
+        parser.add_argument('-a', '--atandt', dest='atandt',
+                            default=False, help='use AT&T syntax',
+                            action='store_true')
+
     def _syntax_highlighting(self, data):
         try:
             from pygments import highlight
