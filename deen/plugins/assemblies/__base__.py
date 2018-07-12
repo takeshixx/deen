@@ -154,13 +154,14 @@ class AsmBase(DeenPlugin):
                             continue
                         output = self.unprocess(data)
                         output = self._syntax_highlighting(output)
+                        self.write_to_stdout(output, nonewline=True)
                     else:
                         encoding, count = self.ks.asm(data)
                         if self.args.raw:
                             output = bytes(bytearray(encoding))
                         else:
                             output = codecs.encode(bytearray(encoding), 'hex')
-                    self.write_to_stdout(output, nonewline=True)
+                        self.write_to_stdout(output)
                 except keystone.KsError as e:
                     self.write_to_stdout(str(e).encode())
             except (KeyboardInterrupt, EOFError):
