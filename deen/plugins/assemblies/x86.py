@@ -73,7 +73,7 @@ class DeenPluginAsmX86(AsmBase):
         return data
 
 
-class DeenPluginAsmX86_64(AsmBase):
+class DeenPluginAsmX86_64(DeenPluginAsmX86):
     name = 'assembly_x86_64'
     display_name = 'x86_64'
     aliases = ['asm_x86_64',
@@ -86,28 +86,3 @@ class DeenPluginAsmX86_64(AsmBase):
     keystone_mode = keystone.KS_MODE_64 if KEYSTONE else None
     capstone_arch = capstone.CS_ARCH_X86 if KEYSTONE else None
     capstone_mode = capstone.CS_MODE_64 if KEYSTONE else None
-
-    def _syntax_highlighting(self, data):
-        try:
-            from pygments import highlight
-            from pygments.lexers import NasmLexer
-            from pygments.formatters import TerminalFormatter, Terminal256Formatter
-            from pygments.styles import get_style_by_name
-            PYGMENTS = True
-            style = get_style_by_name('colorful')
-            import curses
-            curses.setupterm()
-            if curses.tigetnum('colors') >= 256:
-                FORMATTER = Terminal256Formatter(style=style)
-            else:
-                FORMATTER = TerminalFormatter()
-            # When pygments is available, we
-            # can print the disassembled
-            # instructions with syntax
-            # highlighting.
-            data = highlight(data, NasmLexer(), FORMATTER)
-        except ImportError:
-            pass
-        finally:
-            data = data.encode()
-        return data
