@@ -122,27 +122,16 @@ class AsmBase(DeenPlugin):
         else:
             return self.process(self.content)
 
+    def _syntax_highlighting(self, data):
+        """This function can be overwritten by plugins
+        to implement ASM-specific syntax highlighting."""
+        return data
+
     def _interactive_assembly(self):
         # Import readline module to make arrow keys
         # and command history work in the interactive
         # mode.
         import readline
-        try:
-            from pygments import highlight
-            from pygments.lexers import NasmLexer
-            from pygments.formatters import TerminalFormatter, Terminal256Formatter
-            from pygments.styles import get_style_by_name
-            PYGMENTS = True
-            style = get_style_by_name('colorful')
-            import curses
-            curses.setupterm()
-            if curses.tigetnum('colors') >= 256:
-                FORMATTER = Terminal256Formatter(style=style)
-            else:
-                FORMATTER = TerminalFormatter()
-        except ImportError:
-            PYGMENTS = False
-            FORMATTER = False
         while True:
             try:
                 data = input('> ')
@@ -156,20 +145,7 @@ class AsmBase(DeenPlugin):
                             self.write_to_stdout(b'Invalid hex encoding')
                             continue
                         output = self.unprocess(data)
-                        # When pygments is available, we
-                        # can print the disassembled
-                        # instructions with syntax
-                        # highlighting.
-                        if all([PYGMENTS, FORMATTER]):
-                            try:
-                                output = highlight(output, NasmLexer(), FORMATTER)
-                            except Exception:
-                                # When pygment failes, just
-                                # continue printing the raw
-                                # output.
-                                pass
-                            finally:
-                                output = output.encode()
+                        output = self._syntax_highlighting(output)
                     else:
                         encoding, count = self.ks.asm(data)
                         if self.args.raw:
