@@ -98,6 +98,8 @@ class AsmBase(DeenPlugin):
                             help='Interactive mode', action='store_true')
         parser.add_argument('--raw', dest='raw', default=False,
                             help='output raw bytes', action='store_true')
+        parser.add_argument('-p', '--plain', dest='plain', default=False,
+                            help='omit syntax highlighting', action='store_true')
         return parser
 
     def process_cli(self, args):
@@ -119,9 +121,12 @@ class AsmBase(DeenPlugin):
         if not self.content:
             return
         if args.revert:
-            return self.unprocess(self.content)
+            output = self.unprocess(self.content)
+            if not self.args.plain:
+                output = self._syntax_highlighting(output)
         else:
-            return self.process(self.content)
+            output = self.process(self.content)
+        return output
 
     def reinitialize(self):
         """Subclasses can override this function in order
@@ -153,7 +158,8 @@ class AsmBase(DeenPlugin):
                             self.write_to_stdout(b'Invalid hex encoding')
                             continue
                         output = self.unprocess(data)
-                        output = self._syntax_highlighting(output)
+                        if not self.args.plain:
+                            output = self._syntax_highlighting(output)
                         self.write_to_stdout(output, nonewline=True)
                     else:
                         encoding, count = self.ks.asm(data)
