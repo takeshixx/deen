@@ -71,7 +71,6 @@ class AsmBase(DeenPlugin):
             for (address, size, mnemonic, op_str) in self.cs.disasm_lite(bytes(data), 0x1000):
                 if len(output) > 0:
                     output += '\n'
-                #output += '0x%x:\t%s\t%s' % (address, mnemonic, op_str)
                 output += '%s\t%s' % (mnemonic, op_str)
         except capstone.CsError as e:
             self.error = e
@@ -95,7 +94,7 @@ class AsmBase(DeenPlugin):
         parser.add_argument('-f', '--file', dest='plugininfile', default=None,
                             help='file name or - for STDIN', metavar='filename')
         parser.add_argument('-i', '--interactive', dest='interactive', default=False,
-                            help='Interactive mode', action='store_true')
+                            help='interactive mode', action='store_true')
         parser.add_argument('--raw', dest='raw', default=False,
                             help='output raw bytes', action='store_true')
         parser.add_argument('-p', '--plain', dest='plain', default=False,
