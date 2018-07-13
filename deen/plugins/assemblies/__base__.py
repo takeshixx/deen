@@ -116,7 +116,12 @@ class AsmBase(DeenPlugin):
                 else:
                     self.content = self.read_content_from_file(args.plugininfile)
             else:
-                self.content = args.plugindata
+                try:
+                    data = codecs.decode(args.plugindata, 'hex')
+                except Exception:
+                    self.write_to_stdout(b'Invalid hex encoding')
+                    return
+                self.content = data
         if not self.content:
             return
         if args.revert:
