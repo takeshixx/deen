@@ -50,7 +50,7 @@ class DeenPluginAsmX86(AsmBase):
     def _syntax_highlighting(self, data):
         try:
             from pygments import highlight
-            from pygments.lexers import NasmLexer
+            from pygments.lexers import NasmLexer, GasLexer
             from pygments.formatters import TerminalFormatter, Terminal256Formatter
             from pygments.styles import get_style_by_name
             PYGMENTS = True
@@ -61,11 +61,15 @@ class DeenPluginAsmX86(AsmBase):
                 FORMATTER = Terminal256Formatter(style=style)
             else:
                 FORMATTER = TerminalFormatter()
+            if self.ks.syntax == keystone.KS_OPT_SYNTAX_INTEL:
+                lexer = NasmLexer()
+            else:
+                lexer = GasLexer()
             # When pygments is available, we
             # can print the disassembled
             # instructions with syntax
             # highlighting.
-            data = highlight(data, NasmLexer(), FORMATTER)
+            data = highlight(data, lexer, FORMATTER)
         except ImportError:
             pass
         finally:
