@@ -5,7 +5,6 @@ try:
 except ImportError:
     KEYSTONE = False
 
-from .__base__ import AsmBase
 from .arm import DeenPluginAsmArm
 
 

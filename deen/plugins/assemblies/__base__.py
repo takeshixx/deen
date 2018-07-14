@@ -68,7 +68,8 @@ class AsmBase(DeenPlugin):
         super(AsmBase, self).unprocess(data)
         output = ''
         try:
-            for (address, size, mnemonic, op_str) in self.cs.disasm_lite(bytes(data), 0x1000):
+            for (address, size, mnemonic, op_str) in \
+                    self.cs.disasm_lite(bytes(data), 0x1000):
                 if len(output) > 0:
                     output += '\n'
                 output += '%s\t%s' % (mnemonic, op_str)

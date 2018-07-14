@@ -38,7 +38,6 @@ class DeenPluginAsmArm(AsmBase):
             from pygments.lexers import GasLexer
             from pygments.formatters import TerminalFormatter, Terminal256Formatter
             from pygments.styles import get_style_by_name
-            PYGMENTS = True
             style = get_style_by_name('colorful')
             import curses
             curses.setupterm()
