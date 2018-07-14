@@ -32,6 +32,31 @@ class DeenPluginAsmArm(AsmBase):
                             default=False, help='use big endian',
                             action='store_true')
 
+    def _syntax_highlighting(self, data):
+        try:
+            from pygments import highlight
+            from pygments.lexers import GasLexer
+            from pygments.formatters import TerminalFormatter, Terminal256Formatter
+            from pygments.styles import get_style_by_name
+            PYGMENTS = True
+            style = get_style_by_name('colorful')
+            import curses
+            curses.setupterm()
+            if curses.tigetnum('colors') >= 256:
+                FORMATTER = Terminal256Formatter(style=style)
+            else:
+                FORMATTER = TerminalFormatter()
+            # When pygments is available, we
+            # can print the disassembled
+            # instructions with syntax
+            # highlighting.
+            data = highlight(data, GasLexer(), FORMATTER)
+        except ImportError:
+            pass
+        finally:
+            data = data.encode()
+        return data
+
 
 class DeenPluginAsmArmThumb(DeenPluginAsmArm):
     name = 'assembly_armthumb'
