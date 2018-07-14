@@ -19,6 +19,7 @@ class DeenPluginAsmSparc(AsmBase):
     keystone_arch = keystone.KS_ARCH_SPARC if KEYSTONE else None
     keystone_mode = keystone.KS_MODE_SPARC32 if KEYSTONE else None
     capstone_arch = capstone.CS_ARCH_SPARC if KEYSTONE else None
+    capstone_mode = 0 # Add default mode
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
