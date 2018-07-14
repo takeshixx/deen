@@ -35,8 +35,10 @@ class DeenPluginAsmX86(AsmBase):
     def set_syntax(self, atandt=False):
         if atandt:
             self.ks.syntax = keystone.KS_OPT_SYNTAX_ATT
+            self.cs.syntax = capstone.CS_OPT_SYNTAX_ATT
         else:
             self.ks.syntax = keystone.KS_OPT_SYNTAX_INTEL
+            self.cs.syntax = capstone.CS_OPT_SYNTAX_INTEL
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
