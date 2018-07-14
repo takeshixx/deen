@@ -33,7 +33,7 @@ class DeenPluginAsmArm(AsmBase):
                             action='store_true')
 
 
-class DeenPluginAsmArmThumb(AsmBase):
+class DeenPluginAsmArmThumb(DeenPluginAsmArm):
     name = 'assembly_armthumb'
     display_name = 'ARM Thumb'
     aliases = ['asm_armthumb',
@@ -44,12 +44,3 @@ class DeenPluginAsmArmThumb(AsmBase):
     keystone_mode = keystone.KS_MODE_THUMB if KEYSTONE else None
     capstone_arch = capstone.CS_ARCH_ARM if KEYSTONE else None
     capstone_mode = capstone.CS_MODE_THUMB if KEYSTONE else None
-
-    @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
-        # Add an additional argument for big endian mode.
-        parser = AsmBase.add_argparser(argparser, cmd_name,
-                                       cmd_help, cmd_aliases=cmd_aliases)
-        parser.add_argument('-b', '--big-endian', dest='bigendian',
-                            default=False, help='use big endian',
-                            action='store_true')
