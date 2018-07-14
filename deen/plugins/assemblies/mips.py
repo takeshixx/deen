@@ -31,7 +31,7 @@ class DeenPluginAsmMips(AsmBase):
                             action='store_true')
 
 
-class DeenPluginAsmMips64(AsmBase):
+class DeenPluginAsmMips64(DeenPluginAsmMips):
     name = 'assembly_mips64'
     display_name = 'MIPS64'
     aliases = ['asm_mips64',
@@ -43,11 +43,3 @@ class DeenPluginAsmMips64(AsmBase):
     capstone_arch = capstone.CS_ARCH_MIPS if KEYSTONE else None
     capstone_mode = capstone.CS_MODE_MIPS64 if KEYSTONE else None
 
-    @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
-        # Add an additional argument for big endian mode.
-        parser = AsmBase.add_argparser(argparser, cmd_name,
-                                       cmd_help, cmd_aliases=cmd_aliases)
-        parser.add_argument('-b', '--big-endian', dest='bigendian',
-                            default=False, help='use big endian',
-                            action='store_true')
