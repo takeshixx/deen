@@ -454,7 +454,8 @@ class TestTransformers(unittest.TestCase):
     def test_hashs(self):
         data_bytes = self._random_bytes()
         for hash in self._plugins.hashs:
-            if hash[1].name == 'ntlm' or hash[1].name == 'mysql':
+            if hash[1].name == 'ntlm' or hash[1].name == 'mysql' or \
+                    hash[1].name == 'bcrypt':
                 # Skip some hash formats that are not part
                 # of the hashlib module.
                 continue
