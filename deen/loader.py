@@ -1,5 +1,7 @@
 import sys
 import inspect
+import pkgutil
+import importlib
 import pprint
 import logging
 
@@ -53,13 +55,23 @@ class DeenPluginLoader(object):
         pp = pprint.PrettyPrinter(indent=4)
         return pp.pformat([p[1].display_name for p in self.available_plugins])
 
-    def _get_plugin_classes_from_module(self, module):
+    def _get_submodules_from_namespace_package(self, package):
+        """An internal helper function that returns
+        a list of submodules in the given namespace
+        package."""
+        output = []
+        for module in  pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
+            output.append(module.name)
+        return output
+
+    def _get_plugin_classes_from_module(self, package):
         """An internal helper function that extracts
         all plugin classes from modules in the plugins
         folder."""
         output = []
-        for m in inspect.getmembers(module, inspect.ismodule):
-            for c in inspect.getmembers(m[1], inspect.isclass):
+        for m in self._get_submodules_from_namespace_package(package):
+            module = importlib.import_module(m, package=None)
+            for c in inspect.getmembers(module, inspect.isclass):
                 # Only classes that start with DeenPlugin will be loaded.
                 if c[0].startswith('DeenPlugin') and \
                         len(c[0].replace('DeenPlugin', '')) != 0:
