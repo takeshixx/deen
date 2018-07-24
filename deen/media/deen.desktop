@@ -2,6 +2,6 @@
 Type=Application
 Name=deen
 GenericName=Decode/Encode Data
-Category=Utility;Qt;
+Categories=Utility;Qt;
 Exec=/usr/bin/deen
 Icon=deen.png
