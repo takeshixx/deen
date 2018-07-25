@@ -23,6 +23,13 @@ class DeenPluginHex(DeenPlugin):
 
     def unprocess(self, data):
         super(DeenPluginHex, self).unprocess(data)
+        # Remove whitespaces from
+        # input data to make decoding
+        # of hexdumps easier.
+        temp = data.split()
+        data = bytearray()
+        for t in temp:
+            data.extend(t)
         try:
             data = codecs.decode(data, 'hex')
         except (binascii.Error, TypeError) as e:
