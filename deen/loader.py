@@ -45,8 +45,8 @@ class DeenPluginLoader(object):
         """Returns a list of tuples of all available
         plugins in the plugin folder."""
         return self.codecs + self.compressions + \
-                self.hashs + self.formatters + self.misc + \
-                self.assemblies
+               self.hashs + self.formatters + self.misc + \
+               self.assemblies
 
     def pprint_available_plugins(self):
         """Returns a pprint.pformat representation
@@ -60,7 +60,7 @@ class DeenPluginLoader(object):
         a list of submodules in the given namespace
         package."""
         output = []
-        for module in  pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
+        for module in pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
             output.append(module.name)
         return output
 
