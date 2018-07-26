@@ -152,9 +152,14 @@ class AsmBase(DeenPlugin):
         # and command history work in the interactive
         # mode.
         import readline
+        prompt = self.display_name + ' > '
+        if self.args.revert:
+            prompt = 'dsm:' + prompt
+        else:
+            prompt = 'asm:' + prompt
         while True:
             try:
-                data = input('> ')
+                data = input(prompt)
                 if not data:
                     continue
                 try:
