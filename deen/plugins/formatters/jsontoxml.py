@@ -36,7 +36,8 @@ class DeenPluginJsonToXmlFormatter(DeenPlugin):
             return
         try:
             data = json.loads(data.decode())
-        except (json.JSONDecodeError, TypeError) as e:
+        except (json.JSONDecodeError, TypeError,
+                UnicodeDecodeError, AssertionError) as e:
             self.error = e
             return
         try:
