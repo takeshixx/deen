@@ -48,8 +48,10 @@ class DeenPlugin(object):
         """Every plugin must have a process method
         that e.g. encodes, compresses, hashs, formats,
         whatsoever."""
-        assert data is not None
-        assert isinstance(data, (bytes, bytearray))
+        assert data is not None,\
+            'Input data is None'
+        assert isinstance(data, (bytes, bytearray)),\
+            'Invalid input type: ' + str(type(data))
 
     def unprocess(self, data):
         """Depending of the category of a plugin, it
@@ -58,8 +60,10 @@ class DeenPlugin(object):
         However, e.g. hash functions will not require
         an unprocess function as they are not (easily)
         reversible."""
-        assert data is not None
-        assert isinstance(data, (bytes, bytearray))
+        assert data is not None,\
+            'Input data is None'
+        assert isinstance(data, (bytes, bytearray)),\
+            'Invalid input type: ' + str(type(data))
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
