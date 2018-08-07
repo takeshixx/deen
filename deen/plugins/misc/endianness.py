@@ -13,5 +13,7 @@ class DeenPluginEndianess(DeenPlugin):
 
     def process(self, data):
         super(DeenPluginEndianess, self).process(data)
+        if isinstance(data, bytes):
+            data = bytearray(data)
         data.reverse()
         return data
