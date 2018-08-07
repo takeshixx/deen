@@ -121,10 +121,6 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         else:
             return True
 
-    def process(self, data):
-        super(DeenPluginX509CertificateCloner, self).process(data)
-        pass
-
     @staticmethod
     def add_argparser(argparser, *args):
         # Python 2 argparse does not support aliases
