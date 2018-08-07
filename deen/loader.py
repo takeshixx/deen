@@ -5,13 +5,6 @@ import importlib
 import pprint
 import logging
 
-import deen.plugins.codecs
-import deen.plugins.compressions
-import deen.plugins.assemblies
-import deen.plugins.hashs
-import deen.plugins.formatters
-import deen.plugins.misc
-
 LOGGER = logging.getLogger()
 
 
@@ -19,7 +12,7 @@ class DeenPluginLoader(object):
     """Instances of this class can be used
     to load plugins in order to interact with
     them."""
-    def __init__(self, argparser=None):
+    def __init__(self, argparser=None, base=None):
         self.codecs = []
         self.compressions = []
         self.assemblies = []
@@ -30,6 +23,7 @@ class DeenPluginLoader(object):
         self._subargparser = None
         if argparser:
             self.argparser = argparser
+        self.base = base
         self.load_plugins()
 
     @property
@@ -97,12 +91,32 @@ class DeenPluginLoader(object):
         with the available plugins. This function could
         also be called multiple times or at a later point
         in time to reload plugins."""
-        self.codecs = self._get_plugin_classes_from_module(deen.plugins.codecs)
-        self.compressions = self._get_plugin_classes_from_module(deen.plugins.compressions)
-        self.assemblies = self._get_plugin_classes_from_module(deen.plugins.assemblies)
-        self.hashs = self._get_plugin_classes_from_module(deen.plugins.hashs)
-        self.formatters = self._get_plugin_classes_from_module(deen.plugins.formatters)
-        self.misc = self._get_plugin_classes_from_module(deen.plugins.misc)
+        if self.base:
+            codecs = self.base + '.plugins.codecs'
+            compressions = self.base + '.plugins.compressions'
+            assemblies = self.base + '.plugins.assemblies'
+            hashs = self.base + '.plugins.hashs'
+            formatters = self.base + '.plugins.formatters'
+            misc = self.base + '.plugins.misc'
+        else:
+            codecs = 'deen.plugins.codecs'
+            compressions = 'deen.plugins.compressions'
+            assemblies = 'deen.plugins.assemblies'
+            hashs = 'deen.plugins.hashs'
+            formatters = 'deen.plugins.formatters'
+            misc = 'deen.plugins.misc'
+        codecs = importlib.import_module(codecs)
+        self.codecs = self._get_plugin_classes_from_module(codecs)
+        compressions = importlib.import_module(compressions)
+        self.compressions = self._get_plugin_classes_from_module(compressions)
+        assemblies = importlib.import_module(assemblies)
+        self.assemblies = self._get_plugin_classes_from_module(assemblies)
+        hashs = importlib.import_module(hashs)
+        self.hashs = self._get_plugin_classes_from_module(hashs)
+        formatters = importlib.import_module(formatters)
+        self.formatters = self._get_plugin_classes_from_module(formatters)
+        misc = importlib.import_module(misc)
+        self.misc = self._get_plugin_classes_from_module(misc)
 
     def plugin_available(self, name):
         """Returns True if the given plugin name is available,
