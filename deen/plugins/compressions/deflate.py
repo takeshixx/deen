@@ -1,3 +1,4 @@
+import sys
 import zlib
 
 from .. import DeenPlugin
@@ -15,25 +16,22 @@ class DeenPluginDeflate(DeenPlugin):
     def process(self, data):
         super(DeenPluginDeflate, self).process(data)
         zlib_encode = zlib.compressobj(-1, zlib.DEFLATED, -15)
+        if sys.version_info.major < 3:
+            data = buffer(data)
         try:
-            data = zlib_encode.compress(data)
-        except TypeError:
-            # Python 2 does not like bytearrays
-            data = zlib_encode.compress(buffer(data))
-        except Exception as e:
+            zlib_encode.compress(data)
+            data = zlib_encode.flush()
+        except zlib.error as e:
             self.error = e
         return data
 
     def unprocess(self, data):
         super(DeenPluginDeflate, self).unprocess(data)
+        if sys.version_info.major < 3:
+            data = buffer(data)
         try:
-            data = zlib.decompress(data, -15)
+            zlib.decompress(data, -15)
+            data = zlib.flush()
         except zlib.error as e:
             self.error = e
-        except TypeError:
-            try:
-                # Python 2 does not like bytearrays
-                data = zlib.decompress(buffer(data), -15)
-            except zlib.error as e:
-                self.error = e
         return data
