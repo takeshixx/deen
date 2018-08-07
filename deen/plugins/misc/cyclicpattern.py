@@ -60,7 +60,11 @@ class DeenPluginCyclicPatternFind(DeenPlugin):
         """Search for data in cyclic pattern. Convert from hex
         if needed."""
         super(DeenPluginCyclicPatternFind, self).process(data)
-        needle = data.decode("utf-8")
+        try:
+            needle = data.decode("utf-8")
+        except UnicodeDecodeError as e:
+            self.error = e
+            return
         try:
             if needle.startswith('0x'):
                 # Strip off '0x', convert to ASCII and reverse
