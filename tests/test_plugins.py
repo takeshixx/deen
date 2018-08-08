@@ -396,7 +396,8 @@ class TestTransformers(unittest.TestCase):
     def test_compress_deflate(self):
         data_bytes = self._random_bytes()
         zlib_compress = zlib.compressobj(-1, zlib.DEFLATED, -15)
-        encoded_bytes = zlib_compress.compress(data_bytes)
+        zlib_compress.compress(data_bytes)
+        encoded_bytes = zlib_compress.flush()
         plugin = self._plugins.get_plugin_instance('deflate')
         result_bytes = plugin.process(data_bytes)
         self.assertIsNone(plugin.error), 'An error occurred during deflate compression'
@@ -411,7 +412,8 @@ class TestTransformers(unittest.TestCase):
     def test_uncompress_deflate(self):
         data_bytes = self._random_bytes()
         zlib_compress = zlib.compressobj(-1, zlib.DEFLATED, -15)
-        encoded_bytes = zlib_compress.compress(data_bytes)
+        zlib_compress.compress(data_bytes)
+        encoded_bytes = zlib_compress.flush()
         plugin = self._plugins.get_plugin_instance('deflate')
         result = plugin.unprocess(encoded_bytes)
         self.assertIsNone(plugin.error), 'An error occurred during deflate uncompression'
