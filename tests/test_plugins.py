@@ -540,16 +540,13 @@ class TestTransformers(unittest.TestCase):
         plugin = self._plugins.get_plugin_instance('x509certificate')
         try:
             formatted = plugin.process(certificate)
-        except crypto.Error:
-            pass
+        except Exception as e:
+            self.fail('Unhandled exception in x509certificate: ' + str(e))
         else:
-            try:
-                formatted = plugin.process(certificate)
-            except TransformException:
-                pass
-            else:
-                self.fail('Invalid certificate does not raise TransformException!')
-        self.assertIsNone(plugin.error)
+            msg = 'x509certificate failed without setting plugin.error'
+            self.assertIsNotNone(plugin.error, msg)
+            msg = 'x509certificate invalid certificate did not return TransformException'
+            self.assertIsInstance(plugin.error, TransformException, msg)
 
     def test_format_xml(self):
         doc = (b'<?xml version="1.0" encoding="UTF-8"?><note>'
