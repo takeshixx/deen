@@ -30,8 +30,7 @@ class DeenPluginDeflate(DeenPlugin):
         if sys.version_info.major < 3:
             data = buffer(data)
         try:
-            zlib.decompress(data, -15)
-            data = zlib.flush()
+            data = zlib.decompress(data, -15)
         except zlib.error as e:
             self.error = e
         return data
