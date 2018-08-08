@@ -477,7 +477,12 @@ class DeenEncoderWidget(QWidget):
                 plugin = self.parent.plugins.get_plugin_instance(self.current_pick)
             data = None
             combo_choice = self.current_combo.model().item(0).text()
-            process_gui_func = getattr(plugin, 'process_gui', None)
+            process_gui_func = None
+            if 'process_gui' in vars(type(plugin)):
+                # Check if the plugin class implements
+                # process_gui() itself, and does not
+                # inherit it from DeenPlugin.
+                process_gui_func = getattr(plugin, 'process_gui', None)
             if process_gui_func and callable(process_gui_func):
                 # For plugins that implement a process_gui() function
                 # that adds additional GUI elements.
