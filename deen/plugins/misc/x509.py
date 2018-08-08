@@ -73,6 +73,7 @@ class DeenPluginX509Certificate(DeenPlugin):
             self._certificate = OpenSSL.crypto.load_certificate(
                 OpenSSL.crypto.FILETYPE_PEM, data)
         except OpenSSL.crypto.Error:
+            self.error = TransformException('Invalid certificate encoding')
             return
 
     def process(self, data):
