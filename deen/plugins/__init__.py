@@ -41,13 +41,22 @@ class DeenPlugin(object):
         if not. Here a plugin can e.g. check if the
         current Python version is suitable for the
         functionality or if required third party modules
-        are installed."""
+        are installed.
+
+        :return: True if all prerequisites are met,
+                 False if not.
+        """
         return True
 
     def process(self, data):
         """Every plugin must have a process method
         that e.g. encodes, compresses, hashs, formats,
-        whatsoever."""
+        whatsoever.
+
+        :param data: the input data that should be
+                     processed
+        :return: the processed data
+        """
         assert data is not None,\
             'Input data is None'
         assert isinstance(data, (bytes, bytearray)),\
@@ -59,7 +68,12 @@ class DeenPlugin(object):
         applies to e.g. codecs and compressions.
         However, e.g. hash functions will not require
         an unprocess function as they are not (easily)
-        reversible."""
+        reversible.
+
+        :param data: the input data that should be
+                     processed
+        :return: the processed data
+        """
         assert data is not None,\
             'Input data is None'
         assert isinstance(data, (bytes, bytearray)),\
@@ -75,6 +89,7 @@ class DeenPlugin(object):
         :param cmd_name: a plugin's cmd_name class variable
         :param cmd_help: a plugin's cmd_help class variable
         :param cmd_aliases: a plugin's cmd_aliases class variable
+        :return: the newly created argparse object
         """
         if not cmd_aliases:
             cmd_aliases = []
@@ -115,6 +130,18 @@ class DeenPlugin(object):
             return self.process(self.content)
         else:
             return self.unprocess(self.content)
+
+    def process_gui(self, parent, content):
+        """Plugins that need additional GUI elements
+        i.e. to accept multiple inputs, they can
+        override this function. The parent argument
+        can be used to add widgets to the main window.
+
+        :param parent: the parent object
+        :param content: the input data that will be processed
+        :return: the return of either process() or unprocess()
+        """
+        self.parent = parent
 
     def read_content_from_file(self, file):
         """If file is a filename, it will read and
