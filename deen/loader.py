@@ -83,7 +83,7 @@ class DeenPluginLoader(object):
                                                    revert=True if 'unprocess' in vars(c[1]) else False)
                         output.append(c)
                     else:
-                        LOGGER.warning('Prerequisits for plugin {} not met'.format(c[0]))
+                        LOGGER.debug('Prerequisits for plugin {} not met'.format(c[0]))
         else:
             return output
 
