@@ -6,10 +6,7 @@ import argparse
 from deen.loader import DeenPluginLoader
 from deen import constants
 
-ICON = os.path.dirname(os.path.abspath(__file__)) + '/media/icon.png'
 LOGGER = logging.getLogger()
-VERBOSE_FORMAT = '[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s'
-
 ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.',
                                formatter_class=argparse.RawDescriptionHelpFormatter, epilog=constants.cli_epilog)
 ARGS.add_argument('-f', '--file', dest='infile', default=None, metavar='filename',
@@ -41,7 +38,7 @@ def main():
         print(deen.constants.__version__)
     elif any([args.plugin_cmd, args.plugin]):
         # We are in command line mode
-        log_format = VERBOSE_FORMAT if args.level > 0 else '%(message)s'
+        log_format = constants.verbose_log_format if args.level > 0 else '%(message)s'
         levels = [logging.WARN, logging.DEBUG]
         logging.basicConfig(level=levels[min(args.level, len(levels) - 1)], format=log_format)
         if args.plugin_cmd:
@@ -80,13 +77,14 @@ def main():
         from PyQt5.QtWidgets import QApplication
         from PyQt5.QtGui import QIcon
         from deen.gui.core import DeenGui
-        logging.basicConfig(format=VERBOSE_FORMAT)
+        logging.basicConfig(format=constants.verbose_log_format)
         app = QApplication(sys.argv)
         ex = DeenGui(plugins=pl)
         if content:
             # GUI mode also supports input files and
             # content via STDIN.
             ex.set_root_content(content)
-        ex.setWindowIcon(QIcon(ICON))
+        ex.setWindowIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) +
+                               constants.icon_path))
         LOGGER.addHandler(ex.log)
         return app.exec_()

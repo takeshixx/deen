@@ -3,6 +3,10 @@ __version__ = '1.5.2'
 about_text = ('deen (DEcoderENcoder) v%s\n\nA decoding/encoding application for arbitrary data.\n\n'
               'https://github.com/takeshixx/deen') % __version__
 
+icon_path = '/media/icon.png'
+
+verbose_log_format = '[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s'
+
 cli_epilog = """examples:
   open a file in the deen GUI:
     $ deen /bin/ls
