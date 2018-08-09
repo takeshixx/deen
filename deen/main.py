@@ -34,7 +34,7 @@ def main():
     if args.list:
         print(pl.pprint_available_plugins())
     elif args.version:
-        print(deen.constants.__version__)
+        print(constants.__version__)
     elif any([args.plugin_cmd, args.plugin]):
         # We are in command line mode
         log_format = constants.verbose_log_format if args.level > 0 else '%(message)s'
