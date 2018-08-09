@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 import sys
 import json
+
 try:
-    import jwt
-    import jwt.algorithms
-    PYJWT = True
+    from jose import jwt
+    from jose import constants
+    JOSE = True
 except ImportError:
-    PYJWT = False
+    JOSE = False
 
 from .. import DeenPlugin
 from deen.exceptions import MissingDependencyException
@@ -24,7 +25,7 @@ class DeenPluginJwt(DeenPlugin):
     @staticmethod
     def prerequisites():
         try:
-            import jwt
+            from jose import jwt
         except ImportError:
             return False
         else:
@@ -32,34 +33,39 @@ class DeenPluginJwt(DeenPlugin):
 
     def process(self, data, secret='', algo='HS256'):
         super(DeenPluginJwt, self).process(data)
-        if not PYJWT:
-            self.error = MissingDependencyException('pyjwt module missing')
+        if not JOSE:
+            self.error = MissingDependencyException('python-jose module missing')
             return data
         try:
-            json.loads(data)
+            data_dict = json.loads(data)
         except Exception as e:
             self.error = e
             return data
         try:
-            data = jwt.encode(data, secret, algorithm=algo)
-            data = json.dumps(data)
+            data = jwt.encode(data_dict, secret, algorithm=algo)
+        except Exception as e:
+            self.error = e
+        else:
             data = data.encode()
-        except Exception as e:
-            print(e)
-            self.error = e
         return data
 
     def unprocess(self, data, secret='', verify=False):
         super(DeenPluginJwt, self).unprocess(data)
-        if not PYJWT:
-            self.error = MissingDependencyException('pyjwt module missing')
+        if not JOSE:
+            self.error = MissingDependencyException('python-jose module missing')
             return data
+        if verify:
+            options = {'verify_signature': True}
+        else:
+            options = {'verify_signature': False}
         try:
-            data = jwt.decode(bytes(data), secret, verify=verify)
-            data = json.dumps(data)
-            data = data.encode()
+            data = jwt.decode(bytes(data).decode(), secret,
+                              algorithms=['HS256'], options=options)
         except Exception as e:
             self.error = e
+        else:
+            data = json.dumps(data)
+            data = data.encode()
         return data
 
     @staticmethod
@@ -83,7 +89,7 @@ class DeenPluginJwt(DeenPlugin):
         parser.add_argument('-s', '--secret', dest='pluginsecret', default=None,
                             help='JWT secret', metavar='secret')
         parser.add_argument('-m', '--mac', dest='pluginmac', help='JWT MAC algorithm',
-                            default='HS256',choices=jwt.algorithms.get_default_algorithms().keys())
+                            default='HS256',choices=constants.ALGORITHMS.HASHES.keys())
         parser.add_argument('-v', '--verify', dest='pluginverify', default=False,
                             help='force signature and claims verification',
                             action='store_true')
