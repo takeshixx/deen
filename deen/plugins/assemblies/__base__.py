@@ -79,7 +79,8 @@ class AsmBase(DeenPlugin):
         return output.encode()
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
+                      *args, **kwargs):
         if not cmd_aliases:
             cmd_aliases = []
         # Python 2 argparse does not support aliases

@@ -80,7 +80,8 @@ class DeenPlugin(object):
             'Invalid input type: ' + str(type(data))
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
+                      revert=True):
         """This function allows plugins to add subcommands
         to argparse in order to be used via a seperate
         command/alias on the CLI.
@@ -89,6 +90,7 @@ class DeenPlugin(object):
         :param cmd_name: a plugin's cmd_name class variable
         :param cmd_help: a plugin's cmd_help class variable
         :param cmd_aliases: a plugin's cmd_aliases class variable
+        :param revert: True will add the -r/--revert argument
         :return: the newly created argparse object
         """
         if not cmd_aliases:
@@ -103,10 +105,11 @@ class DeenPlugin(object):
                                           description=cmd_help)
         parser.add_argument('plugindata', action='store',
                             help='input data', nargs='?')
-        parser.add_argument('-r', '--revert', action='store_true', dest='revert',
-                            default=False, help='revert plugin process')
         parser.add_argument('-f', '--file', dest='plugininfile', default=None,
                             help='file name or - for STDIN', metavar='filename')
+        if revert:
+            parser.add_argument('-r', '--revert', action='store_true', dest='revert',
+                                default=False, help='revert plugin process')
 
     def process_cli(self, args):
         """Do whatever the CLI cmd should do. The args

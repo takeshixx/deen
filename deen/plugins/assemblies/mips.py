@@ -22,7 +22,8 @@ class DeenPluginAsmMips(AsmBase):
     capstone_mode = capstone.CS_MODE_MIPS32 if KEYSTONE else None
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
+                      *args, **kwargs):
         # Add an additional argument for big endian mode.
         parser = AsmBase.add_argparser(argparser, cmd_name,
                                        cmd_help, cmd_aliases=cmd_aliases)

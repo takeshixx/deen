@@ -123,7 +123,7 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
             return True
 
     @staticmethod
-    def add_argparser(argparser, *args):
+    def add_argparser(argparser, *args, **kwargs):
         # Python 2 argparse does not support aliases
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and

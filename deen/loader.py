@@ -79,7 +79,8 @@ class DeenPluginLoader(object):
                                 if not self._subargparser and self._argparser:
                                     self._subargparser = self._argparser.add_subparsers(dest='plugin_cmd')
                                 add_argparser_func(self._subargparser, c[1].cmd_name,
-                                                   c[1].cmd_help, c[1].aliases)
+                                                   c[1].cmd_help, c[1].aliases,
+                                                   revert=True if 'unprocess' in vars(c[1]) else False)
                         output.append(c)
                     else:
                         LOGGER.warning('Prerequisits for plugin {} not met'.format(c[0]))
