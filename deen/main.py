@@ -34,7 +34,6 @@ def main():
     if args.list:
         print(pl.pprint_available_plugins())
     elif args.version:
-        import deen.constants
         print(deen.constants.__version__)
     elif any([args.plugin_cmd, args.plugin]):
         # We are in command line mode
