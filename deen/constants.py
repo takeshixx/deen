@@ -7,6 +7,8 @@ icon_path = '/media/icon.png'
 
 verbose_log_format = '[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s'
 
+cli_description = 'Apply encodings, compression, hashing and other types of transformations to arbitrary input data.'
+
 cli_epilog = """examples:
   open a file in the deen GUI:
     $ deen /bin/ls

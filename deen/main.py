@@ -7,8 +7,29 @@ from deen.loader import DeenPluginLoader
 from deen import constants
 
 LOGGER = logging.getLogger()
-ARGS = argparse.ArgumentParser(description='apply encodings, compression and hashing to arbitrary input data.',
-                               formatter_class=argparse.RawDescriptionHelpFormatter, epilog=constants.cli_epilog)
+
+
+class DeenHelpFormatter(argparse.RawDescriptionHelpFormatter):
+    """This formatter is a hack for printing the default
+    metavar for the plugin_cmd subparsers. It will prevent
+    argparse from printing additional lists of all cmds."""
+    def _metavar_formatter(self, action, default_metavar):
+        if action.metavar is not None:
+            result = action.metavar
+        else:
+            result = default_metavar
+
+        def format_metavar(tuple_size):
+            if isinstance(result, tuple):
+                return result
+            else:
+                return (result, ) * tuple_size
+        return format_metavar
+
+
+ARGS = argparse.ArgumentParser(formatter_class=DeenHelpFormatter,
+                               description=constants.cli_description,
+                               epilog=constants.cli_epilog)
 ARGS.add_argument('-f', '--file', dest='infile', default=None, metavar='filename',
                   help='file name or - for STDIN')
 ARGS.add_argument('-l', '--list', action='store_true', dest='list',
