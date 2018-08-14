@@ -23,7 +23,7 @@ class DeenPluginX509Certificate(DeenPlugin):
     display_name = 'X.509 Certificate'
     aliases = ['x509']
     cmd_name = 'x509certificate'
-    cmd_help = ('Print a human-readable representation'
+    cmd_help = ('Print a human-readable representation '
                 'of X.509 certificates')
 
     def __init__(self):
