@@ -19,6 +19,7 @@ class DeenPluginLoader(object):
         self.hashs = []
         self.formatters = []
         self.misc = []
+        self.invalid_plugins = []
         self._argparser = None
         self._subargparser = None
         if argparser:
@@ -46,8 +47,30 @@ class DeenPluginLoader(object):
         """Returns a pprint.pformat representation
         of all available plugins. It will most likely
         be a human readable list."""
-        pp = pprint.PrettyPrinter(indent=4)
-        return pp.pformat([p[1].display_name for p in self.available_plugins])
+        output = ''
+        for p in self.available_plugins:
+            if output:
+                output += '\n'
+            output += '  '
+            output += p[1].display_name
+        return output
+
+    def pprint_invalid_plugins(self):
+        """Returns a pprint.pformat representation
+        of all invalid plugins. These are plugins
+        that could not be loaded because i.e. the
+        prerequisites have not been met."""
+        output = ''
+        for p in self.invalid_plugins:
+            if output:
+                output += '\n'
+            output += '  '
+            output += p[0][1].display_name
+            if p[1]:
+                output += ' (Reason: '
+                output += p[1]
+                output += ')'
+        return output
 
     def _get_submodules_from_namespace_package(self, package):
         """An internal helper function that returns
@@ -83,6 +106,7 @@ class DeenPluginLoader(object):
                                                    revert=True if 'unprocess' in vars(c[1]) else False)
                         output.append(c)
                     else:
+                        self.invalid_plugins.append((c, 'Prerequisites not met'))
                         LOGGER.debug('Prerequisits for plugin {} not met'.format(c[0]))
         else:
             return output
