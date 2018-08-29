@@ -34,9 +34,9 @@ class DeenPluginBase64(DeenPlugin):
         # Base64 encoded data.
         data = data.replace(b'\n', b'').replace(b'\r', b'')
         # If the padding character is missing, restore it.
-        padding = len(data) % 4
+        padding = len(data) % 3
         if padding != 0:
-            data += b'=' * (4 - padding)
+            data += b'=' * (3 - padding)
         try:
             data = base64.b64decode(data)
         except binascii.Error as e:
