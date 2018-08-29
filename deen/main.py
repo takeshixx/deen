@@ -53,7 +53,11 @@ def main():
     args = ARGS.parse_args()
     content = pl.read_content_from_args()
     if args.list:
+        print('Loaded plugins:')
         print(pl.pprint_available_plugins())
+        if pl.invalid_plugins:
+            print('\nNot loaded plugins:')
+            print(pl.pprint_invalid_plugins())
     elif args.version:
         print(constants.__version__)
     elif any([args.plugin_cmd, args.plugin]):
