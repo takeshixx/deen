@@ -2,7 +2,6 @@ import sys
 import inspect
 import pkgutil
 import importlib
-import pprint
 import logging
 
 LOGGER = logging.getLogger()
@@ -107,7 +106,6 @@ class DeenPluginLoader(object):
                         output.append(c)
                     else:
                         self.invalid_plugins.append((c, 'Prerequisites not met'))
-                        LOGGER.debug('Prerequisits for plugin {} not met'.format(c[0]))
         else:
             return output
 
