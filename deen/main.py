@@ -111,4 +111,6 @@ def main():
         ex.setWindowIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) +
                                constants.icon_path))
         LOGGER.addHandler(ex.log)
+        if pl.invalid_plugins:
+            LOGGER.warning('Not loaded plugins:\n' + pl.pprint_invalid_plugins())
         return app.exec_()
