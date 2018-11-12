@@ -456,6 +456,17 @@ class DeenEncoderWidget(QWidget):
             self.parent.widgets[-1] = None
             self.parent.widgets.pop()
 
+    def is_action_process(self, choice):
+        """Returns True if the action should call
+        process(), False if unprocess() should be
+        called."""
+        if choice == 'Encode' or choice == 'Compress' or \
+                choice == 'Hash' or choice == 'Miscellaneous' or \
+                choice == 'Assemble':
+            return True
+        else:
+            return False
+
     def action(self, combo=None):
         """The main function that is responsible for calling plugins
         on input data. It will use self._content as source and puts
@@ -478,15 +489,33 @@ class DeenEncoderWidget(QWidget):
             data = None
             combo_choice = self.current_combo.model().item(0).text()
             process_gui_func = None
-            if 'process_gui' in vars(type(plugin)):
+            unprocess_gui_func = None
+            if self.is_action_process(combo_choice) and \
+                    'process_gui' in vars(type(plugin)):
                 # Check if the plugin class implements
                 # process_gui() itself, and does not
                 # inherit it from DeenPlugin.
                 process_gui_func = getattr(plugin, 'process_gui', None)
-            if process_gui_func and callable(process_gui_func):
-                # For plugins that implement a process_gui() function
-                # that adds additional GUI elements.
-                data = plugin.process_gui(self.parent, self._content)
+            if not self.is_action_process(combo_choice) and \
+                    'unprocess_gui' in vars(type(plugin)):
+                # Check if the plugin class implements
+                # unprocess_gui() itself, and does not
+                # inherit it from DeenPlugin.
+                unprocess_gui_func = getattr(plugin, 'unprocess_gui', None)
+            if process_gui_func or unprocess_gui_func:
+                print(combo_choice)
+                if self.is_action_process(combo_choice) and \
+                        process_gui_func and callable(process_gui_func):
+                    # For plugins that implement a process_gui() function
+                    # that adds additional GUI elements.
+                    data = plugin.process_gui(self.parent, self._content)
+                elif not self.is_action_process(combo_choice) and \
+                        unprocess_gui_func and callable(unprocess_gui_func):
+                    # For plugins that implement a unprocess_gui() function
+                    # that adds additional GUI elements.
+                    data = plugin.unprocess_gui(self.parent, self._content)
+                else:
+                    print('Invalid path')
                 if not data:
                     # plugin.process_gui() returned nothing, so
                     # don't create a new widget.
@@ -520,12 +549,9 @@ class DeenEncoderWidget(QWidget):
             else:
                 # All other plugins will write their output to a new
                 # window (self.next).
-                if combo_choice == 'Encode' or combo_choice == 'Compress' or \
-                        combo_choice == 'Hash' or combo_choice == 'Miscellaneous' or \
-                        combo_choice == 'Assemble':
+                if self.is_action_process(combo_choice):
                     data = plugin.process(self._content)
-                elif combo_choice == 'Decode' or combo_choice == 'Uncompress' or \
-                        combo_choice == 'Disassemble':
+                else:
                     data = plugin.unprocess(self._content)
                 if plugin.error:
                     LOGGER.error(plugin.error)

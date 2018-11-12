@@ -142,7 +142,19 @@ class DeenPlugin(object):
 
         :param parent: the parent object
         :param content: the input data that will be processed
-        :return: the return of either process() or unprocess()
+        :return: the return value of process()
+        """
+        self.parent = parent
+
+    def unprocess_gui(self, parent, content):
+        """Plugins that need additional GUI elements
+        i.e. to accept multiple inputs, they can
+        override this function. The parent argument
+        can be used to add widgets to the main window.
+
+        :param parent: the parent object
+        :param content: the input data that will be processed
+        :return: the return value of unprocess()
         """
         self.parent = parent
 
