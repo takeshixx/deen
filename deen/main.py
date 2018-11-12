@@ -87,11 +87,12 @@ def main():
                     LOGGER.error('Plugin cannot unprocess data')
                     sys.exit(1)
                 processed = plugin.unprocess(content)
+        if plugin.error:
+            LOGGER.error('Plugin ' + plugin.display_name +
+                         ' returned the following error: ' + str(plugin.error))
+            sys.exit(1)
         if not processed:
-            if plugin.error:
-                LOGGER.error(plugin.error)
-            else:
-                LOGGER.debug('Plugin {} did not return any data'.format(plugin.cmd_name))
+            LOGGER.debug('Plugin {} did not return any data'.format(plugin.cmd_name))
             sys.exit(1)
         plugin.write_to_stdout(processed, nonewline=args.nonewline)
     else:
