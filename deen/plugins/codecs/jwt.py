@@ -1,6 +1,10 @@
 from __future__ import absolute_import
 import sys
 import json
+import base64
+
+from PyQt5.QtWidgets import QFileDialog, QDialog
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 try:
     from jose import jwt
@@ -10,7 +14,7 @@ except ImportError:
     JOSE = False
 
 from .. import DeenPlugin
-from deen.exceptions import MissingDependencyException
+from deen.exceptions import MissingDependencyException, InvalidFormatException
 
 
 class DeenPluginJwt(DeenPlugin):
@@ -21,6 +25,7 @@ class DeenPluginJwt(DeenPlugin):
 
     def __init__(self):
         super(DeenPluginJwt, self).__init__()
+        self.secret = None
 
     @staticmethod
     def prerequisites():
@@ -31,7 +36,7 @@ class DeenPluginJwt(DeenPlugin):
         else:
             return True
 
-    def process(self, data, secret='', algo='HS256'):
+    def process(self, data, secret=b'', algo='HS256'):
         super(DeenPluginJwt, self).process(data)
         if not JOSE:
             self.error = MissingDependencyException('python-jose module missing')
@@ -41,6 +46,8 @@ class DeenPluginJwt(DeenPlugin):
         except Exception as e:
             self.error = e
             return data
+        if not isinstance(secret, str):
+            secret = str(secret)
         try:
             data = jwt.encode(data_dict, secret, algorithm=algo)
         except Exception as e:
@@ -49,18 +56,32 @@ class DeenPluginJwt(DeenPlugin):
             data = data.encode()
         return data
 
-    def unprocess(self, data, secret='', verify=False):
+    def unprocess(self, data, secret=b'', verify=False, algo='HS256'):
         super(DeenPluginJwt, self).unprocess(data)
         if not JOSE:
             self.error = MissingDependencyException('python-jose module missing')
             return data
+        try:
+            header, payload, signature = data.split(b'.')
+        except ValueError:
+            self.error = InvalidFormatException()
+            return data
+        try:
+            header = json.loads(base64.b64decode(header))
+        except Exception as e:
+            self.error = e
+            return
+        try:
+            algo = header['alg']
+        except KeyError:
+            self.error = Exception('alg attribute not found, defaulting to HS256')
         if verify:
             options = {'verify_signature': True}
         else:
             options = {'verify_signature': False}
         try:
             data = jwt.decode(bytes(data).decode(), secret,
-                              algorithms=['HS256'], options=options)
+                              algorithms=[algo], options=options)
         except Exception as e:
             self.error = e
         else:
@@ -86,8 +107,8 @@ class DeenPluginJwt(DeenPlugin):
                             default=False, help='revert plugin process')
         parser.add_argument('-f', '--file', dest='plugininfile', default=None,
                             help='file name or - for STDIN', metavar='filename')
-        parser.add_argument('-s', '--secret', dest='pluginsecret', default=None,
-                            help='JWT secret', metavar='secret')
+        parser.add_argument('-s', '--secret', dest='pluginsecret', default='',
+                            help='JWT secret', metavar='secret', type=str)
         parser.add_argument('-m', '--mac', dest='pluginmac', help='JWT MAC algorithm',
                             default='HS256',choices=constants.ALGORITHMS.HASHES.keys())
         parser.add_argument('-v', '--verify', dest='pluginverify', default=False,
@@ -110,4 +131,86 @@ class DeenPluginJwt(DeenPlugin):
                                 algo=args.pluginmac)
         else:
             return self.unprocess(self.content, secret=args.pluginsecret,
-                                  verify=args.pluginverify)
+                                  verify=args.pluginverify, algo=args.pluginmac)
+
+    def process_gui(self, parent, content):
+        """Creating JWT tokens requires inputs for the
+        secret and signature algorithm values."""
+        self.parent = parent
+        self.jwtgui = JwtGui(self.parent)
+        self.file_open_dialog = QFileDialog(self.jwtgui)
+        self.jwtgui.ui.read_secret_file_button.clicked.connect(self._load_secret_dialog)
+        if self.jwtgui.exec_() == 0:
+            # If the plugin GUI is cancelled, just
+            # return without doing anything.
+            return
+        algo = self.jwtgui.ui.algo_combo.currentText()
+        if self.secret:
+            secret = self.secret
+        else:
+            secret = self.jwtgui.ui.secret_input_field.text()
+            if self.jwtgui.ui.secret_base64_checkbox.isChecked():
+                secret = base64.b64decode(secret)
+        return self.process(content, secret=secret,
+                            algo=algo)
+
+    def _load_secret_dialog(self):
+        secret_path = self.file_open_dialog.getOpenFileName(
+            self.file_open_dialog, 'Load secret from file')[0]
+        if not secret_path:
+            return
+        with open(secret_path, 'rb') as f:
+            self.secret = f.read()
+
+
+class JwtGui(QDialog):
+    def __init__(self, parent):
+        super(JwtGui, self).__init__(parent)
+        self.ui = Ui_JwtCreateGui()
+        self.ui.setupUi(self)
+        self.setWindowTitle('Create JWT Token')
+        self.parent = parent
+        for algo in constants.ALGORITHMS.HASHES.keys():
+            self.ui.algo_combo.addItem(algo)
+
+
+class Ui_JwtCreateGui(object):
+    def setupUi(self, JwtCreateGui):
+        JwtCreateGui.setObjectName("JwtCreateGui")
+        JwtCreateGui.resize(443, 281)
+        self.dialogButtonBox = QtWidgets.QDialogButtonBox(JwtCreateGui)
+        self.dialogButtonBox.setGeometry(QtCore.QRect(30, 230, 391, 32))
+        self.dialogButtonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.dialogButtonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.dialogButtonBox.setObjectName("dialogButtonBox")
+        self.label = QtWidgets.QLabel(JwtCreateGui)
+        self.label.setGeometry(QtCore.QRect(20, 150, 141, 18))
+        self.label.setObjectName("label")
+        self.algo_combo = QtWidgets.QComboBox(JwtCreateGui)
+        self.algo_combo.setGeometry(QtCore.QRect(180, 140, 151, 32))
+        self.algo_combo.setObjectName("algo_combo")
+        self.label_2 = QtWidgets.QLabel(JwtCreateGui)
+        self.label_2.setGeometry(QtCore.QRect(20, 30, 58, 18))
+        self.label_2.setObjectName("label_2")
+        self.secret_input_field = QtWidgets.QLineEdit(JwtCreateGui)
+        self.secret_input_field.setGeometry(QtCore.QRect(180, 20, 241, 32))
+        self.secret_input_field.setObjectName("secret_input_field")
+        self.read_secret_file_button = QtWidgets.QPushButton(JwtCreateGui)
+        self.read_secret_file_button.setGeometry(QtCore.QRect(180, 90, 241, 34))
+        self.read_secret_file_button.setObjectName("read_secret_file_button")
+        self.secret_base64_checkbox = QtWidgets.QCheckBox(JwtCreateGui)
+        self.secret_base64_checkbox.setGeometry(QtCore.QRect(180, 60, 231, 22))
+        self.secret_base64_checkbox.setObjectName("secret_base64_checkbox")
+
+        self.retranslateUi(JwtCreateGui)
+        self.dialogButtonBox.accepted.connect(JwtCreateGui.accept)
+        self.dialogButtonBox.rejected.connect(JwtCreateGui.reject)
+        QtCore.QMetaObject.connectSlotsByName(JwtCreateGui)
+
+    def retranslateUi(self, JwtCreateGui):
+        _translate = QtCore.QCoreApplication.translate
+        JwtCreateGui.setWindowTitle(_translate("JwtCreateGui", "Create JWT Token"))
+        self.label.setText(_translate("JwtCreateGui", "Signature algorithm:"))
+        self.label_2.setText(_translate("JwtCreateGui", "Secret:"))
+        self.read_secret_file_button.setText(_translate("JwtCreateGui", "Read secret from file"))
+        self.secret_base64_checkbox.setText(_translate("JwtCreateGui", "secret base64 encoded"))
