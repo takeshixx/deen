@@ -88,8 +88,12 @@ def main():
                     sys.exit(1)
                 processed = plugin.unprocess(content)
         if plugin.error:
-            LOGGER.error('Plugin ' + plugin.display_name +
-                         ' returned the following error: ' + str(plugin.error))
+            if args.level > 0:
+                message = 'Plugin ' + plugin.display_name + \
+                          ' returned the following error: ' + str(plugin.error)
+            else:
+                message = plugin.error
+            LOGGER.error(message)
             sys.exit(1)
         if not processed:
             LOGGER.debug('Plugin {} did not return any data'.format(plugin.cmd_name))

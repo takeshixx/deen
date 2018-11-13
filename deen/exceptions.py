@@ -8,3 +8,7 @@ class MissingDependencyException(Exception):
 
 class InvalidFormatException(Exception):
     pass
+
+
+class InvalidInputFile(Exception):
+    pass
