@@ -77,6 +77,9 @@ class DeenPluginJwt(DeenPlugin):
         if not JOSE:
             self.error = MissingDependencyException('python-jose module missing')
             return data
+        # Make sure there are no new lines.
+        # that could break the padding.
+        data = data.strip()
         try:
             _header, payload, signature = data.split(b'.')
             _header = _header
