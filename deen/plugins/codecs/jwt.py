@@ -194,7 +194,7 @@ class DeenPluginJwt(DeenPlugin):
         if self.secret:
             secret = self.secret
         else:
-            secret = self.jwtgui.ui.secret_input_field.text()
+            secret = self.jwtgui.ui.secret_input_field.toPlainText()
             if self.jwtgui.ui.secret_base64_checkbox.isChecked():
                 try:
                     secret = base64.b64decode(secret)
