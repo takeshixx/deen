@@ -13,8 +13,15 @@ See the [wiki](https://github.com/takeshixx/deen/wiki) for basic and more advanc
 Install via `pip`:
 
 ```bash
-pip3 install -r requirements.txt
+pip3 install -r requirements3.txt
 pip3 install .
+```
+
+For Python 2:
+
+```bash
+pip2 install -r requirements2.txt
+pip2 install .
 ```
 
 After installation, just run:
@@ -24,6 +31,19 @@ deen
 ```
 
 **Note**: If the installation fails with an error like "Could not find a version that satisfies the requirement PyQt5", then you are trying to install deen via pip on a version of Python < 3.5. In this case, you cannot install PyQt5 via `pip`. You have to install PyQt5 separately, e.g. via your package manager (e.g. `pacman -S python2-pyqt5` on Arch Linux for Python 2).
+
+#### Optional Dependencies
+
+There are several optional dependencies that are required for some plugins. These include:
+
+```
+keystone
+capstone
+```
+
+It is recommended to install these via the package manager of your distribution. For other operating systems like Windows these might not be available. They might also not work when installed via pip.
+
+**Note**: It is recommended to check the status console in GUI mode to see which plugins could not be loaded due to missing dependencies.
 
 ### Packages
 

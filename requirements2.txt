@@ -1,9 +1,6 @@
-PyQt5
 pyOpenSSL
 jsbeautifier
 dicttoxml
 xmltodict
-pyjwt
+python-jose
 bcrypt
-keystone
-capstone
