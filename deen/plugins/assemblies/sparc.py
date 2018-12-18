@@ -17,11 +17,11 @@ class DeenPluginAsmSparc(AsmBase):
     cmd_name = 'assembly_sparc'
     cmd_help='Assemble/Disassemble for the SPARC architecture'
     keystone_arch = keystone.KS_ARCH_SPARC \
-        if (KEYSTONE and keystone.KS_ARCH_SPARC) else None
+        if (KEYSTONE and hasattr(keystone, 'KS_ARCH_SPARC')) else None
     keystone_mode = keystone.KS_MODE_SPARC32 \
-        if (KEYSTONE and keystone.KS_MODE_SPARC32) else None
+        if (KEYSTONE and hasattr(keystone, 'KS_MODE_SPARC32')) else None
     capstone_arch = capstone.CS_ARCH_SPARC \
-        if (KEYSTONE and keystone.CS_ARCH_SPARC) else None
+        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_SPARC')) else None
     capstone_mode = 0 # Add default mode
 
     @staticmethod

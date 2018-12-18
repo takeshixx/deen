@@ -19,13 +19,13 @@ class DeenPluginAsmArm(AsmBase):
     cmd_name = 'assembly_arm'
     cmd_help='Assemble/Disassemble for the ARM architecture'
     keystone_arch = keystone.KS_ARCH_ARM \
-        if (KEYSTONE and keystone.KS_ARCH_ARM) else None
+        if (KEYSTONE and hasattr(keystone, 'KS_ARCH_ARM')) else None
     keystone_mode = keystone.KS_MODE_ARM \
-        if (KEYSTONE and keystone.KS_MODE_ARM) else None
+        if (KEYSTONE and hasattr(keystone, 'KS_MODE_ARM')) else None
     capstone_arch = capstone.CS_ARCH_ARM \
-        if (KEYSTONE and keystone.CS_ARCH_ARM) else None
+        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_ARM')) else None
     capstone_mode = capstone.CS_MODE_ARM \
-        if (KEYSTONE and keystone.CS_MODE_ARM) else None
+        if (KEYSTONE and hasattr(keystone, 'CS_MODE_ARM')) else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
