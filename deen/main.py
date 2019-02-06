@@ -118,4 +118,8 @@ def main():
         LOGGER.addHandler(ex.log)
         if pl.invalid_plugins:
             LOGGER.warning('Not loaded plugins:\n' + pl.pprint_invalid_plugins())
+            plugins = ', '.join([x[0][1].display_name for x in pl.invalid_plugins])
+            message = 'Failed to load plugin(s), see status console '
+            message += '(CTRL+P) for more information: ' + plugins
+            ex.statusBar().showMessage(message, 5000)
         return app.exec_()
