@@ -475,6 +475,10 @@ class DeenEncoderWidget(QWidget):
         which will write their output into the same window)"""
         if not self._content:
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
+        cursor = self.text_field.textCursor()
+        selected_data = cursor.selectedText()
+        if selected_data:
+            self._content = bytearray(selected_data, 'utf8')
         if combo:
             if combo.currentIndex() == 0:
                 return
