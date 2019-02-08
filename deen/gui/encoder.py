@@ -372,6 +372,8 @@ class DeenEncoderWidget(QWidget):
             widget.hex_field.content = bytearray()
             widget._content = bytearray()
             widget.update_length_field(self)
+            widget.ui.current_plugin_label.clear()
+            widget.ui.current_plugin_label.hide()
             widget.text_field.setReadOnly(False)
             widget.update_readonly_field(self)
             widget.current_pick = None
@@ -544,6 +546,11 @@ class DeenEncoderWidget(QWidget):
                 self.text_field.setPlainText(
                     self.codec.toUnicode(data))
                 self.text_field.moveCursor(QTextCursor.End)
+                # After applying formatters the plugin
+                # should be displayed, even in the root
+                # widget.
+                self.ui.current_plugin_label.setText('Plugin: ' + self.current_pick)
+                self.ui.current_plugin_label.show()
                 if plugin.error:
                     LOGGER.error(plugin.error)
                     self.set_error()
