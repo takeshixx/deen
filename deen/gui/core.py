@@ -63,7 +63,19 @@ class DeenGui(QMainWindow):
         if self.fuzzy_search_ui.exec_() == 0:
             return
         search_data = self.fuzzy_search_ui.ui.fuzzy_search_field.text()
-        focussed_widget.parent.action_fuzzy(search_data)
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if parent_encoder:
+            parent_encoder.action_fuzzy(search_data)
+        else:
+            LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
+
+    def get_parent_encoder(self, widget):
+        w = widget
+        while not isinstance(widget, DeenEncoderWidget):
+            widget = widget.parent
+            if isinstance(widget, DeenGui):
+                return False
+        return widget
 
     def clear_current_widget(self):
         """Clear and remove the current encoder widget."""

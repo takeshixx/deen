@@ -377,12 +377,14 @@ class DeenEncoderWidget(QWidget):
             widget.text_field.setReadOnly(False)
             widget.update_readonly_field(self)
             widget.formatted_view = False
+            widget.text_field.setFocus()
         else:
             # Remove the current_combo of the previous
             # widget so that the last pick doesn't
             # stuck in the previous widget after deleting
             # one.
             self.previous.current_combo = None
+            self.previous.text_field.setFocus()
         self.remove_next_widgets(widget=widget)
 
     def copy_to_clipboard(self):
@@ -508,7 +510,8 @@ class DeenEncoderWidget(QWidget):
             self._content = bytearray(selected_data, 'utf8')
         if self._content:
             if not self.parent.plugins.plugin_available(plugin_name):
-                LOGGER.warning('Pluging {} not found'.format(plugin_name))
+                LOGGER.warning('Plugin {} not found'.format(plugin_name))
+                self.parent.show_error_msg('Plugin {} not found'.format(plugin_name))
                 return
             else:
                 plugin = self.parent.plugins.get_plugin_instance(plugin_name)
