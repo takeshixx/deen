@@ -518,7 +518,6 @@ class DeenEncoderWidget(QWidget):
                 # inherit it from DeenPlugin.
                 unprocess_gui_func = getattr(plugin, 'unprocess_gui', None)
             if process_gui_func or unprocess_gui_func:
-                print(combo_choice)
                 if self.is_action_process(combo_choice) and \
                         process_gui_func and callable(process_gui_func):
                     # For plugins that implement a process_gui() function
@@ -530,7 +529,7 @@ class DeenEncoderWidget(QWidget):
                     # that adds additional GUI elements.
                     data = plugin.unprocess_gui(self.parent, self._content)
                 else:
-                    print('Invalid path')
+                    LOGGER.error('Invalid path')
                 if not data:
                     # plugin.process_gui() returned nothing, so
                     # don't create a new widget.
