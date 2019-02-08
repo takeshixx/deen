@@ -246,6 +246,7 @@ class DeenEncoderWidget(QWidget):
         with the Search button."""
         if self.ui.search_group.isVisible():
             self.ui.search_group.hide()
+            self.clear_search_highlight()
             self.text_field.setFocus()
         else:
             self.ui.search_group.show()
@@ -283,7 +284,6 @@ class DeenEncoderWidget(QWidget):
         the text_field and highlights matches."""
         cursor = self.text_field.textCursor()
         format = QTextCharFormat()
-        format.setBackground(QBrush(QColor('white')))
         cursor.select(QTextCursor.Document)
         cursor.mergeCharFormat(format)
         cursor.clearSelection()
@@ -315,8 +315,7 @@ class DeenEncoderWidget(QWidget):
         cursor = self.text_field.textCursor()
         cursor.select(QTextCursor.Document)
         format = QTextCharFormat()
-        format.setBackground(QBrush(QColor('white')))
-        cursor.mergeCharFormat(format)
+        cursor.setCharFormat(format)
         widget.ui.search_area.clear()
         widget.ui.search_matches_label.setText('Matches: 0')
 
