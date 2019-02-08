@@ -8,12 +8,11 @@ except ImportError:
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon, QKeySequence
-from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QShortcut, QDialog
+from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QShortcut
 
 from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget
 from deen.gui.widgets.ui_deenencoderwidget import Ui_DeenEncoderWidget
-from deen.gui.widgets.ui_deenfuzzysearch import Ui_DeenFuzzySearchWidget
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
 LOGGER = logging.getLogger(__name__)
@@ -31,7 +30,6 @@ class DeenEncoderWidget(QWidget):
         self.ui.setupUi(self)
         self.parent = parent
         self.readonly = readonly
-        self.current_pick = None
         self.current_combo = None
         self._content = bytearray()
         self.formatted_view = False
@@ -172,9 +170,6 @@ class DeenEncoderWidget(QWidget):
         # After adding new widgets, we have to update the max scroll range.
         self.parent.ui.DeenMainWindow.verticalScrollBar().rangeChanged.connect(self.update_vertical_scroll_range)
         self.parent.ui.DeenMainWindow.horizontalScrollBar().rangeChanged.connect(self.update_horizontal_scroll_range)
-        # Add a shortcut for the action fuzzy search
-        self.fuzzy_search_action_shortcut = QShortcut(QKeySequence('Ctrl+R'), self)
-        self.fuzzy_search_action_shortcut.activated.connect(self.fuzzy_search_action)
 
     @property
     def content(self):
@@ -256,21 +251,6 @@ class DeenEncoderWidget(QWidget):
         else:
             self.ui.search_group.show()
 
-    def fuzzy_search_action(self):
-        """Open a dialog for quick access to actions
-        with fuzzy search."""
-        class FuzzySearchUi(QDialog):
-            def __init__(self, parent):
-                super(FuzzySearchUi, self).__init__(parent)
-                self.ui = Ui_DeenFuzzySearchWidget()
-                self.ui.setupUi(self)
-                self.parent = parent
-        self.fuzzy_search_ui = FuzzySearchUi(self.parent)
-        self.fuzzy_search_ui.ui.fuzzy_search_field.setFocus()
-        if self.fuzzy_search_ui.exec_() == 0:
-            return
-        search_data = self.fuzzy_search_ui.ui.fuzzy_search_field.text()
-
     def field_content_changed(self):
         """The event handler for the textChanged event of the
         current widget. This will be called whenever the text
@@ -294,8 +274,7 @@ class DeenEncoderWidget(QWidget):
         if not self.formatted_view:
             self.update_length_field(self)
             self.update_readonly_field(self)
-            if (self.hex_field.hasFocus() or self.text_field.hasFocus()) \
-                    and self.current_pick:
+            if (self.hex_field.hasFocus() or self.text_field.hasFocus()):
                 self.action()
 
     def search_highlight(self):
@@ -397,15 +376,13 @@ class DeenEncoderWidget(QWidget):
             widget.ui.current_plugin_label.hide()
             widget.text_field.setReadOnly(False)
             widget.update_readonly_field(self)
-            widget.current_pick = None
             widget.formatted_view = False
         else:
-            # Remove the current_combo and current_pick
-            # of the previous widget so that the last
-            # pick doesn't stuck in the previous widget
-            # after deleting one.
+            # Remove the current_combo of the previous
+            # widget so that the last pick doesn't
+            # stuck in the previous widget after deleting
+            # one.
             self.previous.current_combo = None
-            self.previous.current_pick = None
         self.remove_next_widgets(widget=widget)
 
     def copy_to_clipboard(self):
@@ -489,7 +466,8 @@ class DeenEncoderWidget(QWidget):
     def is_action_process(self, choice):
         """Returns True if the action should call
         process(), False if unprocess() should be
-        called."""
+        called. Should only be used for values of
+        the combo boxes."""
         if choice == 'Encode' or choice == 'Compress' or \
                 choice == 'Hash' or choice == 'Miscellaneous' or \
                 choice == 'Assemble':
@@ -503,47 +481,62 @@ class DeenEncoderWidget(QWidget):
         the result of each plugin into the next widget in line via
         the self.set_content_next() function. (except for formatters,
         which will write their output into the same window)"""
+        if combo:
+            if combo.currentIndex() == 0:
+                return
+            self.current_combo = combo
+            combo_head = self.current_combo.model().item(0).text()
+            process = self.is_action_process(combo_head)
+            self._action(self.current_combo.currentText(),
+                         process)
+
+    def action_fuzzy(self, plugin_name):
+        """The main entry point for triggering
+        actions via the fuzzy search field."""
+        process = True
+        if plugin_name.startswith('-'):
+            process = False
+            plugin_name = plugin_name[1:]
+        self._action(plugin_name, process)
+
+    def _action(self, plugin_name, process=True):
         if not self._content:
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
         cursor = self.text_field.textCursor()
         selected_data = cursor.selectedText()
         if selected_data:
             self._content = bytearray(selected_data, 'utf8')
-        if combo:
-            if combo.currentIndex() == 0:
-                return
-            self.current_combo = combo
-            self.current_pick = combo.currentText()
         if self._content:
-            if not self.parent.plugins.plugin_available(self.current_pick):
-                LOGGER.warning('Pluging {} not found'.format(self.current_pick))
+            if not self.parent.plugins.plugin_available(plugin_name):
+                LOGGER.warning('Pluging {} not found'.format(plugin_name))
                 return
             else:
-                plugin = self.parent.plugins.get_plugin_instance(self.current_pick)
+                plugin = self.parent.plugins.get_plugin_instance(plugin_name)
             data = None
-            combo_choice = self.current_combo.model().item(0).text()
+            category = self.parent.plugins.get_category_for_plugin(plugin)
+            if not category:
+                LOGGER.error('Could not determine category for ' + plugin.name)
+                return
             process_gui_func = None
             unprocess_gui_func = None
-            if self.is_action_process(combo_choice) and \
-                    'process_gui' in vars(type(plugin)):
+            if process and 'process_gui' in vars(type(plugin)):
                 # Check if the plugin class implements
                 # process_gui() itself, and does not
                 # inherit it from DeenPlugin.
                 process_gui_func = getattr(plugin, 'process_gui', None)
-            if not self.is_action_process(combo_choice) and \
-                    'unprocess_gui' in vars(type(plugin)):
+            if not process and 'unprocess_gui' in vars(type(plugin)):
                 # Check if the plugin class implements
                 # unprocess_gui() itself, and does not
                 # inherit it from DeenPlugin.
                 unprocess_gui_func = getattr(plugin, 'unprocess_gui', None)
             if process_gui_func or unprocess_gui_func:
-                if self.is_action_process(combo_choice) and \
-                        process_gui_func and callable(process_gui_func):
+                if process and process_gui_func and \
+                        callable(process_gui_func):
                     # For plugins that implement a process_gui() function
                     # that adds additional GUI elements.
                     data = plugin.process_gui(self.parent, self._content)
-                elif not self.is_action_process(combo_choice) and \
-                        unprocess_gui_func and callable(unprocess_gui_func):
+                elif not process and unprocess_gui_func and \
+                        callable(unprocess_gui_func):
                     # For plugins that implement a unprocess_gui() function
                     # that adds additional GUI elements.
                     data = plugin.unprocess_gui(self.parent, self._content)
@@ -552,7 +545,6 @@ class DeenEncoderWidget(QWidget):
                 if not data:
                     # plugin.process_gui() returned nothing, so
                     # don't create a new widget.
-                    self.current_pick = None
                     if self.current_combo:
                         self.current_combo.setCurrentIndex(0)
                     return
@@ -561,12 +553,13 @@ class DeenEncoderWidget(QWidget):
                     self.next.set_error()
                     self.next.set_error_message(str(plugin.error))
                 self.next.content = data
-                if self.next.text_field.isReadOnly() and self.current_pick:
-                    self.next.ui.current_plugin_label.setText('Plugin: ' + self.current_pick)
+                if self.next.text_field.isReadOnly():
+                    self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
                     self.next.ui.current_plugin_label.show()
+                self.next.text_field.setFocus()
                 if not plugin.error:
                     self.next.clear_error_message()
-            elif combo_choice == 'Format':
+            elif category == 'formatters':
                 # Formatters format data in the current window (self)
                 data = plugin.process(self._content)
                 self.formatted_view = True
@@ -576,7 +569,7 @@ class DeenEncoderWidget(QWidget):
                 # After applying formatters the plugin
                 # should be displayed, even in the root
                 # widget.
-                self.ui.current_plugin_label.setText('Plugin: ' + self.current_pick)
+                self.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
                 self.ui.current_plugin_label.show()
                 if plugin.error:
                     LOGGER.error(plugin.error)
@@ -587,7 +580,7 @@ class DeenEncoderWidget(QWidget):
             else:
                 # All other plugins will write their output to a new
                 # window (self.next).
-                if self.is_action_process(combo_choice):
+                if process:
                     data = plugin.process(self._content)
                 else:
                     data = plugin.unprocess(self._content)
@@ -597,14 +590,13 @@ class DeenEncoderWidget(QWidget):
                     self.next.set_error_message(str(plugin.error))
                 if data:
                     self.next.content = data
-                    if self.next.text_field.isReadOnly() and self.current_pick:
-                        self.next.ui.current_plugin_label.setText('Plugin: ' + self.current_pick)
+                    if self.next.text_field.isReadOnly():
+                        self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
                         self.next.ui.current_plugin_label.show()
                     if not plugin.error:
                         self.next.clear_error_message()
+                    self.next.text_field.setFocus()
                 else:
                     LOGGER.error('Plugin {} did not return any data'.format(plugin.name))
-        else:
-            self.current_pick = None
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)

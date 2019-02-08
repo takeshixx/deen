@@ -1,13 +1,24 @@
 import logging
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog, QBoxLayout, QErrorMessage
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog,\
+                            QBoxLayout, QShortcut, QDialog
+from PyQt5.QtGui import QKeySequence
 
 import deen.constants
 from deen.gui.widgets.log import DeenLogger, DeenStatusConsole
 from deen.gui.widgets.ui_deenmainwindow import Ui_MainWindow
 from deen.gui.encoder import DeenEncoderWidget
+from deen.gui.widgets.ui_deenfuzzysearch import Ui_DeenFuzzySearchWidget
 
 LOGGER = logging.getLogger(__name__)
+
+
+class FuzzySearchUi(QDialog):
+    def __init__(self, parent):
+        super(FuzzySearchUi, self).__init__(parent)
+        self.ui = Ui_DeenFuzzySearchWidget()
+        self.ui.setupUi(self)
+        self.parent = parent
 
 
 class DeenGui(QMainWindow):
@@ -36,7 +47,21 @@ class DeenGui(QMainWindow):
         # Start Deen GUI maximized with focus on the text field
         self.showMaximized()
         self.widgets[0].text_field.setFocus(True)
+        # Add action fuzzy search
+        self.fuzzy_search_ui = FuzzySearchUi(self)
+        self.fuzzy_search_action_shortcut = QShortcut(QKeySequence('Ctrl+R'), self)
+        self.fuzzy_search_action_shortcut.activated.connect(self.fuzzy_search_action)
         self.show()
+
+    def fuzzy_search_action(self):
+        """Open a dialog for quick access to actions
+        with fuzzy search."""
+        focussed_widget = QApplication.focusWidget()
+        self.fuzzy_search_ui.ui.fuzzy_search_field.setFocus()
+        if self.fuzzy_search_ui.exec_() == 0:
+            return
+        search_data = self.fuzzy_search_ui.ui.fuzzy_search_field.text()
+        focussed_widget.parent.action_fuzzy(search_data)
 
     def set_root_content(self, data):
         if data:
