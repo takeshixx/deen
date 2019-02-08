@@ -51,6 +51,8 @@ class DeenGui(QMainWindow):
         self.fuzzy_search_ui = FuzzySearchUi(self)
         self.fuzzy_search_action_shortcut = QShortcut(QKeySequence('Ctrl+R'), self)
         self.fuzzy_search_action_shortcut.activated.connect(self.fuzzy_search_action)
+        self.clear_current_widget_shortcut = QShortcut(QKeySequence('Ctrl+C'), self)
+        self.clear_current_widget_shortcut.activated.connect(self.clear_current_widget)
         self.show()
 
     def fuzzy_search_action(self):
@@ -62,6 +64,11 @@ class DeenGui(QMainWindow):
             return
         search_data = self.fuzzy_search_ui.ui.fuzzy_search_field.text()
         focussed_widget.parent.action_fuzzy(search_data)
+
+    def clear_current_widget(self):
+        """Clear and remove the current encoder widget."""
+        focussed_widget = QApplication.focusWidget()
+        focussed_widget.parent.clear_content()
 
     def set_root_content(self, data):
         if data:
