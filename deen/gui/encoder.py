@@ -7,8 +7,8 @@ except ImportError:
     crypto = None
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
-from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon, QKeySequence
-from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QShortcut
+from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
+from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
 
 from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget

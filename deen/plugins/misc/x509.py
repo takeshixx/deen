@@ -10,7 +10,7 @@ except ImportError:
     OPENSSL = False
 
 from PyQt5.QtWidgets import QFileDialog, QDialog
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 from deen.exceptions import *
 from .. import DeenPlugin
