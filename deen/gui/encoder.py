@@ -8,11 +8,12 @@ except ImportError:
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon, QKeySequence
-from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QShortcut
+from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QShortcut, QDialog
 
 from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget
 from deen.gui.widgets.ui_deenencoderwidget import Ui_DeenEncoderWidget
+from deen.gui.widgets.ui_deenfuzzysearch import Ui_DeenFuzzySearchWidget
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
 LOGGER = logging.getLogger(__name__)
@@ -171,6 +172,9 @@ class DeenEncoderWidget(QWidget):
         # After adding new widgets, we have to update the max scroll range.
         self.parent.ui.DeenMainWindow.verticalScrollBar().rangeChanged.connect(self.update_vertical_scroll_range)
         self.parent.ui.DeenMainWindow.horizontalScrollBar().rangeChanged.connect(self.update_horizontal_scroll_range)
+        # Add a shortcut for the action fuzzy search
+        self.fuzzy_search_action_shortcut = QShortcut(QKeySequence('Ctrl+R'), self)
+        self.fuzzy_search_action_shortcut.activated.connect(self.fuzzy_search_action)
 
     @property
     def content(self):
@@ -251,6 +255,21 @@ class DeenEncoderWidget(QWidget):
             self.ui.search_group.hide()
         else:
             self.ui.search_group.show()
+
+    def fuzzy_search_action(self):
+        """Open a dialog for quick access to actions
+        with fuzzy search."""
+        class FuzzySearchUi(QDialog):
+            def __init__(self, parent):
+                super(FuzzySearchUi, self).__init__(parent)
+                self.ui = Ui_DeenFuzzySearchWidget()
+                self.ui.setupUi(self)
+                self.parent = parent
+        self.fuzzy_search_ui = FuzzySearchUi(self.parent)
+        self.fuzzy_search_ui.ui.fuzzy_search_field.setFocus()
+        if self.fuzzy_search_ui.exec_() == 0:
+            return
+        search_data = self.fuzzy_search_ui.ui.fuzzy_search_field.text()
 
     def field_content_changed(self):
         """The event handler for the textChanged event of the
