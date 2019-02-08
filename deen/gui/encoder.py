@@ -7,8 +7,8 @@ except ImportError:
     crypto = None
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
-from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
-from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
+from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon, QKeySequence
+from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QShortcut
 
 from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget
@@ -69,6 +69,8 @@ class DeenEncoderWidget(QWidget):
         self.ui.move_to_root_button.clicked.connect(self.move_content_to_root)
         self.ui.hide_side_menu.clicked.connect(self.toggle_side_menu_visibility)
         self.ui.hide_search_box.clicked.connect(self.toggle_search_box_visibility)
+        self.hide_search_box_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
+        self.hide_search_box_shortcut.activated.connect(self.toggle_search_box_visibility)
         # Update labels with proper values
         self.update_length_field(self)
         self.update_readonly_field(self)
