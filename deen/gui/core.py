@@ -70,9 +70,19 @@ class DeenGui(QMainWindow):
             LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
 
     def get_parent_encoder(self, widget):
-        w = widget
+        """A wrapper function that returns the
+        parent encoder widget for a given widget
+        retrieved via QApplication.focusWidget().
+        Can be used on signal receivers to
+        reference the current encoder widget."""
         while not isinstance(widget, DeenEncoderWidget):
-            widget = widget.parent
+            # Builin clases may implement
+            # parent() to retrieve the
+            # parent object.
+            if callable(widget.parent):
+                widget = widget.parent()
+            else:
+                widget = widget.parent
             if isinstance(widget, DeenGui):
                 return False
         return widget
