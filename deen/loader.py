@@ -25,6 +25,13 @@ class DeenPluginLoader(object):
             self.argparser = argparser
         self.base = base
         self.load_plugins()
+        self.categories = {
+            'codecs': self.codecs,
+            'compressions': self.compressions,
+            'hashs': self.hashs,
+            'formatters': self.formatters,
+            'misc': self.misc,
+            'assemblies': self.assemblies}
 
     @property
     def argparser(self):
@@ -206,6 +213,14 @@ class DeenPluginLoader(object):
             if p[1] == plugin:
                 return True
         return False
+
+    def get_category_for_plugin(self, plugin):
+        """Return the category for a plugin instance."""
+        for k, v in self.categories.items():
+            for p in v:
+                if p[1] == plugin.__class__:
+                    return k
+        return None
 
     def read_content_from_args(self):
         args = self.argparser.parse_args()
