@@ -53,6 +53,8 @@ class DeenGui(QMainWindow):
         self.fuzzy_search_action_shortcut.activated.connect(self.fuzzy_search_action)
         self.clear_current_widget_shortcut = QShortcut(QKeySequence('Ctrl+C'), self)
         self.clear_current_widget_shortcut.activated.connect(self.clear_current_widget)
+        self.hide_search_box_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
+        self.hide_search_box_shortcut.activated.connect(self.toggle_search_box_visibility)
         self.show()
 
     def fuzzy_search_action(self):
@@ -66,6 +68,17 @@ class DeenGui(QMainWindow):
         parent_encoder = self.get_parent_encoder(focussed_widget)
         if parent_encoder:
             parent_encoder.action_fuzzy(search_data)
+        else:
+            LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
+
+    def toggle_search_box_visibility(self):
+        """Toggle the search box visibility
+        via a shortcut for the current encoder
+        widget."""
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if parent_encoder:
+            parent_encoder.toggle_search_box_visibility()
         else:
             LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
 

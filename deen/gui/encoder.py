@@ -68,8 +68,6 @@ class DeenEncoderWidget(QWidget):
         self.ui.move_to_root_button.clicked.connect(self.move_content_to_root)
         self.ui.hide_side_menu.clicked.connect(self.toggle_side_menu_visibility)
         self.ui.hide_search_box.clicked.connect(self.toggle_search_box_visibility)
-        self.hide_search_box_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
-        self.hide_search_box_shortcut.activated.connect(self.toggle_search_box_visibility)
         # Update labels with proper values
         self.update_length_field(self)
         self.update_readonly_field(self)
@@ -248,8 +246,10 @@ class DeenEncoderWidget(QWidget):
         with the Search button."""
         if self.ui.search_group.isVisible():
             self.ui.search_group.hide()
+            self.text_field.setFocus()
         else:
             self.ui.search_group.show()
+            self.ui.search_area.setFocus()
 
     def field_content_changed(self):
         """The event handler for the textChanged event of the
