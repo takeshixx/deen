@@ -183,6 +183,30 @@ class DeenPluginLoader(object):
         else:
             return None
 
+    def get_plugin_by_display_name(self, name):
+        """Returns the plugin module for the given display name."""
+        for plugin in self.available_plugins:
+            if not getattr(plugin[1], 'display_name', None) or \
+                    not plugin[1].display_name:
+                continue
+            if name == plugin[1].display_name:
+                return plugin[1]
+        else:
+            return None
+
+    def is_plugin_in_category(self, plugin, category):
+        """Check if plugin is in a category. Can be used
+        to i.e. check if a given plugin is a formatter
+        or a codec plugin."""
+        category = getattr(self, category, None)
+        if not category:
+            LOGGER.error('Invalid category: ' + category)
+            return False
+        for p in category:
+            if p[1] == plugin:
+                return True
+        return False
+
     def read_content_from_args(self):
         args = self.argparser.parse_args()
         content = None

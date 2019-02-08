@@ -414,7 +414,14 @@ class DeenEncoderWidget(QWidget):
         if isinstance(name, tuple):
             name = name[0]
         with open(name, 'wb') as file:
-            file.write(self._content)
+            current_plugin = self.parent.plugins.get_plugin_by_display_name(
+                    self.ui.current_plugin_label.text().replace('Plugin: ', ''))
+            if self.parent.plugins.is_plugin_in_category(current_plugin, 'formatters'):
+                # Formatters alter data inplace, so we have to write the
+                # data that is currently displayed into the outfile.
+                file.write(bytearray(self.text_field.toPlainText(), 'utf8'))
+            else:
+                file.write(self._content)
 
     def move_content_to_root(self):
         """Moves the content of the current widget
