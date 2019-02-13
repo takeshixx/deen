@@ -46,7 +46,7 @@ class DeenGui(QMainWindow):
         self.log = DeenLogger(self)
         # Start Deen GUI maximized with focus on the text field
         self.showMaximized()
-        self.widgets[0].text_field.setFocus(True)
+        self.widgets[0].set_field_focus()
         # Add action fuzzy search
         self.fuzzy_search_ui = FuzzySearchUi(self)
         self.fuzzy_search_action_shortcut = QShortcut(QKeySequence('Ctrl+R'), self)
