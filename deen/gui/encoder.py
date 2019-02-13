@@ -10,7 +10,7 @@ from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
 
-from deen.gui.widgets.hex import HexViewWidget
+from deen.gui.widgets.hex import HexViewWidget, QHEXEDIT2_AVAILABLE
 from deen.gui.widgets.text import TextViewWidget
 from deen.gui.widgets.ui_deenencoderwidget import Ui_DeenEncoderWidget
 
@@ -43,7 +43,11 @@ class DeenEncoderWidget(QWidget):
         self.text_field.textChanged.connect(self.field_content_changed)
         self.hex_field = HexViewWidget(read_only=self.readonly, parent=self)
         self.hex_field.setHidden(True)
-        self.hex_field.bytesChanged.connect(self.field_content_changed)
+        # TODO: remove this queck after the old hex viewer will be removed
+        if QHEXEDIT2_AVAILABLE:
+            self.hex_field.dataChanged.connect(self.field_content_changed)
+        else:
+            self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.ui.content_area_layout.addWidget(self.text_field)
         self.ui.content_area_layout.addWidget(self.hex_field)
         # Configure widget elements

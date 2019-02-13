@@ -5,7 +5,11 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import (QBrush, QColor)
 from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QHeaderView)
 
-import qhexedit
+try:
+    import qhexedit
+    QHEXEDIT2_AVAILABLE = True
+except ImportError:
+    QHEXEDIT2_AVAILABLE = False
 
 
 class HexViewWidget(qhexedit.QHexEdit):
