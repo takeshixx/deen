@@ -202,7 +202,10 @@ class DeenEncoderWidget(QWidget):
 
     def has_next(self):
         """Determine if there are already new widgets created."""
-        return True if self.parent.widgets[-1] != self else False
+        if self.parent.widgets and self.parent.widgets[-1] != self:
+            return True
+        else:
+            return False
 
     @property
     def previous(self):
