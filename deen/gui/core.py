@@ -103,7 +103,16 @@ class DeenGui(QMainWindow):
     def clear_current_widget(self):
         """Clear and remove the current encoder widget."""
         focussed_widget = QApplication.focusWidget()
-        focussed_widget.parent.clear_content()
+        if not hasattr(focussed_widget, 'parent') or \
+                not focussed_widget.parent:
+            LOGGER.warning('NO parent for widget found: ' + str(focussed_widget))
+            return
+        if callable(focussed_widget.parent):
+            widget = focussed_widget.parent()
+        else:
+            widget = focussed_widget.parent
+        if isinstance(widget, DeenEncoderWidget):
+            widget.clear_content()
 
     def set_root_content(self, data):
         if data:
