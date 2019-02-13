@@ -232,6 +232,35 @@ class DeenEncoderWidget(QWidget):
             if w == self:
                 return self.parent.widgets[i + 1]
 
+    def set_field_focus(self):
+        """Set the focus of the current
+        input field. Checks if hex view
+        mode is enabled."""
+        if self.hex_view:
+            self.hex_field.setFocus()
+        else:
+            self.text_field.setFocus()
+
+    def get_field_content(self):
+        """Return the content of the current
+        text or hex field."""
+        if self.hex_view:
+            return self.hex_field.content
+        else:
+            return self.text_field.content
+
+    def toggle_printable(self):
+        """Toggle the printable flag, which
+        indicates if an encoder widget's
+        self._content contains non-printable
+        characters."""
+        if self.printable:
+            self.printable = False
+            self.hex_view = True
+            self.ui.toggle_text_view.setEnabled(False)
+        else:
+            self.printable = True
+
     def toggle_side_menu_visibility(self):
         """Calling this function will either
         hide or show the sidebar. Hiding the
