@@ -51,7 +51,7 @@ class DeenGui(QMainWindow):
         self.fuzzy_search_ui = FuzzySearchUi(self)
         self.fuzzy_search_action_shortcut = QShortcut(QKeySequence('Ctrl+R'), self)
         self.fuzzy_search_action_shortcut.activated.connect(self.fuzzy_search_action)
-        self.clear_current_widget_shortcut = QShortcut(QKeySequence('Ctrl+C'), self)
+        self.clear_current_widget_shortcut = QShortcut(QKeySequence('Ctrl+Q'), self)
         self.clear_current_widget_shortcut.activated.connect(self.clear_current_widget)
         self.hide_search_box_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
         self.hide_search_box_shortcut.activated.connect(self.toggle_search_box_visibility)
