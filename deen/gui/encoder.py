@@ -186,13 +186,10 @@ class DeenEncoderWidget(QWidget):
                 not all(chr(c) in string.printable for c in self._content):
             # If there are non-printable characters,
             # switch to hex view.
-            self.text_field.setReadOnly(True)
             self.ui.toggle_hex_view.setChecked(True)
         else:
             # Prevent the field from overwriting itself with invalid
             # characters.
-            if not all(chr(c) in string.printable for c in self._content):
-                self.text_field.setReadOnly(True)
             self.text_field.setPlainText(self.codec.toUnicode(self._content))
             self.text_field.moveCursor(QTextCursor.End)
 
@@ -221,7 +218,7 @@ class DeenEncoderWidget(QWidget):
         that is supposed to hold the output of action()'s of
         the current widget."""
         if not self.has_next():
-            w = DeenEncoderWidget(self.parent, readonly=True, enable_actions=False)
+            w = DeenEncoderWidget(self.parent, enable_actions=False)
             self.parent.widgets.append(w)
             self.parent.ui.encoder_widget_layout.addWidget(w)
             return w
@@ -258,16 +255,15 @@ class DeenEncoderWidget(QWidget):
         of the QTextEdit() will be changed. Whatever will be
         executed here will most likely differ if it will be
         applied on a root widget or any following widget."""
-        if self.has_next() and not self.text_field.isReadOnly() \
-                and not self.formatted_view:
+        if self.has_next() and not self.formatted_view:
             # If widget count is greater then two,
             # remove all widgets after the second.
             self.remove_next_widgets(offset=2)
-        elif self.has_next() and self.text_field.isReadOnly():
+        elif self.has_next():
             # If the current widget is not the root
             # but there is at least one next widget.
             self.next.content = self.content
-        if not self.text_field.isReadOnly() and not self.formatted_view:
+        if not self.formatted_view:
             if not self.hex_view:
                 self._content = bytearray(self.text_field.toPlainText(), 'utf8')
             else:
@@ -353,7 +349,6 @@ class DeenEncoderWidget(QWidget):
         self.hex_view = True
         self.text_field.setHidden(True)
         self.hex_field.setHidden(False)
-        self.hex_field._read_only = self.text_field.isReadOnly()
         if not self._content:
             self._content = bytearray(self.text_field.toPlainText(), 'utf8')
         self.hex_field.content = self._content
@@ -373,7 +368,6 @@ class DeenEncoderWidget(QWidget):
             widget.update_length_field(self)
             widget.ui.current_plugin_label.clear()
             widget.ui.current_plugin_label.hide()
-            widget.text_field.setReadOnly(False)
             widget.update_readonly_field(self)
             widget.formatted_view = False
             widget.text_field.setFocus()
@@ -555,9 +549,8 @@ class DeenEncoderWidget(QWidget):
                     self.next.set_error()
                     self.next.set_error_message(str(plugin.error))
                 self.next.content = data
-                if self.next.text_field.isReadOnly():
-                    self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
-                    self.next.ui.current_plugin_label.show()
+                self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
+                self.next.ui.current_plugin_label.show()
                 self.next.text_field.setFocus()
                 if not plugin.error:
                     self.next.clear_error_message()
@@ -592,9 +585,8 @@ class DeenEncoderWidget(QWidget):
                     self.next.set_error_message(str(plugin.error))
                 if data:
                     self.next.content = data
-                    if self.next.text_field.isReadOnly():
-                        self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
-                        self.next.ui.current_plugin_label.show()
+                    self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
+                    self.next.ui.current_plugin_label.show()
                     if not plugin.error:
                         self.next.clear_error_message()
                     self.next.text_field.setFocus()
