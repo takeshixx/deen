@@ -73,7 +73,7 @@ class DeenEncoderWidget(QWidget):
         self.update_readonly_field(self)
         # The root widget will not have a plugin label and no "Move to root" button.
         self.ui.current_plugin_label.hide()
-        if not self.readonly:
+        if not self.has_previous():
             self.ui.move_to_root_button.hide()
         # Disable the first element in all combo boxes.
         for combo in [self.ui.encode_combo, self.ui.decode_combo, self.ui.uncompress_combo,
@@ -195,7 +195,10 @@ class DeenEncoderWidget(QWidget):
 
     def has_previous(self):
         """Determine if the current widget is the root widget."""
-        return True if self.parent.widgets[0] != self else False
+        if self.parent.widgets and self.parent.widgets[0] != self:
+            return True
+        else:
+            return False
 
     def has_next(self):
         """Determine if there are already new widgets created."""
