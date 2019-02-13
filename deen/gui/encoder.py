@@ -35,6 +35,8 @@ class DeenEncoderWidget(QWidget):
         self.formatted_view = False
         self.codec = QTextCodec.codecForName('UTF-8')
         self.hex_view = False
+        # TODO: check if printable is enforced
+        self.printable = True
         # Assign custom widgets for text_field and hex_field.
         # TODO: create proper widgets for text and hex widget.
         self.text_field = TextViewWidget(self, readonly=self.readonly)
@@ -182,15 +184,15 @@ class DeenEncoderWidget(QWidget):
         self.formatted_view = False
         if self.hex_view:
             self.hex_field.content = self._content
-        elif not self.hex_view and \
-                not all(chr(c) in string.printable for c in self._content):
+        elif not all(chr(c) in string.printable for c in self._content):
             # If there are non-printable characters,
             # switch to hex view.
+            self.toggle_printable()
             self.ui.toggle_hex_view.setChecked(True)
         else:
             # Prevent the field from overwriting itself with invalid
             # characters.
-            self.text_field.setPlainText(self.codec.toUnicode(self._content))
+            self.text_field.content = self._content
             self.text_field.moveCursor(QTextCursor.End)
 
     def has_previous(self):
@@ -279,7 +281,7 @@ class DeenEncoderWidget(QWidget):
         if self.ui.search_group.isVisible():
             self.ui.search_group.hide()
             self.clear_search_highlight()
-            self.text_field.setFocus()
+            self.set_field_focus()
         else:
             self.ui.search_group.show()
             self.ui.search_area.setFocus()
@@ -297,13 +299,12 @@ class DeenEncoderWidget(QWidget):
         elif self.has_next():
             # If the current widget is not the root
             # but there is at least one next widget.
+            # TODO: should be change the live data in the next widget?
             self.next.content = self.content
         if not self.formatted_view:
-            if not self.hex_view:
-                self._content = bytearray(self.text_field.toPlainText(), 'utf8')
-            else:
-                self._content = self.hex_field.content
-        if not self.formatted_view:
+            if self.printable:
+                # TODO: is there another situation where this could fail?
+                self._content = self.get_field_content()
             self.update_length_field(self)
             self.update_readonly_field(self)
             if (self.hex_field.hasFocus() or self.text_field.hasFocus()):
@@ -378,14 +379,12 @@ class DeenEncoderWidget(QWidget):
         self.text_field.setHidden(False)
         self.hex_field.setHidden(True)
         if self._content:
-            self.text_field.setPlainText(self.codec.toUnicode(self._content))
+            self.text_field.content = self._content
 
     def view_hex(self):
         self.hex_view = True
         self.text_field.setHidden(True)
         self.hex_field.setHidden(False)
-        if not self._content:
-            self._content = bytearray(self.text_field.toPlainText(), 'utf8')
         self.hex_field.content = self._content
 
     def clear_content(self, widget=None):
@@ -405,14 +404,14 @@ class DeenEncoderWidget(QWidget):
             widget.ui.current_plugin_label.hide()
             widget.update_readonly_field(self)
             widget.formatted_view = False
-            widget.text_field.setFocus()
+            widget.set_field_focus()
         else:
             # Remove the current_combo of the previous
             # widget so that the last pick doesn't
             # stuck in the previous widget after deleting
             # one.
             self.previous.current_combo = None
-            self.previous.text_field.setFocus()
+            self.previous.set_field_focus()
         self.remove_next_widgets(widget=widget)
 
     def copy_to_clipboard(self):
@@ -531,7 +530,7 @@ class DeenEncoderWidget(QWidget):
 
     def _action(self, plugin_name, process=True):
         if not self._content:
-            self._content = bytearray(self.text_field.toPlainText(), 'utf8')
+            self._content = self.text_field.content
         cursor = self.text_field.textCursor()
         selected_data = cursor.selectedText()
         if selected_data:
@@ -586,7 +585,7 @@ class DeenEncoderWidget(QWidget):
                 self.next.content = data
                 self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
                 self.next.ui.current_plugin_label.show()
-                self.next.text_field.setFocus()
+                self.next.set_field_focus()
                 if not plugin.error:
                     self.next.clear_error_message()
             elif category == 'formatters':
@@ -624,7 +623,7 @@ class DeenEncoderWidget(QWidget):
                     self.next.ui.current_plugin_label.show()
                     if not plugin.error:
                         self.next.clear_error_message()
-                    self.next.text_field.setFocus()
+                    self.next.set_field_focus()
                 else:
                     LOGGER.error('Plugin {} did not return any data'.format(plugin.name))
         if self.current_combo:

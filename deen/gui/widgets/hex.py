@@ -5,13 +5,39 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import (QBrush, QColor)
 from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QHeaderView)
 
+import qhexedit
 
-class HexViewWidget(QTableWidget):
+
+class HexViewWidget(qhexedit.QHexEdit):
+    def __init__(self, content=None, read_only=False,
+                 parent=None):
+        super(HexViewWidget, self).__init__(parent)
+        self.parent = parent
+        self._read_only = read_only
+        self._content = bytearray()
+        if content:
+            self.content = content
+        self.setData(self._content)
+        self.setReadOnly(self._read_only)
+
+    @property
+    def content(self):
+        return bytearray(self.data())
+
+    @content.setter
+    def content(self, content):
+        ctype = type(content).__name__
+        assert isinstance(content, bytearray),\
+            TypeError('bytearray required. Got ' + ctype)
+        self.setData(content)
+
+
+class OldHexViewWidget(QTableWidget):
     bytesChanged = pyqtSignal()
 
     def __init__(self, content=None, max_bytes_per_line=16, width=1,
                  read_only=False, parent=None):
-        super(HexViewWidget, self).__init__(parent)
+        super(OldHexViewWidget, self).__init__(parent)
         self.parent = parent
         self._max_bytes_per_line = max_bytes_per_line
         self._bytes_per_line = max_bytes_per_line

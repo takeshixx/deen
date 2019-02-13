@@ -12,3 +12,14 @@ class TextViewWidget(QPlainTextEdit):
         self.parent = parent
         self.setReadOnly(readonly)
         self.codec = self.parent.codec
+
+    @property
+    def content(self):
+        return bytearray(self.codec.fromUnicode(self.toPlainText()))
+
+    @content.setter
+    def content(self, content):
+        ctype = type(content).__name__
+        assert isinstance(content, bytearray),\
+            TypeError('bytearray required. Got ' + ctype)
+        self.setPlainText(self.codec.toUnicode(content))
