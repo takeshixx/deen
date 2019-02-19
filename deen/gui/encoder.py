@@ -38,7 +38,6 @@ class DeenEncoderWidget(QWidget):
         # TODO: check if printable is enforced
         self.printable = True
         # Assign custom widgets for text_field and hex_field.
-        # TODO: create proper widgets for text and hex widget.
         self.text_field = TextViewWidget(self, readonly=self.readonly)
         self.text_field.textChanged.connect(self.field_content_changed)
         self.hex_field = HexViewWidget(read_only=self.readonly, parent=self)
