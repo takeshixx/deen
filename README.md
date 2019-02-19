@@ -10,6 +10,16 @@ See the [wiki](https://github.com/takeshixx/deen/wiki) for basic and more advanc
 
 ## Installation
 
+deen requires [QHexEdit2](https://github.com/Simsys/qhexedit2) to properly display hex dumps:
+
+```
+git clone https://github.com/Simsys/qhexedit2.git
+cd qhexedit2
+mkdir build
+./build-python-bindings.sh
+pip3 install .
+```
+
 Install via `pip`:
 
 ```bash
