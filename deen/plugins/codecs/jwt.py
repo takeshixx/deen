@@ -126,7 +126,7 @@ class DeenPluginJwt(DeenPlugin):
             self.error = e
         else:
             data = json.dumps(data)
-            data = _header.decode() + '.' + data
+            data = '[' + _header.decode() + ',' + data + ']'
             if verify:
                 data += '\nSignature valid: True'
             data = data.encode()
