@@ -23,3 +23,9 @@ class TextViewWidget(QPlainTextEdit):
         assert isinstance(content, bytearray),\
             TypeError('bytearray required. Got ' + ctype)
         self.setPlainText(self.codec.toUnicode(content))
+
+    @property
+    def selected_data(self):
+        cursor = self.textCursor()
+        data = cursor.selectedText()
+        return data
