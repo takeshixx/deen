@@ -55,6 +55,7 @@ class Ui_DeenEncoderWidget(object):
         self.plugin_combos.addWidget(self.encode_combo, 1, 0, 1, 1)
         self.gridLayout.addLayout(self.plugin_combos, 5, 0, 1, 1)
         self.content_area_layout_widget = QtWidgets.QWidget(DeenEncoderWidget)
+        self.content_area_layout_widget.setMinimumSize(QtCore.QSize(0, 250))
         self.content_area_layout_widget.setObjectName("content_area_layout_widget")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.content_area_layout_widget)
         self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
