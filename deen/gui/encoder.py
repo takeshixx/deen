@@ -236,22 +236,23 @@ class DeenEncoderWidget(QWidget):
             if w == self:
                 return self.parent.widgets[i + 1]
 
+    @property
+    def field(self):
+        if self.hex_view:
+            return self.hex_field
+        else:
+            return self.text_field
+
     def set_field_focus(self):
         """Set the focus of the current
         input field. Checks if hex view
         mode is enabled."""
-        if self.hex_view:
-            self.hex_field.setFocus()
-        else:
-            self.text_field.setFocus()
+        self.field.setFocus()
 
     def get_field_content(self):
         """Return the content of the current
         text or hex field."""
-        if self.hex_view:
-            return self.hex_field.content
-        else:
-            return self.text_field.content
+        return self.field.content
 
     def toggle_printable(self):
         """Toggle the printable flag, which
@@ -518,10 +519,8 @@ class DeenEncoderWidget(QWidget):
     def _action(self, plugin_name, process=True):
         if not self._content:
             self._content = self.text_field.content
-        cursor = self.text_field.textCursor()
-        selected_data = cursor.selectedText()
-        if selected_data:
-            self._content = bytearray(selected_data, 'utf8')
+        if self.field.selected_data:
+            self._content = bytearray(self.field.selected_data, 'utf8')
         if self._content:
             if not self.parent.plugins.plugin_available(plugin_name):
                 LOGGER.warning('Plugin {} not found'.format(plugin_name))
