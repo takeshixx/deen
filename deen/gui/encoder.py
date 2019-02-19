@@ -72,11 +72,9 @@ class DeenEncoderWidget(QWidget):
         self.ui.save_button.clicked.connect(self.save_content)
         self.ui.copy_to_clipboard_button.clicked.connect(self.copy_to_clipboard)
         self.ui.move_to_root_button.clicked.connect(self.move_content_to_root)
-        self.ui.hide_side_menu.clicked.connect(self.toggle_side_menu_visibility)
         self.ui.hide_search_box.clicked.connect(self.toggle_search_box_visibility)
         # Update labels with proper values
         self.update_length_field(self)
-        self.update_readonly_field(self)
         # The root widget will not have a plugin label and no "Move to root" button.
         self.ui.current_plugin_label.hide()
         if not self.has_previous():
@@ -267,16 +265,6 @@ class DeenEncoderWidget(QWidget):
         else:
             self.printable = True
 
-    def toggle_side_menu_visibility(self):
-        """Calling this function will either
-        hide or show the sidebar. Hiding the
-        sidebar is a convenient way to make
-        larger content more readable."""
-        if self.ui.side_menu.isVisible():
-            self.ui.side_menu.hide()
-        else:
-            self.ui.side_menu.show()
-
     def toggle_search_box_visibility(self):
         """Calling this function will either
         hide or show the search box. By default
@@ -310,7 +298,6 @@ class DeenEncoderWidget(QWidget):
                 # TODO: is there another situation where this could fail?
                 self._content = self.get_field_content()
             self.update_length_field(self)
-            self.update_readonly_field(self)
             if (self.hex_field.hasFocus() or self.text_field.hasFocus()):
                 self.action()
 
@@ -406,7 +393,6 @@ class DeenEncoderWidget(QWidget):
             widget.update_length_field(self)
             widget.ui.current_plugin_label.clear()
             widget.ui.current_plugin_label.hide()
-            widget.update_readonly_field(self)
             widget.formatted_view = False
             widget.set_field_focus()
         else:
@@ -464,9 +450,6 @@ class DeenEncoderWidget(QWidget):
 
     def update_length_field(self, widget):
         widget.ui.content_length_label.setText('Length: ' + str(len(widget.content)))
-
-    def update_readonly_field(self, widget):
-        widget.ui.widget_mode_label.setText('Mode: Read' if widget.text_field.isReadOnly() else 'Mode: Read/Write')
 
     def update_vertical_scroll_range(self, min, max):
         """Update the scroll maximum of the main window scroll
