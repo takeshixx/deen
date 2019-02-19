@@ -47,11 +47,16 @@ class DeenPluginJwt(DeenPlugin):
         if not JOSE:
             self.error = MissingDependencyException('python-jose module missing')
             return data
+        header = None
         try:
             data_dict = json.loads(data)
         except Exception as e:
             self.error = e
             return data
+        if data_dict and 'data' in data_dict.keys() and \
+                'header' in data_dict.keys():
+            header = data_dict.get('header')
+            data_dict = data_dict.get('data')
         if algo in constants.ALGORITHMS.HMAC:
             # Symmetric signatures
             try:
@@ -69,6 +74,19 @@ class DeenPluginJwt(DeenPlugin):
                 self.error = e
             else:
                 data = data.encode()
+        elif algo == 'none':
+            # Do not sign JWT token
+            if not header:
+                header = {'alg': 'none',
+                          "typ": "JWT"}
+            else:
+                header['alg'] = 'none'
+            header = json.dumps(header)
+            data = base64.b64encode(header.encode())
+            data += b'.'
+            data_dict = json.dumps(data_dict)
+            data += base64.b64encode(data_dict.encode())
+            data += b'.'
         return data
 
     def unprocess(self, data, secret=b'', verify=False, algo='HS256',
@@ -126,7 +144,7 @@ class DeenPluginJwt(DeenPlugin):
             self.error = e
         else:
             data = json.dumps(data)
-            data = '[' + _header.decode() + ',' + data + ']'
+            data = '{"header":' + _header.decode() + ', "data":' + data + '}'
             if verify:
                 data += '\nSignature valid: True'
             data = data.encode()
@@ -144,6 +162,9 @@ class DeenPluginJwt(DeenPlugin):
             parser = argparser.add_parser(cmd_name, help=cmd_help)
         else:
             parser = argparser.add_parser(cmd_name, help=cmd_help, aliases=cmd_aliases)
+        algos = []
+        algos.extend(constants.ALGORITHMS.HASHES.keys())
+        algos.append('None')
         parser.add_argument('plugindata', action='store',
                             help='input data', nargs='?')
         parser.add_argument('-r', '--revert', action='store_true', dest='revert',
@@ -155,7 +176,7 @@ class DeenPluginJwt(DeenPlugin):
         parser.add_argument('-k', '--key', dest='pluginkey', default=None,
                             help='key file for asymmetric signatures', metavar='key', type=str)
         parser.add_argument('-m', '--mac', dest='pluginmac', help='JWT MAC algorithm',
-                            default='HS256',choices=constants.ALGORITHMS.HASHES.keys())
+                            default='HS256',choices=algos)
         parser.add_argument('-v', '--verify', dest='pluginverify', default=False,
                             help='force signature and claims verification',
                             action='store_true')
@@ -214,6 +235,8 @@ class DeenPluginJwt(DeenPlugin):
         elif algo in constants.ALGORITHMS.RSA or \
                 algo in constants.ALGORITHMS.EC:
             return self.process(content, key=secret, algo=algo)
+        elif algo == 'none':
+            return self.process(content, key=secret, algo='none')
 
     def _load_secret_dialog(self):
         secret_path = self.file_open_dialog.getOpenFileName(
@@ -231,7 +254,7 @@ class JwtGui(QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle('Create JWT Token')
         self.parent = parent
-        for algo in constants.ALGORITHMS.HASHES.keys():
+        for algo in constants.ALGORITHMS.ALL:
             self.ui.algo_combo.addItem(algo)
 
 
