@@ -103,7 +103,15 @@ class DeenPluginJwt(DeenPlugin):
         if verify:
             options = {'verify_signature': True}
         else:
-            options = {'verify_signature': False}
+            options = {'verify_signature': False,
+                       'verify_aud': False,
+                       'verify_iat': True,
+                       'verify_exp': True,
+                       'verify_nbf': True,
+                       'verify_iss': True,
+                       'verify_sub': True,
+                       'verify_jti': True,
+                       'verify_at_hash': True}
         if algo in constants.ALGORITHMS.RSA or \
              algo in constants.ALGORITHMS.EC:
             # Asymmetric signatures
@@ -111,8 +119,9 @@ class DeenPluginJwt(DeenPlugin):
         try:
             data = jwt.decode(bytes(data).decode(), secret,
                               algorithms=[algo], options=options)
-        except exceptions.JWTError:
+        except exceptions.JWTError as e:
             data = b'Signature valid: False'
+            self.error = e
         except Exception as e:
             self.error = e
         else:
