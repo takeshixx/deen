@@ -69,7 +69,12 @@ class DeenPluginAsmArmThumb(DeenPluginAsmArm):
                'thumb']
     cmd_name = 'assembly_armthumb'
     cmd_help='Assemble/Disassemble for the ARM architecture with Thumb instructions'
-    keystone_arch = keystone.KS_ARCH_ARM if KEYSTONE else None
-    keystone_mode = keystone.KS_MODE_THUMB if KEYSTONE else None
-    capstone_arch = capstone.CS_ARCH_ARM if KEYSTONE else None
-    capstone_mode = capstone.CS_MODE_THUMB if KEYSTONE else None
+    keystone_arch = keystone.KS_ARCH_ARM \
+        if (KEYSTONE and hasattr(keystone, 'KS_ARCH_ARM')) else None
+    keystone_mode = keystone.KS_MODE_THUMB \
+        if (KEYSTONE and hasattr(keystone, 'KS_MODE_THUMB')) else None
+    capstone_arch = keystone.CS_ARCH_ARM \
+        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_ARM')) else None
+    capstone_mode = keystone.CS_MODE_THUMB \
+        if (KEYSTONE and hasattr(keystone, 'CS_MODE_THUMB')) else None
+
