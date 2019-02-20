@@ -123,12 +123,12 @@ class DeenPluginJwt(DeenPlugin):
         else:
             options = {'verify_signature': False,
                        'verify_aud': False,
-                       'verify_iat': True,
-                       'verify_exp': True,
-                       'verify_nbf': True,
-                       'verify_iss': True,
-                       'verify_sub': True,
-                       'verify_jti': True,
+                       'verify_iat': False,
+                       'verify_exp': False,
+                       'verify_nbf': False,
+                       'verify_iss': False,
+                       'verify_sub': False,
+                       'verify_jti': False,
                        'verify_at_hash': True}
         if algo in constants.ALGORITHMS.RSA or \
              algo in constants.ALGORITHMS.EC:
