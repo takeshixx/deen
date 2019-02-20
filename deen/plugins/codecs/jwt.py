@@ -107,7 +107,6 @@ class DeenPluginJwt(DeenPlugin):
             _payload += b'=' * ((4 - len(payload) % 4) % 4)
             _payload = base64.urlsafe_b64decode(_payload)
             signature += b'=' * ((4 - len(signature) % 4) % 4)
-            signature = base64.urlsafe_b64decode(signature)
         except Exception as e:
             self.error = InvalidFormatException('Invalid JWT token format: ' + str(e))
             return data
@@ -143,11 +142,12 @@ class DeenPluginJwt(DeenPlugin):
         except Exception as e:
             self.error = e
         else:
-            data = json.dumps(data)
-            data = '{"header":' + _header.decode() + ', "data":' + data + '}'
+            data_decoded = json.dumps(data)
+            data = b'{"header":' + _header + b', '
+            data += b'"data":' + data_decoded.encode() + b','
+            data += b'"signature":"' + signature + b'"}'
             if verify:
-                data += '\nSignature valid: True'
-            data = data.encode()
+                data += b'\nSignature valid: True'
         return data
 
     @staticmethod
