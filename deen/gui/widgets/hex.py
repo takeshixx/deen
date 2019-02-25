@@ -38,7 +38,13 @@ if QHEXEDIT2_AVAILABLE:
 
         @property
         def selected_data(self):
-            data = self.selectionToReadableString()
+            if hasattr(self, 'selectedData'):
+                data = self.selectedData()
+                data = codecs.decode(data, 'hex')
+                data = bytearray(data)
+            else:
+                data = self.selectionToReadableString()
+                data = bytearray(data, 'utf8')
             return data
 else:
     class HexViewWidget(QTableWidget):

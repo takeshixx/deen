@@ -28,4 +28,5 @@ class TextViewWidget(QPlainTextEdit):
     def selected_data(self):
         cursor = self.textCursor()
         data = cursor.selectedText()
+        data = bytearray(data, 'utf8')
         return data

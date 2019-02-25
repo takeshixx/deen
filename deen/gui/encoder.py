@@ -519,7 +519,7 @@ class DeenEncoderWidget(QWidget):
         if not self._content:
             self._content = self.text_field.content
         if self.field.selected_data:
-            self._content = bytearray(self.field.selected_data, 'utf8')
+            self._content = self.field.selected_data
         if self._content:
             if not self.parent.plugins.plugin_available(plugin_name):
                 LOGGER.warning('Plugin {} not found'.format(plugin_name))
