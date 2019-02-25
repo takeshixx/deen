@@ -4,4 +4,3 @@ dicttoxml
 xmltodict
 python-jose
 bcrypt
-git+https://github.com/takeshixx/qhexedit2.git
