@@ -7,9 +7,9 @@ from deen.gui.widgets.log import DeenLogger, DeenStatusConsole
 from deen.gui.widgets.ui_deenmainwindow import Ui_MainWindow
 from deen.gui.encoder import DeenEncoderWidget
 from deen.gui.widgets.ui_deenfuzzysearch import Ui_DeenFuzzySearchWidget
-from deen import logging
+from deen import logger
 
-LOGGER = logging.DEEN_LOG.getChild('gui.widgets.core')
+LOGGER = logger.DEEN_LOG.getChild('gui.widgets.core')
 
 
 class FuzzySearchUi(QDialog):

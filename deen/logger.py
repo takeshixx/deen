@@ -2,13 +2,6 @@ import logging
 
 import deen.constants
 
-WARN = logging.WARN
-DEBUG = logging.DEBUG
-ERROR = logging.ERROR
-
-StreamHandler = logging.StreamHandler
-Formatter = logging.Formatter
-
 
 def getLogger(name='', level=0, log_format=None):
     if not log_format:

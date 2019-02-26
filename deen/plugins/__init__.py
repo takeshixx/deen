@@ -1,6 +1,6 @@
 import sys
 
-from deen import logging
+import deen.logger
 
 
 class DeenPlugin(object):
@@ -213,7 +213,7 @@ class DeenPlugin(object):
         Plugins are supposed to log via self.log, i.e.
         self.log.info()."""
         logger = 'plugins.' + self.__class__.__name__
-        self.log = logging.DEEN_LOG.getChild(logger)
+        self.log = deen.logger.DEEN_LOG.getChild(logger)
 
     def log_missing_depdendencies(self, dep):
         """A helper function for plugins

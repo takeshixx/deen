@@ -12,10 +12,10 @@ from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
 from deen.gui.widgets.hex import HexViewWidget, QHEXEDIT2_AVAILABLE
 from deen.gui.widgets.text import TextViewWidget
 from deen.gui.widgets.ui_deenencoderwidget import Ui_DeenEncoderWidget
-from deen import logging
+from deen import logger
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
-LOGGER = logging.DEEN_LOG.getChild('gui.widgets.encoder')
+LOGGER = logger.DEEN_LOG.getChild('gui.widgets.encoder')
 
 
 class DeenEncoderWidget(QWidget):

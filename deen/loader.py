@@ -3,9 +3,9 @@ import inspect
 import pkgutil
 import importlib
 
-from deen import logging
+from deen import logger
 
-LOGGER = logging.DEEN_LOG.getChild('loader')
+LOGGER = logger.DEEN_LOG.getChild('loader')
 
 
 class DeenPluginLoader(object):

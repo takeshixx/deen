@@ -1,12 +1,13 @@
 import sys
 import os.path
 import argparse
+import logging
 
 from deen.loader import DeenPluginLoader
 from deen import constants
-from deen import logging
+from deen import logger
 
-LOGGER = logging.DEEN_LOG
+LOGGER = logger.DEEN_LOG
 
 
 class DeenHelpFormatter(argparse.RawDescriptionHelpFormatter):
