@@ -31,7 +31,8 @@ class DeenPluginAsmX86(AsmBase):
 
     def __init__(self, atandt=False):
         super(DeenPluginAsmX86, self).__init__()
-        self.set_syntax(atandt)
+        if keystone and capstone:
+            self.set_syntax(atandt)
 
     def reinitialize(self):
         if self.args and getattr(self.args, 'atandt', None) \

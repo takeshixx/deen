@@ -34,10 +34,10 @@ class AsmBase(DeenPlugin):
         # Initialize keystone and capstone as soon as an instance
         # of this plugin will be created.
         if not keystone:
-            self.log.error('Keystone is required for ' + self.__class__.__name__)
+            self.log.debug('Keystone is required for ' + self.__class__.__name__)
             return
         if not capstone:
-            self.log.error('Capstone is required for ' + self.__class__.__name__)
+            self.log.debug('Capstone is required for ' + self.__class__.__name__)
             return
         if getattr(self, 'args', None) and self.args and getattr(self.args, 'bigendian', None) \
                 and self.args.bigendian:
