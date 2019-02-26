@@ -1,12 +1,12 @@
 import sys
-import logging
 import os.path
 import argparse
 
 from deen.loader import DeenPluginLoader
 from deen import constants
+from deen import logging
 
-LOGGER = logging.getLogger()
+LOGGER = logging.DEEN_LOG
 
 
 class DeenHelpFormatter(argparse.RawDescriptionHelpFormatter):
@@ -52,6 +52,8 @@ def main():
     pl = DeenPluginLoader(argparser=ARGS)
     args = ARGS.parse_args()
     content = pl.read_content_from_args()
+    levels = [logging.WARN, logging.DEBUG]
+    LOGGER.setLevel(levels[min(args.level, len(levels) - 1)])
     if args.list:
         print('Loaded plugins:')
         print(pl.pprint_available_plugins())
@@ -62,9 +64,6 @@ def main():
         print(constants.__version__)
     elif any([args.plugin_cmd, args.plugin]):
         # We are in command line mode
-        log_format = constants.verbose_log_format if args.level > 0 else '%(message)s'
-        levels = [logging.WARN, logging.DEBUG]
-        logging.basicConfig(level=levels[min(args.level, len(levels) - 1)], format=log_format)
         if args.plugin_cmd:
             # Run subcommands
             if not pl.get_plugin_cmd_available(args.plugin_cmd):
@@ -88,12 +87,6 @@ def main():
                     sys.exit(1)
                 processed = plugin.unprocess(content)
         if plugin.error:
-            if args.level > 0:
-                message = 'Plugin ' + plugin.display_name + \
-                          ' returned the following error: ' + str(plugin.error)
-            else:
-                message = plugin.error
-            LOGGER.error(message)
             sys.exit(1)
         if not processed:
             LOGGER.debug('Plugin {} did not return any data'.format(plugin.cmd_name))
@@ -106,7 +99,6 @@ def main():
         from PyQt5.QtWidgets import QApplication
         from PyQt5.QtGui import QIcon
         from deen.gui.core import DeenGui
-        logging.basicConfig(format=constants.verbose_log_format)
         app = QApplication(sys.argv)
         ex = DeenGui(plugins=pl)
         if content:

@@ -1,5 +1,4 @@
 import os
-import logging
 import string
 try:
     from OpenSSL import crypto
@@ -13,9 +12,10 @@ from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
 from deen.gui.widgets.hex import HexViewWidget, QHEXEDIT2_AVAILABLE
 from deen.gui.widgets.text import TextViewWidget
 from deen.gui.widgets.ui_deenencoderwidget import Ui_DeenEncoderWidget
+from deen import logging
 
 MEDIA_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../media/'
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.DEEN_LOG.getChild('gui.widgets.encoder')
 
 
 class DeenEncoderWidget(QWidget):
@@ -410,8 +410,8 @@ class DeenEncoderWidget(QWidget):
         try:
             content = self._content.decode('utf8')
         except UnicodeDecodeError as e:
-            LOGGER.error(e)
-            LOGGER.error('Cannot copy non-ASCII content to clipboard')
+            self.log.error('Cannot copy non-ASCII content to clipboard')
+            self.log.debug(e, exc_info=True)
             return
         clipboard = QApplication.clipboard()
         clipboard.setText(content)
@@ -562,9 +562,11 @@ class DeenEncoderWidget(QWidget):
                     # don't create a new widget.
                     if self.current_combo:
                         self.current_combo.setCurrentIndex(0)
+                    if plugin.error:
+                        self.set_error()
+                        self.set_error_message(str(plugin.error))
                     return
                 if plugin.error:
-                    LOGGER.error(plugin.error)
                     self.next.set_error()
                     self.next.set_error_message(str(plugin.error))
                 self.next.content = data
@@ -586,7 +588,6 @@ class DeenEncoderWidget(QWidget):
                 self.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
                 self.ui.current_plugin_label.show()
                 if plugin.error:
-                    LOGGER.error(plugin.error)
                     self.set_error()
                     self.set_error_message(str(plugin.error))
                 else:
@@ -599,7 +600,6 @@ class DeenEncoderWidget(QWidget):
                 else:
                     data = plugin.unprocess(self._content)
                 if plugin.error:
-                    LOGGER.error(plugin.error)
                     self.next.set_error()
                     self.next.set_error_message(str(plugin.error))
                 if data:

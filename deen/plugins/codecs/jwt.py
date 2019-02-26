@@ -33,11 +33,11 @@ class DeenPluginJwt(DeenPlugin):
         self.secret = None
         self.key = None
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             from jose import jwt
         except ImportError:
+            self.log_missing_depdendencies('python-jose')
             return False
         else:
             return True
@@ -52,6 +52,8 @@ class DeenPluginJwt(DeenPlugin):
             data_dict = json.loads(data)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return data
         if data_dict and 'data' in data_dict.keys() and \
                 'header' in data_dict.keys():
@@ -63,6 +65,8 @@ class DeenPluginJwt(DeenPlugin):
                 data = jwt.encode(data_dict, secret, algorithm=algo)
             except Exception as e:
                 self.error = e
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
             else:
                 data = data.encode()
         elif algo in constants.ALGORITHMS.RSA or \
@@ -72,6 +76,8 @@ class DeenPluginJwt(DeenPlugin):
                 data = jwt.encode(data_dict, key, algorithm=algo)
             except Exception as e:
                 self.error = e
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
             else:
                 data = data.encode()
         elif algo == 'none':
@@ -109,13 +115,19 @@ class DeenPluginJwt(DeenPlugin):
             signature += b'=' * ((4 - len(signature) % 4) % 4)
         except Exception as e:
             self.error = InvalidFormatException('Invalid JWT token format: ' + str(e))
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return data
         try:
             algo = json.loads(_header)['alg']
         except KeyError:
             self.error = Exception('alg attribute not found, defaulting to HS256')
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         if verify:
             options = {'verify_signature': True}
@@ -139,8 +151,12 @@ class DeenPluginJwt(DeenPlugin):
         except exceptions.JWTError as e:
             data = b'Signature valid: False'
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         else:
             data_decoded = json.dumps(data)
             data = b'{"header":' + _header + b', '
@@ -200,6 +216,8 @@ class DeenPluginJwt(DeenPlugin):
                     key_data = f.read()
             except Exception as e:
                 self.error = InvalidInputFile('Could not read key file: ' + str(e))
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
                 return
         if not args.revert:
             return self.process(self.content, secret=args.pluginsecret,

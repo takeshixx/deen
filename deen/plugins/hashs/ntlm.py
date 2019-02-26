@@ -21,4 +21,6 @@ class DeenPluginNtlm(DeenPlugin):
             data = h.hexdigest().encode()
         except UnicodeDecodeError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

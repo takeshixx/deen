@@ -28,4 +28,6 @@ class DeenPluginXmlFormatter(DeenPlugin):
                                       encoding='utf8')
         except ExpatError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

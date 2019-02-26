@@ -19,6 +19,8 @@ class DeenPluginRot13(DeenPlugin):
             data = data.encode()
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -28,4 +30,6 @@ class DeenPluginRot13(DeenPlugin):
             data = data.encode()
         except UnicodeDecodeError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

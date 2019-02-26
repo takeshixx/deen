@@ -23,8 +23,6 @@ except ImportError:
 from .. import DeenPlugin
 from deen.exceptions import MissingDependencyException
 
-LOGGER = logging.getLogger(__name__)
-
 
 class DeenPluginListener(DeenPlugin):
     name = 'listener'
@@ -50,11 +48,11 @@ class DeenPluginListener(DeenPlugin):
         self.server_cert_pem = None
         self.server_key_pem = None
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import OpenSSL.crypto
         except ImportError:
+            self.log_missing_depdendencies('pyOpenSSL')
             return False
         else:
             return True
@@ -131,7 +129,9 @@ class DeenPluginListener(DeenPlugin):
             try:
                 OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
             except (OpenSSL.crypto.Error, TypeError) as e:
-                LOGGER.error(e)
+                self.error = e
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
                 return
             else:
                 self.server_cert_pem = cert
@@ -140,7 +140,9 @@ class DeenPluginListener(DeenPlugin):
             try:
                 OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
             except OpenSSL.crypto.Error as e:
-                LOGGER.error(e)
+                self.error = e
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
                 return
             else:
                 self.server_key_pem = key
@@ -269,7 +271,9 @@ class DeenPluginListener(DeenPlugin):
                                           cert_chain,
                                           server_key)
                 except OSError as e:
-                    LOGGER.error(e)
+                    self.error = e
+                    self.log.error(self.error)
+                    self.log.debug(self.error, exc_info=True)
                     return
 
         else:
@@ -277,7 +281,9 @@ class DeenPluginListener(DeenPlugin):
                 server = socketserver.TCPServer(self.listen_socket,
                                                 DeenTcpHandler)
             except OSError as e:
-                LOGGER.error(e)
+                self.error = e
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
                 return
         message = 'Listening on TCP port ' + str(self.listen_port)
         if listen_ssl:
@@ -349,4 +355,6 @@ class DeenPluginListener(DeenPlugin):
                 except KeyboardInterrupt:
                     pass
         except OSError as e:
-            LOGGER.error(e)
+            self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)

@@ -20,6 +20,8 @@ class DeenPluginUuencode(DeenPlugin):
             data = codecs.encode(data, 'uu')
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -28,4 +30,6 @@ class DeenPluginUuencode(DeenPlugin):
             data = codecs.decode(data, 'uu')
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

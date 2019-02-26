@@ -25,6 +25,8 @@ class DeenPluginUrl(DeenPlugin):
             data = data.encode()
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -34,4 +36,6 @@ class DeenPluginUrl(DeenPlugin):
             data = data.encode()
         except (UnicodeDecodeError, TypeError) as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

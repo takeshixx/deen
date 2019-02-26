@@ -22,4 +22,6 @@ class DeenPluginMysql(DeenPlugin):
             data = h2.hexdigest().encode()
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

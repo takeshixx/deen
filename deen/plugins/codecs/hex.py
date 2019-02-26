@@ -19,6 +19,8 @@ class DeenPluginHex(DeenPlugin):
             data = codecs.encode(data, 'hex')
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -34,4 +36,6 @@ class DeenPluginHex(DeenPlugin):
             data = codecs.decode(data, 'hex')
         except (binascii.Error, TypeError) as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

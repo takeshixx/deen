@@ -26,6 +26,8 @@ class DeenPluginSha1(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -46,6 +48,8 @@ class DeenPluginSha224(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -66,6 +70,8 @@ class DeenPluginSha256(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -86,6 +92,8 @@ class DeenPluginSha384(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -106,4 +114,6 @@ class DeenPluginSha512(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

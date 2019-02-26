@@ -23,6 +23,8 @@ class DeenPluginDeflate(DeenPlugin):
             data = zlib_encode.flush()
         except zlib.error as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -33,4 +35,6 @@ class DeenPluginDeflate(DeenPlugin):
             data = zlib.decompress(data, -15)
         except zlib.error as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

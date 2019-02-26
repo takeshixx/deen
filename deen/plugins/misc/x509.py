@@ -1,5 +1,4 @@
 import sys
-import logging
 import base64
 import binascii
 
@@ -15,8 +14,6 @@ from PyQt5 import QtCore, QtWidgets
 from deen.exceptions import *
 from .. import DeenPlugin
 
-LOGGER = logging.getLogger(__name__)
-
 
 class DeenPluginX509Certificate(DeenPlugin):
     name = 'x509certificate'
@@ -30,11 +27,11 @@ class DeenPluginX509Certificate(DeenPlugin):
         super(DeenPluginX509Certificate, self).__init__()
         self._certificate = None
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import OpenSSL.crypto
         except ImportError:
+            self.log_missing_depdendencies('pyOpenSSL')
             return False
         else:
             return True
@@ -54,20 +51,22 @@ class DeenPluginX509Certificate(DeenPlugin):
             try:
                 base64.b64decode(data.replace(b'\n', b''), validate=True)
             except binascii.Error as e:
-                LOGGER.error(e)
+                self.log.exception(e)
                 # If data is not encoded, encode it
                 data = base64.b64encode(data)
         try:
             data = data.decode()
         except UnicodeDecodeError:
             self.error = TransformException('Invalid certificate encoding')
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         data = data.strip()
         if not '-----BEGIN CERTIFICATE-----' in data:
-            LOGGER.warning('Missing certificate prefix')
+            self.log.warning('Missing certificate prefix')
             data = '-----BEGIN CERTIFICATE-----\n' + data
         if not '-----END CERTIFICATE-----' in data:
-            LOGGER.warning('Missing certificate suffix')
+            self.log.warning('Missing certificate suffix')
             data = data + '\n-----END CERTIFICATE-----'
         try:
             self._certificate = OpenSSL.crypto.load_certificate(
@@ -82,6 +81,8 @@ class DeenPluginX509Certificate(DeenPlugin):
         if not self._certificate:
             if not self.error:
                 self.error = TransformException('Invalid certificate')
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
             return data
         if OPENSSL and self._certificate is not None:
             out = bytearray()
@@ -93,6 +94,8 @@ class DeenPluginX509Certificate(DeenPlugin):
             return out
         elif not OPENSSL:
             self.error = MissingDependencyException('pyOpenSSL is not available')
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -113,11 +116,11 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         self.ca_cert = None
         self.ca_key = None
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import OpenSSL.crypto
         except ImportError:
+            self.log_missing_depdendencies('pyOpenSSL')
             return False
         else:
             return True
@@ -149,10 +152,10 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
             self.error = MissingDependencyException('pyOpenSSL is not available')
             return
         if args.self_signed and (args.CA_CERT or args.CA_KEY):
-            LOGGER.error('-s and CA_* couldn\'t be used together')
+            self.log.error('-s and CA_* couldn\'t be used together')
             sys.exit(1)
         if (args.CA_CERT and not args.CA_KEY) or (not args.CA_CERT and args.CA_KEY):
-            LOGGER.error('CA_CERT and CA_KEY required')
+            self.log.error('CA_CERT and CA_KEY required')
             sys.exit(1)
         original_cert = self._load_cert(args.CERT_TO_CLONE)
         if args.signature_algorithm:
@@ -189,23 +192,31 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         try:
             original_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, content)
         except (OpenSSL.crypto.Error, TypeError) as e:
-            LOGGER.error('Invalid certificate')
+            self.error = Exception('Invalid certificate')
+            self.log.error(self.error)
+            self.log.debug(e, exc_info=True)
             return
         signature_algo = original_cert.get_signature_algorithm().decode()
         if self.x509gui.ui.x509clone_selfsign.isChecked():
             new_cert, new_key = self._clone(original_cert, True, signature_algo)
         elif self.x509gui.ui.x509clone_casign.isChecked():
             if not self.ca_cert:
-                LOGGER.error('Invalid CA cert')
+                self.error = Exception('Invalid CA cert')
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
                 return
             if not self.ca_key:
-                LOGGER.error('Invalid CA key')
+                self.error = Exception('Invalid CA key')
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
                 return
             new_cert, new_key = self._clone(original_cert, False, signature_algo)
             new_cert.set_issuer(self.ca_cert.get_issuer())
             new_cert.sign(self.ca_key, signature_algo)
         else:
-            LOGGER.error('No action selected')
+            self.error = Exception('No action selected')
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         content = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, new_key)
         content += OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, new_cert)
@@ -252,7 +263,9 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         try:
             cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
         except OpenSSL.crypto.Error as e:
-            LOGGER.error('Invalid certificate ' + filepath)
+            self.error = Exception('Invalid certificate ' + filepath)
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         return cert
 
@@ -273,7 +286,9 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         try:
             key = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
         except OpenSSL.crypto.Error:
-            LOGGER.error('Invalid private key ' + filepath)
+            self.error = Exception('Invalid private key ' + filepath)
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         return key
 

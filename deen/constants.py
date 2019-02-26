@@ -5,7 +5,9 @@ about_text = ('deen (DEcoderENcoder) v%s\n\nA decoding/encoding application for 
 
 icon_path = '/media/icon.png'
 
-verbose_log_format = '[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s'
+verbose_log_format = '[ %(levelname)s - %(asctime)s - %(name)s - '
+verbose_log_format += '%(filename)s:%(lineno)s - %(funcName)s() ] '
+verbose_log_format += '%(message)s'
 
 cli_description = 'Apply encodings, compression, hashing and other types of transformations to arbitrary input data.'
 

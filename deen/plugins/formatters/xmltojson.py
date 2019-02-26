@@ -21,11 +21,11 @@ class DeenPluginXmlToJsonFormatter(DeenPlugin):
     def __init__(self):
         super(DeenPluginXmlToJsonFormatter, self).__init__()
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import xmltodict
         except ImportError:
+            self.log_missing_depdendencies('xmltodict')
             return False
         else:
             return True
@@ -38,9 +38,13 @@ class DeenPluginXmlToJsonFormatter(DeenPlugin):
             data = xmltodict.parse(data, xml_attribs=False)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         try:
             data = json.dumps(data).encode()
         except  Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         return data

@@ -9,8 +9,6 @@ else:
 
 from .. import DeenPlugin
 
-LOGGER = logging.getLogger(__name__)
-
 
 class DeenPluginJsBeautifierFormatter(DeenPlugin):
     name = 'jsbeautifier_formatter'
@@ -21,11 +19,11 @@ class DeenPluginJsBeautifierFormatter(DeenPlugin):
     def __init__(self):
         super(DeenPluginJsBeautifierFormatter, self).__init__()
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import jsbeautifier
         except ImportError:
+            self.log_missing_depdendencies('jsbeautifier')
             return False
         else:
             return True
@@ -33,7 +31,7 @@ class DeenPluginJsBeautifierFormatter(DeenPlugin):
     def process(self, data):
         super(DeenPluginJsBeautifierFormatter, self).process(data)
         if not JSBEAUTIFIER:
-            LOGGER.warning('jsbeautifier is not available')
+            self.log.warning('jsbeautifier is not available')
             return
         opts = jsbeautifier.default_options()
         opts.unescape_strings = True
@@ -41,5 +39,7 @@ class DeenPluginJsBeautifierFormatter(DeenPlugin):
             data = jsbeautifier.beautify(data.decode(), opts).encode()
         except (UnicodeDecodeError, TypeError) as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         return data

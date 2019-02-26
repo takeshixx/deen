@@ -21,11 +21,11 @@ class DeenPluginJsonToXmlFormatter(DeenPlugin):
     def __init__(self):
         super(DeenPluginJsonToXmlFormatter, self).__init__()
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import dicttoxml
         except ImportError:
+            self.log_missing_depdendencies('dicttoxml')
             return False
         else:
             return True
@@ -39,9 +39,13 @@ class DeenPluginJsonToXmlFormatter(DeenPlugin):
         except (json.JSONDecodeError, TypeError,
                 UnicodeDecodeError, AssertionError) as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         try:
             data = dicttoxml.dicttoxml(data)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

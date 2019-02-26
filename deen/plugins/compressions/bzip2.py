@@ -18,6 +18,8 @@ class DeenPluginBzip2(DeenPlugin):
             data = codecs.encode(data, 'bz2')
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -26,4 +28,6 @@ class DeenPluginBzip2(DeenPlugin):
             data = codecs.decode(data, 'bz2')
         except (OSError, IOError) as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

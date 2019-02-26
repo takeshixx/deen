@@ -26,6 +26,8 @@ class DeenPluginBase64(DeenPlugin):
             data = base64.b64encode(data)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -41,6 +43,8 @@ class DeenPluginBase64(DeenPlugin):
             data = base64.b64decode(data)
         except binascii.Error as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -60,6 +64,8 @@ class DeenPluginBase64Url(DeenPlugin):
             data = base64.urlsafe_b64encode(data)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -71,6 +77,8 @@ class DeenPluginBase64Url(DeenPlugin):
             data = base64.urlsafe_b64decode(data)
         except binascii.Error as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -90,6 +98,8 @@ class DeenPluginBase32(DeenPlugin):
             data = base64.b32encode(data)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -101,6 +111,8 @@ class DeenPluginBase32(DeenPlugin):
             data = base64.b32decode(data)
         except binascii.Error as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -114,11 +126,11 @@ class DeenPluginBase85(DeenPlugin):
     def __init__(self):
         super(DeenPluginBase85, self).__init__()
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 4):
+            self.log_incompatible_version('3.4')
             return False
         else:
             return True
@@ -129,6 +141,8 @@ class DeenPluginBase85(DeenPlugin):
             data = base64.b85encode(data)
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -140,4 +154,6 @@ class DeenPluginBase85(DeenPlugin):
             data = base64.b85decode(data)
         except (binascii.Error, ValueError) as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

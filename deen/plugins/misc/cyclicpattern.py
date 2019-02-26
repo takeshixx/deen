@@ -30,6 +30,8 @@ class DeenPluginCyclicPatternCreate(DeenPlugin):
             data = int(data)
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return b'Invalid must be an integer'
         if data > MAX_PATTERN_LENGTH:
             return b'Pattern exceeds maximum length'
@@ -64,6 +66,8 @@ class DeenPluginCyclicPatternFind(DeenPlugin):
             needle = data.decode("utf-8")
         except UnicodeDecodeError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         try:
             if needle.startswith('0x'):
@@ -72,6 +76,8 @@ class DeenPluginCyclicPatternFind(DeenPlugin):
                 needle = needle[::-1].decode("utf-8")
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return ('Unable to convert hex input:{}'.format(e)).encode()
         try:
             haystack = ''
@@ -84,5 +90,7 @@ class DeenPluginCyclicPatternFind(DeenPlugin):
                             return 'Pattern offset: {}'.format(found_at).encode()
         except TypeError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return b'Invalid input data'
         return 'Couldn\'t find {} ({}) anywhere in the pattern.'.format(data, needle).encode()

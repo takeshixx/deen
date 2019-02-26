@@ -19,6 +19,8 @@ class DeenPluginJsonFormatter(DeenPlugin):
         except (json.JSONDecodeError, TypeError,
                 UnicodeDecodeError, AssertionError) as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return
         data = json.dumps(data, sort_keys=True,
                           indent=4, separators=(',', ': '))

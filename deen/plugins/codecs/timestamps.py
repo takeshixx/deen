@@ -22,6 +22,8 @@ class DeenPluginUnixTimestamp(DeenPlugin):
             data = data.encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -31,4 +33,6 @@ class DeenPluginUnixTimestamp(DeenPlugin):
             data = data.encode()
         except (UnboundLocalError, ValueError) as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

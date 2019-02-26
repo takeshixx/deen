@@ -16,11 +16,11 @@ class DeenPluginBlake2b(DeenPlugin):
     def __init__(self):
         super(DeenPluginBlake2b, self).__init__()
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 6):
+            self.log_incompatible_version('3.6')
             return False
         else:
             return True
@@ -33,6 +33,8 @@ class DeenPluginBlake2b(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -45,11 +47,11 @@ class DeenPluginBlake2s(DeenPlugin):
     def __init__(self):
         super(DeenPluginBlake2s, self).__init__()
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 6):
+            self.log_incompatible_version('3.6')
             return False
         else:
             return True
@@ -62,4 +64,6 @@ class DeenPluginBlake2s(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

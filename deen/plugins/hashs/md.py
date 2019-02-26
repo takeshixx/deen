@@ -23,6 +23,8 @@ class DeenPluginMd4(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
 
@@ -43,4 +45,6 @@ class DeenPluginMd5(DeenPlugin):
             data = h.hexdigest().encode()
         except ValueError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data

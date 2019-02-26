@@ -19,12 +19,12 @@ class DeenPluginBcrypt(DeenPlugin):
     def __init__(self):
         super(DeenPluginBcrypt, self).__init__()
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import bcrypt
             return True
         except ImportError:
+            self.log_missing_depdendencies('bcrypt')
             return False
 
     def process(self, data, salt=None, password=None, check=False):
@@ -46,12 +46,16 @@ class DeenPluginBcrypt(DeenPlugin):
                     data = b'Invalid hash for given password'
             except Exception as e:
                 self.error = e
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
                 return b'Invalud input data: ' + str(e).encode()
         else:
             try:
                 data = bcrypt.hashpw(bytes(data), salt)
             except ValueError as e:
                 self.error = e
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
                 return b'Invalid salt: ' + salt
         return data
 

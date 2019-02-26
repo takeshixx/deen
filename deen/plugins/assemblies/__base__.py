@@ -32,7 +32,7 @@ class AsmBase(DeenPlugin):
         # Initialize keystone and capstone as soon as an instance
         # of this plugin will be created.
         if not KEYSTONE:
-            return
+            self.log.error('Keystone and Capstone are required')
         if getattr(self, 'args', None) and self.args and getattr(self.args, 'bigendian', None) \
                 and self.args.bigendian:
             self.ks = keystone.Ks(self.keystone_arch,
@@ -45,12 +45,12 @@ class AsmBase(DeenPlugin):
             self.cs = capstone.Cs(self.capstone_arch,
                                   capstone.CS_MODE_LITTLE_ENDIAN)
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import keystone
             import capstone
         except ImportError:
+            self.log_missing_depdendencies(['keystone', 'capstone'])
             return False
         else:
             return True
@@ -61,6 +61,8 @@ class AsmBase(DeenPlugin):
             encoding, count = self.ks.asm(data.decode())
         except keystone.KsError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return b''
         return bytearray(encoding)
 
@@ -75,6 +77,8 @@ class AsmBase(DeenPlugin):
                 output += '%s\t%s' % (mnemonic, op_str)
         except capstone.CsError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return b''
         return output.encode()
 
@@ -122,7 +126,10 @@ class AsmBase(DeenPlugin):
                 if args.revert:
                     try:
                         data = codecs.decode(data, 'hex')
-                    except Exception:
+                    except Exception as e:
+                        self.error = e
+                        self.log.error(self.error)
+                        self.log.debug(self.error, exc_info=True)
                         self.write_to_stdout(b'Invalid hex encoding')
                         return
                 self.content = data
@@ -182,6 +189,8 @@ class AsmBase(DeenPlugin):
                             output = codecs.encode(bytearray(encoding), 'hex')
                         self.write_to_stdout(output)
                 except keystone.KsError as e:
+                    self.log.error(e)
+                    self.log.debug(e, exc_info=True)
                     self.write_to_stdout(str(e).encode())
             except (KeyboardInterrupt, EOFError):
                 return b''

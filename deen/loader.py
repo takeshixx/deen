@@ -2,9 +2,10 @@ import sys
 import inspect
 import pkgutil
 import importlib
-import logging
 
-LOGGER = logging.getLogger()
+from deen import logging
+
+LOGGER = logging.DEEN_LOG.getChild('loader')
 
 
 class DeenPluginLoader(object):
@@ -99,7 +100,7 @@ class DeenPluginLoader(object):
                 if c[0].startswith('DeenPlugin') and \
                         len(c[0].replace('DeenPlugin', '')) != 0:
                     # Call the prerequisites() function before loading plugin.
-                    if c[1].prerequisites():
+                    if c[1]().prerequisites():
                         # Check if the plugin wants to add additional CLI arguments.
                         if self.argparser:
                             if getattr(c[1], 'cmd_name', None) and c[1].cmd_name and \

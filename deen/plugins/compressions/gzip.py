@@ -21,6 +21,8 @@ class DeenPluginGzip(DeenPlugin):
             data = zlib.compress(buffer(data))
         except Exception as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         return data
 
     def unprocess(self, data):
@@ -29,10 +31,14 @@ class DeenPluginGzip(DeenPlugin):
             data = zlib.decompress(data, zlib.MAX_WBITS | 32)
         except zlib.error as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
         except TypeError:
             try:
                 # Python 2 does not like bytearrays
                 data = zlib.decompress(buffer(data), zlib.MAX_WBITS | 32)
             except zlib.error as e:
                 self.error = e
+                self.log.error(self.error)
+                self.log.debug(self.error, exc_info=True)
         return data

@@ -1,5 +1,7 @@
 import sys
 
+from deen import logging
+
 
 class DeenPlugin(object):
     """The core plugin class that should be subclassed
@@ -20,7 +22,11 @@ class DeenPlugin(object):
     aliases = []
 
     def __init__(self):
+        self.parent = None
+        self.content = None
+        self.log = None
         self._content = bytearray()
+        self._create_log_handler()
 
     @property
     def content(self):
@@ -34,8 +40,7 @@ class DeenPlugin(object):
             data = bytearray(data)
         self._content = data
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         """A function that should return True if all
         prerequisites for this plugin are met or False
         if not. Here a plugin can e.g. check if the
@@ -201,3 +206,41 @@ class DeenPlugin(object):
         stdout.write(data)
         if not nonewline:
             stdout.write(b'\n')
+
+    def _create_log_handler(self):
+        """Create a log handler for each plugin instance.
+        Plugins are supposed to log via self.log, i.e.
+        self.log.info()."""
+        logger = 'plugins.' + self.__class__.__name__
+        self.log = logging.DEEN_LOG.getChild(logger)
+
+    def log_missing_depdendencies(self, dep):
+        """A helper function for plugins
+        to log missing dependencies in the
+        self.prerequisites() function.
+
+        :param dep: a str or list of module names"""
+        if isinstance(dep, list):
+            dep = ','.join(dep)
+            msg = dep
+            msg += ' modules '
+        else:
+            msg = dep
+            msg += ' module '
+        msg += 'not found, '
+        msg += self.display_name
+        msg += ' plugin disabled.'
+        self.log.warning(msg)
+
+    def log_incompatible_version(self, version=''):
+        """A helper function for plugins to log
+        missing features in current Python version.
+
+        :param version: a str with a Python version (optional)"""
+        msg = 'Python version ' + str(sys.version_info.major)
+        msg += '.' + str(sys.version_info.minor)
+        msg += ' does not support ' + self.display_name
+        if version:
+            msg += ' (v' + version
+            msg += ' required)'
+        self.log.warning(msg)
