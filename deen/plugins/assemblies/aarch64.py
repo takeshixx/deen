@@ -20,5 +20,5 @@ class DeenPluginAsmAarch64(DeenPluginAsmArm):
         if (KEYSTONE and hasattr(keystone, 'KS_ARCH_ARM64')) else None
     keystone_mode = 0 # There is only the default mode for AARCH64
     capstone_arch = capstone.CS_ARCH_ARM64 \
-        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_ARM64')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_ARM64')) else None
     capstone_mode = 0 # There is only the default mode for AARCH64

@@ -23,9 +23,9 @@ class DeenPluginAsmX86(AsmBase):
     keystone_mode = keystone.KS_MODE_32 \
         if (KEYSTONE and hasattr(keystone, 'KS_MODE_32')) else None
     capstone_arch = capstone.CS_ARCH_X86 \
-        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_X86')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_X86')) else None
     capstone_mode = capstone.CS_MODE_32 \
-        if (KEYSTONE and hasattr(keystone, 'CS_MODE_32')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_MODE_32')) else None
 
     def __init__(self, atandt=False):
         super(DeenPluginAsmX86, self).__init__()
@@ -97,6 +97,6 @@ class DeenPluginAsmX86_64(DeenPluginAsmX86):
     keystone_mode = keystone.KS_MODE_64 \
         if (KEYSTONE and hasattr(keystone, 'KS_MODE_64')) else None
     capstone_arch = capstone.CS_ARCH_X86 \
-        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_X86')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_X86')) else None
     capstone_mode = capstone.CS_MODE_64 \
-        if (KEYSTONE and hasattr(keystone, 'CS_MODE_64')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_MODE_64')) else None

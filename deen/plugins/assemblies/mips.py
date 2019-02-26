@@ -21,9 +21,9 @@ class DeenPluginAsmMips(AsmBase):
     keystone_mode = keystone.KS_MODE_MIPS32 \
         if (KEYSTONE and hasattr(keystone, 'KS_MODE_MIPS32')) else None
     capstone_arch = capstone.CS_ARCH_MIPS \
-        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_MIPS')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_MIPS')) else None
     capstone_mode = capstone.CS_MODE_MIPS32 \
-        if (KEYSTONE and hasattr(keystone, 'CS_MODE_MIPS32')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_MODE_MIPS32')) else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
@@ -48,7 +48,7 @@ class DeenPluginAsmMips64(DeenPluginAsmMips):
     keystone_mode = keystone.KS_MODE_MIPS64 \
         if (KEYSTONE and hasattr(keystone, 'KS_MODE_MIPS64')) else None
     capstone_arch = capstone.CS_ARCH_MIPS \
-        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_MIPS')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_MIPS')) else None
     capstone_mode = capstone.CS_MODE_MIPS64 \
-        if (KEYSTONE and hasattr(keystone, 'CS_MODE_MIPS64')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_MODE_MIPS64')) else None
 

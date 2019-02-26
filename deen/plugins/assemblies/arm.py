@@ -23,9 +23,9 @@ class DeenPluginAsmArm(AsmBase):
     keystone_mode = keystone.KS_MODE_ARM \
         if (KEYSTONE and hasattr(keystone, 'KS_MODE_ARM')) else None
     capstone_arch = capstone.CS_ARCH_ARM \
-        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_ARM')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_ARM')) else None
     capstone_mode = capstone.CS_MODE_ARM \
-        if (KEYSTONE and hasattr(keystone, 'CS_MODE_ARM')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_MODE_ARM')) else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
@@ -74,7 +74,7 @@ class DeenPluginAsmArmThumb(DeenPluginAsmArm):
     keystone_mode = keystone.KS_MODE_THUMB \
         if (KEYSTONE and hasattr(keystone, 'KS_MODE_THUMB')) else None
     capstone_arch = capstone.CS_ARCH_ARM \
-        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_ARM')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_ARM')) else None
     capstone_mode = capstone.CS_MODE_THUMB \
-        if (KEYSTONE and hasattr(keystone, 'CS_MODE_THUMB')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_MODE_THUMB')) else None
 

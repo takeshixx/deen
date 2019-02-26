@@ -21,7 +21,7 @@ class DeenPluginAsmSparc(AsmBase):
     keystone_mode = keystone.KS_MODE_SPARC32 \
         if (KEYSTONE and hasattr(keystone, 'KS_MODE_SPARC32')) else None
     capstone_arch = capstone.CS_ARCH_SPARC \
-        if (KEYSTONE and hasattr(keystone, 'CS_ARCH_SPARC')) else None
+        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_SPARC')) else None
     capstone_mode = 0 # Add default mode
 
     @staticmethod
