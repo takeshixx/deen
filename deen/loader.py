@@ -112,8 +112,6 @@ class DeenPluginLoader(object):
                                                    c[1].cmd_help, c[1].aliases,
                                                    revert=True if 'unprocess' in vars(c[1]) else False)
                         output.append(c)
-                    else:
-                        self.invalid_plugins.append((c, 'Prerequisites not met'))
         else:
             return output
 
