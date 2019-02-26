@@ -162,6 +162,7 @@ class DeenPlugin(object):
         :return: the return value of unprocess()
         """
         self.parent = parent
+        self.content = content
 
     def read_content_from_file(self, file):
         """If file is a filename, it will read and

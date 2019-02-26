@@ -24,13 +24,14 @@ class DeenEncoderWidget(QWidget):
     action. self.parent in instances of this
     class should point to the main window (an
     instance of DeenGui)."""
-    def __init__(self, parent, readonly=False, enable_actions=True):
+    def __init__(self, parent, readonly=False):
         super(DeenEncoderWidget, self).__init__(parent)
         self.ui = Ui_DeenEncoderWidget()
         self.ui.setupUi(self)
         self.parent = parent
         self.readonly = readonly
         self.current_combo = None
+        self.search_matches = None
         self._content = bytearray()
         self.formatted_view = False
         self.codec = QTextCodec.codecForName('UTF-8')
@@ -85,64 +86,64 @@ class DeenEncoderWidget(QWidget):
             combo.model().item(0).setEnabled(False)
         # Add all alvailable plugins to the corresponding combo boxes.
         for encoding in [p[1] for p in self.parent.plugins.codecs
-                         if (not getattr(p[1], 'cmd_only', None) or
-                            (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                     if (not getattr(p[1], 'cmd_only', None) or
+                        (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.encode_combo.addItem(encoding.display_name)
             if getattr(encoding, 'cmd_help', None) and encoding.cmd_help:
                 index = self.ui.encode_combo.count()
                 self.ui.encode_combo.setItemData(index-1, encoding.cmd_help, Qt.ToolTipRole)
         for encoding in [p[1] for p in self.parent.plugins.codecs
                      if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.decode_combo.addItem(encoding.display_name)
             if getattr(encoding, 'cmd_help', None) and encoding.cmd_help:
                 index = self.ui.decode_combo.count()
                 self.ui.decode_combo.setItemData(index-1, encoding.cmd_help, Qt.ToolTipRole)
         for compression in [p[1] for p in self.parent.plugins.compressions
                      if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.compress_combo.addItem(compression.display_name)
             if getattr(compression, 'cmd_help', None) and compression.cmd_help:
                 index = self.ui.compress_combo.count()
                 self.ui.compress_combo.setItemData(index-1, compression.cmd_help, Qt.ToolTipRole)
         for compression in [p[1] for p in self.parent.plugins.compressions
                      if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.uncompress_combo.addItem(compression.display_name)
             if getattr(compression, 'cmd_help', None) and compression.cmd_help:
                 index = self.ui.uncompress_combo.count()
                 self.ui.uncompress_combo.setItemData(index-1, compression.cmd_help, Qt.ToolTipRole)
         for assembly in [p[1] for p in self.parent.plugins.assemblies
                      if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.assemble_combo.addItem(assembly.display_name)
             if getattr(assembly, 'cmd_help', None) and assembly.cmd_help:
                 index = self.ui.assemble_combo.count()
                 self.ui.assemble_combo.setItemData(index-1, assembly.cmd_help, Qt.ToolTipRole)
         for assembly in [p[1] for p in self.parent.plugins.assemblies
                      if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.disassemble_combo.addItem(assembly.display_name)
             if getattr(assembly, 'cmd_help', None) and assembly.cmd_help:
                 index = self.ui.disassemble_combo.count()
                 self.ui.disassemble_combo.setItemData(index-1, assembly.cmd_help, Qt.ToolTipRole)
         for hash in [p[1] for p in self.parent.plugins.hashs
                      if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.hash_combo.addItem(hash.display_name)
             if getattr(hash, 'cmd_help', None) and hash.cmd_help:
                 index = self.ui.hash_combo.count()
                 self.ui.hash_combo.setItemData(index - 1, hash.cmd_help, Qt.ToolTipRole)
         for misc in [p[1] for p in self.parent.plugins.misc
                      if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.misc_combo.addItem(misc.display_name)
             if getattr(misc, 'cmd_help', None) and misc.cmd_help:
                 index = self.ui.misc_combo.count()
                 self.ui.misc_combo.setItemData(index - 1, misc.cmd_help, Qt.ToolTipRole)
         for formatter in [p[1] for p in self.parent.plugins.formatters
                      if (not getattr(p[1], 'cmd_only', None) or
-                             (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                        (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.ui.format_combo.addItem(formatter.display_name)
             if getattr(formatter, 'cmd_help', None) and formatter.cmd_help:
                 index = self.ui.format_combo.count()
@@ -306,11 +307,11 @@ class DeenEncoderWidget(QWidget):
         search area is submitted. It will search within
         the text_field and highlights matches."""
         cursor = self.text_field.textCursor()
-        format = QTextCharFormat()
+        char_format = QTextCharFormat()
         cursor.select(QTextCursor.Document)
-        cursor.mergeCharFormat(format)
+        cursor.mergeCharFormat(char_format)
         cursor.clearSelection()
-        format.setBackground(QBrush(QColor('yellow')))
+        char_format.setBackground(QBrush(QColor('yellow')))
         regex = QRegularExpression(self.ui.search_area.text())
         matches = regex.globalMatch(self.text_field.toPlainText())
         _matches = []
@@ -337,8 +338,8 @@ class DeenEncoderWidget(QWidget):
         widget = widget or self
         cursor = self.text_field.textCursor()
         cursor.select(QTextCursor.Document)
-        format = QTextCharFormat()
-        cursor.setCharFormat(format)
+        char_format = QTextCharFormat()
+        cursor.setCharFormat(char_format)
         widget.ui.search_area.clear()
         widget.ui.search_matches_label.setText('Matches: 0')
 
@@ -451,19 +452,19 @@ class DeenEncoderWidget(QWidget):
     def update_length_field(self, widget):
         widget.ui.content_length_label.setText('Length: ' + str(len(widget.content)))
 
-    def update_vertical_scroll_range(self, min, max):
+    def update_vertical_scroll_range(self, minimum, maximum):
         """Update the scroll maximum of the main window scroll
         are in order to automatically jump to newly created
         encoder widgets."""
         sb = self.parent.ui.DeenMainWindow.verticalScrollBar()
-        sb.setValue(max)
+        sb.setValue(maximum)
 
-    def update_horizontal_scroll_range(self, min, max):
+    def update_horizontal_scroll_range(self, minimum, maximum):
         """Update the scroll maximum of the main window scroll
         are in order to automatically jump to newly created
         encoder widgets."""
         sb = self.parent.ui.DeenMainWindow.horizontalScrollBar()
-        sb.setValue(max)
+        sb.setValue(maximum)
 
     def remove_next_widgets(self, widget=None, offset=0):
         """Remove all widgets after widget. If widget is not

@@ -9,6 +9,7 @@ try:
     import qhexedit
     QHEXEDIT2_AVAILABLE = True
 except ImportError:
+    qhexedit = None
     QHEXEDIT2_AVAILABLE = False
 
 

@@ -163,7 +163,7 @@ class DeenGui(QMainWindow):
             content = file.read()
         if content:
             self.widgets[0].clear_content()
-            self.widgets[0].content =  bytearray(content)
+            self.widgets[0].content = bytearray(content)
             try:
                 content = content.decode('utf8')
             except UnicodeDecodeError:
