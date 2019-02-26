@@ -63,7 +63,7 @@ def main():
             print(pl.pprint_invalid_plugins())
     elif args.version:
         print(constants.__version__)
-    elif any([args.plugin_cmd, args.plugin]):
+    elif any([args.plugin_cmd, args.plugin]) and args.plugin_cmd != 'gui':
         # We are in command line mode
         if args.plugin_cmd:
             # Run subcommands
