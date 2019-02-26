@@ -63,7 +63,9 @@ else:
                 self.content = content
             else:
                 self.content = bytearray()
-            self.horizontalHeader().setStretchLastSection(True)
+            header = self.horizontalHeader()
+            header.setStretchLastSection(True)
+            header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         def _reconstruct_table(self):
             try:
