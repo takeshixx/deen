@@ -1,6 +1,6 @@
 # deen
 
-<img src="https://i.imgur.com/JiXLsko.png" width="90%">
+<img src="https://i.imgur.com/WyoDEfj.png" width="90%">
 
 An application that allows to apply encoding, compression and hashing to generic input data. It is meant to be a handy tool for quick encoding/decoding tasks for data to be used in other applications. It aims to be a lightweight alternative to other tools that might take a long time to startup and should not have too many dependencies. It includes a GUI for easy interaction and integration in common workflows as well as a CLI that might be usefule for automation tasks.
 
