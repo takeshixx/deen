@@ -68,7 +68,7 @@ class TestDeenPluginLoader(unittest.TestCase):
         plugins_path = self.temp_dir + '/' + self.module_name + '/plugins'
         for c in self.plugin_categories:
             os.makedirs(plugins_path + '/' + c)
-        with open(plugins_path + '/codecs/base64.py', 'w') as f:
+        with open(plugins_path + '/codecs/plugin_base64.py', 'w') as f:
             f.write(test_plugin)
 
     def test_load_plugins(self):

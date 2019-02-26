@@ -1,5 +1,4 @@
 import codecs
-import binascii
 
 from .. import DeenPlugin
 

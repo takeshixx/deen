@@ -28,8 +28,6 @@ class DeenPluginBase64(DeenPlugin):
             self.error = e
             self.log.error(self.error)
             self.log.debug(self.error, exc_info=True)
-        if isinstance(data, str):
-            data = data.encode()
         return data
 
     def unprocess(self, data):
