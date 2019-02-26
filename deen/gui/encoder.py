@@ -228,7 +228,7 @@ class DeenEncoderWidget(QWidget):
         that is supposed to hold the output of action()'s of
         the current widget."""
         if not self.has_next():
-            w = DeenEncoderWidget(self.parent, enable_actions=False)
+            w = DeenEncoderWidget(self.parent)
             self.parent.widgets.append(w)
             self.parent.ui.encoder_widget_layout.addWidget(w)
             return w
