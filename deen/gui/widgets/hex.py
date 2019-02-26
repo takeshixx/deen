@@ -213,3 +213,8 @@ else:
 
         def to_bytes(self):
             return self.content
+
+        @property
+        def selected_data(self):
+            # TODO: implement selection of bytes
+            return self.content
