@@ -231,7 +231,7 @@ class DeenPlugin(object):
         msg += 'not found, '
         msg += self.display_name
         msg += ' plugin disabled.'
-        self.log.warning(msg)
+        self.log.debug(msg)
 
     def log_incompatible_version(self, version=''):
         """A helper function for plugins to log
@@ -244,4 +244,4 @@ class DeenPlugin(object):
         if version:
             msg += ' (v' + version
             msg += ' required)'
-        self.log.warning(msg)
+        self.log.debug(msg)
