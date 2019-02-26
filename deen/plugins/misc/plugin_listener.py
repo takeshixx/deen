@@ -26,6 +26,7 @@ from deen.exceptions import MissingDependencyException
 
 class DeenPluginListener(DeenPlugin):
     name = 'listener'
+    display_name = 'Listener'
     aliases = ['listen',
                'http',
                'https',

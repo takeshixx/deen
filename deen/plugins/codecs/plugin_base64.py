@@ -28,6 +28,8 @@ class DeenPluginBase64(DeenPlugin):
             self.error = e
             self.log.error(self.error)
             self.log.debug(self.error, exc_info=True)
+        if isinstance(data, str):
+            data = data.encode()
         return data
 
     def unprocess(self, data):
@@ -41,7 +43,7 @@ class DeenPluginBase64(DeenPlugin):
             data += b'=' * (3 - padding)
         try:
             data = base64.b64decode(data)
-        except binascii.Error as e:
+        except (binascii.Error, TypeError) as e:
             self.error = e
             self.log.error(self.error)
             self.log.debug(self.error, exc_info=True)
@@ -75,7 +77,7 @@ class DeenPluginBase64Url(DeenPlugin):
         data = data.replace(b'\n', b'').replace(b'\r', b'')
         try:
             data = base64.urlsafe_b64decode(data)
-        except binascii.Error as e:
+        except (binascii.Error, TypeError) as e:
             self.error = e
             self.log.error(self.error)
             self.log.debug(self.error, exc_info=True)
@@ -109,7 +111,7 @@ class DeenPluginBase32(DeenPlugin):
         data = data.replace(b'\n', b'').replace(b'\r', b'')
         try:
             data = base64.b32decode(data)
-        except binascii.Error as e:
+        except (binascii.Error, TypeError) as e:
             self.error = e
             self.log.error(self.error)
             self.log.debug(self.error, exc_info=True)
@@ -152,7 +154,7 @@ class DeenPluginBase85(DeenPlugin):
         data = data.replace(b'\n', b'').replace(b'\r', b'')
         try:
             data = base64.b85decode(data)
-        except (binascii.Error, ValueError) as e:
+        except (binascii.Error, TypeError, ValueError) as e:
             self.error = e
             self.log.error(self.error)
             self.log.debug(self.error, exc_info=True)

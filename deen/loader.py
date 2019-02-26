@@ -84,8 +84,12 @@ class DeenPluginLoader(object):
         a list of submodules in the given namespace
         package."""
         output = []
-        for module in pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
-            output.append(module.name)
+        for module in pkgutil.iter_modules(package.__path__,
+                                           package.__name__ + '.'):
+            if isinstance(module, tuple):
+                output.append(module[1])
+            else:
+                output.append(module.name)
         return output
 
     def _get_plugin_classes_from_module(self, package):

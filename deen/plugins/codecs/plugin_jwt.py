@@ -5,8 +5,7 @@ import base64
 import os
 import os.path
 
-from PyQt5.QtWidgets import QFileDialog, QDialog
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 try:
     from jose import jwt
@@ -232,7 +231,7 @@ class DeenPluginJwt(DeenPlugin):
         secret and signature algorithm values."""
         self.parent = parent
         self.jwtgui = JwtGui(self.parent)
-        self.file_open_dialog = QFileDialog(self.jwtgui)
+        self.file_open_dialog = QtWidgets.QFileDialog(self.jwtgui)
         self.jwtgui.ui.read_secret_file_button.clicked.connect(self._load_secret_dialog)
         if self.jwtgui.exec_() == 0:
             # If the plugin GUI is cancelled, just
@@ -265,7 +264,7 @@ class DeenPluginJwt(DeenPlugin):
             self.secret = f.read()
 
 
-class JwtGui(QDialog):
+class JwtGui(QtWidgets.QDialog):
     def __init__(self, parent):
         super(JwtGui, self).__init__(parent)
         self.ui = Ui_JwtCreateGui()

@@ -5,7 +5,7 @@ try:
     import html
     html_encode = html.escape
     html_decode = html.unescape
-except ImportError:
+except (ImportError, AttributeError):
     # Python 2
     import cgi
     html_encode = cgi.escape

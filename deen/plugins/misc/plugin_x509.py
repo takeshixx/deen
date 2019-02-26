@@ -8,7 +8,6 @@ try:
 except ImportError:
     OPENSSL = False
 
-from PyQt5.QtWidgets import QFileDialog, QDialog
 from PyQt5 import QtCore, QtWidgets
 
 from deen.exceptions import *
@@ -178,7 +177,7 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         certificates or use an existing CA cert and key for signing."""
         self.parent = parent
         self.x509gui = X509CloneGui(self.parent)
-        self.file_open_dialog = QFileDialog(self.x509gui)
+        self.file_open_dialog = QtWidgets.QFileDialog(self.x509gui)
         self.x509gui.ui.x509clone_selfsign.toggled.connect(self.x509gui.toggle_selfsign)
         self.x509gui.ui.x509clone_casign.toggled.connect(self.x509gui.toggle_casign)
         self.x509gui.ui.x509clone_load_cacert_button.clicked.connect(self._load_cert_dialog)
@@ -304,7 +303,7 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
             f.write(cert_pem)
 
 
-class X509CloneGui(QDialog):
+class X509CloneGui(QtWidgets.QDialog):
     def __init__(self, parent):
         super(X509CloneGui, self).__init__(parent)
         self.ui = Ui_X509CloneGui()
