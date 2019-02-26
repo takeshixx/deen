@@ -1,9 +1,11 @@
 try:
     import keystone
-    import capstone
-    KEYSTONE = True
 except ImportError:
-    KEYSTONE = False
+    keystone = None
+try:
+    import capstone
+except ImportError:
+    capstone = None
 
 from .__base__ import AsmBase
 
@@ -17,13 +19,13 @@ class DeenPluginAsmMips(AsmBase):
     cmd_name = 'assembly_mips'
     cmd_help='Assemble/Disassemble for the MIPS architecture'
     keystone_arch = keystone.KS_ARCH_MIPS \
-        if (KEYSTONE and hasattr(keystone, 'KS_ARCH_MIPS')) else None
+        if (keystone and hasattr(keystone, 'KS_ARCH_MIPS')) else None
     keystone_mode = keystone.KS_MODE_MIPS32 \
-        if (KEYSTONE and hasattr(keystone, 'KS_MODE_MIPS32')) else None
+        if (keystone and hasattr(keystone, 'KS_MODE_MIPS32')) else None
     capstone_arch = capstone.CS_ARCH_MIPS \
-        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_MIPS')) else None
+        if (capstone and hasattr(capstone, 'CS_ARCH_MIPS')) else None
     capstone_mode = capstone.CS_MODE_MIPS32 \
-        if (KEYSTONE and hasattr(capstone, 'CS_MODE_MIPS32')) else None
+        if (capstone and hasattr(capstone, 'CS_MODE_MIPS32')) else None
 
     @staticmethod
     def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
@@ -44,11 +46,10 @@ class DeenPluginAsmMips64(DeenPluginAsmMips):
     cmd_name = 'assembly_mips64'
     cmd_help='Assemble/Disassemble for the MIPS64 architecture'
     keystone_arch = keystone.KS_ARCH_MIPS \
-        if (KEYSTONE and hasattr(keystone, 'KS_ARCH_MIPS')) else None
+        if (keystone and hasattr(keystone, 'KS_ARCH_MIPS')) else None
     keystone_mode = keystone.KS_MODE_MIPS64 \
-        if (KEYSTONE and hasattr(keystone, 'KS_MODE_MIPS64')) else None
+        if (keystone and hasattr(keystone, 'KS_MODE_MIPS64')) else None
     capstone_arch = capstone.CS_ARCH_MIPS \
-        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_MIPS')) else None
+        if (capstone and hasattr(capstone, 'CS_ARCH_MIPS')) else None
     capstone_mode = capstone.CS_MODE_MIPS64 \
-        if (KEYSTONE and hasattr(capstone, 'CS_MODE_MIPS64')) else None
-
+        if (capstone and hasattr(capstone, 'CS_MODE_MIPS64')) else None

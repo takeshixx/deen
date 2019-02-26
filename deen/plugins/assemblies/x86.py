@@ -1,9 +1,11 @@
 try:
     import keystone
-    import capstone
-    KEYSTONE = True
 except ImportError:
-    KEYSTONE = False
+    keystone = None
+try:
+    import capstone
+except ImportError:
+    capstone = None
 
 from .__base__ import AsmBase
 
@@ -19,13 +21,13 @@ class DeenPluginAsmX86(AsmBase):
     cmd_name = 'assembly_x86'
     cmd_help='Assemble/Disassemble for the x86 architecture'
     keystone_arch = keystone.KS_ARCH_X86 \
-        if (KEYSTONE and hasattr(keystone, 'KS_ARCH_X86')) else None
+        if (keystone and hasattr(keystone, 'KS_ARCH_X86')) else None
     keystone_mode = keystone.KS_MODE_32 \
-        if (KEYSTONE and hasattr(keystone, 'KS_MODE_32')) else None
+        if (keystone and hasattr(keystone, 'KS_MODE_32')) else None
     capstone_arch = capstone.CS_ARCH_X86 \
-        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_X86')) else None
+        if (capstone and hasattr(capstone, 'CS_ARCH_X86')) else None
     capstone_mode = capstone.CS_MODE_32 \
-        if (KEYSTONE and hasattr(capstone, 'CS_MODE_32')) else None
+        if (capstone and hasattr(capstone, 'CS_MODE_32')) else None
 
     def __init__(self, atandt=False):
         super(DeenPluginAsmX86, self).__init__()
@@ -93,10 +95,10 @@ class DeenPluginAsmX86_64(DeenPluginAsmX86):
     cmd_name = 'assembly_x86_64'
     cmd_help='Assemble/Disassemble for the x86_64 architecture'
     keystone_arch = keystone.KS_ARCH_X86 \
-        if (KEYSTONE and hasattr(keystone, 'KS_ARCH_X86')) else None
+        if (keystone and hasattr(keystone, 'KS_ARCH_X86')) else None
     keystone_mode = keystone.KS_MODE_64 \
-        if (KEYSTONE and hasattr(keystone, 'KS_MODE_64')) else None
+        if (keystone and hasattr(keystone, 'KS_MODE_64')) else None
     capstone_arch = capstone.CS_ARCH_X86 \
-        if (KEYSTONE and hasattr(capstone, 'CS_ARCH_X86')) else None
+        if (capstone and hasattr(capstone, 'CS_ARCH_X86')) else None
     capstone_mode = capstone.CS_MODE_64 \
-        if (KEYSTONE and hasattr(capstone, 'CS_MODE_64')) else None
+        if (capstone and hasattr(capstone, 'CS_MODE_64')) else None

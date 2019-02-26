@@ -7,10 +7,12 @@ import sys
 import codecs
 try:
     import keystone
-    import capstone
-    KEYSTONE = True
 except ImportError:
-    KEYSTONE = False
+    keystone = None
+try:
+    import capstone
+except ImportError:
+    capstone = None
 
 from .. import DeenPlugin
 
@@ -31,8 +33,12 @@ class AsmBase(DeenPlugin):
         super(AsmBase, self).__init__()
         # Initialize keystone and capstone as soon as an instance
         # of this plugin will be created.
-        if not KEYSTONE:
-            self.log.error('Keystone and Capstone are required')
+        if not keystone:
+            self.log.error('Keystone is required for ' + self.__class__.__name__)
+            return
+        if not capstone:
+            self.log.error('Capstone is required for ' + self.__class__.__name__)
+            return
         if getattr(self, 'args', None) and self.args and getattr(self.args, 'bigendian', None) \
                 and self.args.bigendian:
             self.ks = keystone.Ks(self.keystone_arch,
@@ -48,12 +54,15 @@ class AsmBase(DeenPlugin):
     def prerequisites(self):
         try:
             import keystone
+        except ImportError:
+            self.log_missing_depdendencies('keystone')
+            return False
+        try:
             import capstone
         except ImportError:
-            self.log_missing_depdendencies(['keystone', 'capstone'])
+            self.log_missing_depdendencies('capstone')
             return False
-        else:
-            return True
+        return True
 
     def process(self, data):
         super(AsmBase, self).process(data)
