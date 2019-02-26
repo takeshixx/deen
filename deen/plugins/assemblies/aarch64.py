@@ -7,10 +7,10 @@ try:
 except ImportError:
     capstone = None
 
-from .arm import DeenPluginAsmArm
+from .arm import DeenPluginAsmArm as ArmBase
 
 
-class DeenPluginAsmAarch64(DeenPluginAsmArm):
+class DeenPluginAsmAarch64(ArmBase):
     name = 'assembly_aarch64'
     display_name = 'AARCH64'
     aliases = ['asm_aarch64',
