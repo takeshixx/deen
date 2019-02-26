@@ -98,7 +98,7 @@ class DeenPluginLoader(object):
         folder."""
         output = []
         for m in self._get_submodules_from_namespace_package(package):
-            module = importlib.import_module(m, package=None)
+            module = importlib.import_module(m)
             for c in inspect.getmembers(module, inspect.isclass):
                 # Only classes that start with DeenPlugin will be loaded.
                 if c[0].startswith('DeenPlugin') and \
