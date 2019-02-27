@@ -18,7 +18,7 @@ class DeenPluginUnixTimestamp(DeenPlugin):
         # Try to Convert ctime string to Unix Timestamp
         try:
             data = str(int(time.mktime(datetime.datetime.strptime(
-                ''.join(map(chr, data)), '%Y-%m-%d %H:%M:%S').timetuple())))
+                ''.join(map(chr, data.strip())), '%Y-%m-%d %H:%M:%S').timetuple())))
             data = data.encode()
         except ValueError as e:
             self.error = e
