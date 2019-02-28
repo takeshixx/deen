@@ -37,6 +37,9 @@ class DeenGui(QMainWindow):
         self.ui.actionStatus_console.triggered.connect(self.show_status_console)
         self.ui.actionTop_to_bottom.triggered.connect(self.set_widget_direction_toptobottom)
         self.ui.actionLeft_to_right.triggered.connect(self.set_widget_direction_lefttoright)
+        self.ui.actionCopy_to_clipboard.triggered.connect(self.copy_content_to_clipboard)
+        self.ui.actionSave_content_to_file.triggered.connect(self.save_widget_content_to_file)
+        self.ui.actionSearch.triggered.connect(self.toggle_search_box_visibility)
         self.widgets.append(DeenEncoderWidget(self))
         for widget in self.widgets:
             self.ui.encoder_widget_layout.addWidget(widget)
@@ -172,3 +175,43 @@ class DeenGui(QMainWindow):
             self.widgets[0].text_field.setPlainText(content)
         self.widgets[0].hex_field.setHidden(True)
         self.widgets[0].text_field.setHidden(False)
+
+    def save_widget_content_to_file(self, file_name=None):
+        """Save the content of the current widget
+        to a file."""
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if not parent_encoder._content:
+            return
+        fd = QFileDialog(parent_encoder)
+        if file_name:
+            name = file_name
+        else:
+            name = fd.getSaveFileName(fd, 'Save File')
+        if not name or not name[0]:
+            return
+        if isinstance(name, tuple):
+            name = name[0]
+        with open(name, 'wb') as file:
+            current_plugin = self.plugins.get_plugin_by_display_name(
+                    parent_encoder.ui.current_plugin_label.text().replace('Plugin: ', ''))
+            if self.plugins.is_plugin_in_category(current_plugin, 'formatters'):
+                # Formatters alter data inplace, so we have to write the
+                # data that is currently displayed into the outfile.
+                file.write(bytearray(parent_encoder.text_field.toPlainText(), 'utf8'))
+            else:
+                file.write(parent_encoder._content)
+
+    def copy_content_to_clipboard(self):
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if not parent_encoder._content:
+            return
+        try:
+            content = parent_encoder._content.decode('utf8')
+        except UnicodeDecodeError as e:
+            parent_encoder.log.error('Cannot copy non-ASCII content to clipboard')
+            parent_encoder.log.debug(e, exc_info=True)
+            return
+        clipboard = QApplication.clipboard()
+        clipboard.setText(content)

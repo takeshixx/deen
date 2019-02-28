@@ -65,30 +65,10 @@ class DeenEncoderWidget(QWidget):
         self.ui.toggle_text_view.toggled.connect(self.view_text)
         self.ui.toggle_hex_view.setChecked(False)
         self.ui.toggle_hex_view.toggled.connect(self.view_hex)
-        # Set icons based on current theme darkness. Assume dark theme
-        # if background color is below 50% brightness.
-        if self.palette().color(self.backgroundRole()).value() < 128:
-            self.ui.clear_button.setIcon(QIcon(MEDIA_PATH + 'dark/edit-clear.svg'))
-            self.ui.save_button.setIcon(QIcon(MEDIA_PATH + 'dark/document-save-as.svg'))
-            self.ui.copy_to_clipboard_button.setIcon(QIcon(MEDIA_PATH + 'dark/edit-copy.svg'))
-            self.ui.move_to_root_button.setIcon(QIcon(MEDIA_PATH + 'dark/go-up.svg'))
-        else:
-            self.ui.clear_button.setIcon(QIcon(MEDIA_PATH + 'edit-clear.svg'))
-            self.ui.save_button.setIcon(QIcon(MEDIA_PATH + 'document-save-as.svg'))
-            self.ui.copy_to_clipboard_button.setIcon(QIcon(MEDIA_PATH + 'edit-copy.svg'))
-            self.ui.move_to_root_button.setIcon(QIcon(MEDIA_PATH + 'go-up.svg'))
-        # Add connections for the encoder buttons.
-        self.ui.clear_button.clicked.connect(self.clear_content)
-        self.ui.save_button.clicked.connect(self.save_content)
-        self.ui.copy_to_clipboard_button.clicked.connect(self.copy_to_clipboard)
-        self.ui.move_to_root_button.clicked.connect(self.move_content_to_root)
-        self.ui.hide_search_box.clicked.connect(self.toggle_search_box_visibility)
         # Update labels with proper values
         self.update_length_field(self)
         # The root widget will not have a plugin label and no "Move to root" button.
         self.ui.current_plugin_label.hide()
-        if not self.has_previous():
-            self.ui.move_to_root_button.hide()
         # Disable the first element in all combo boxes.
         for combo in [self.ui.encode_combo, self.ui.decode_combo, self.ui.uncompress_combo,
                       self.ui.compress_combo, self.ui.hash_combo, self.ui.misc_combo,
@@ -414,50 +394,6 @@ class DeenEncoderWidget(QWidget):
             self.previous.current_combo = None
             self.previous.set_field_focus()
         self.remove_next_widgets(widget=widget)
-
-    def copy_to_clipboard(self):
-        if not self._content:
-            return
-        try:
-            content = self._content.decode('utf8')
-        except UnicodeDecodeError as e:
-            self.log.error('Cannot copy non-ASCII content to clipboard')
-            self.log.debug(e, exc_info=True)
-            return
-        clipboard = QApplication.clipboard()
-        clipboard.setText(content)
-
-    def save_content(self, file_name=None):
-        """Save the content of the current widget
-        to a file."""
-        if not self._content:
-            return
-        fd = QFileDialog(self)
-        if file_name:
-            name = file_name
-        else:
-            name = fd.getSaveFileName(fd, 'Save File')
-        if not name or not name[0]:
-            return
-        if isinstance(name, tuple):
-            name = name[0]
-        with open(name, 'wb') as file:
-            current_plugin = self.parent.plugins.get_plugin_by_display_name(
-                    self.ui.current_plugin_label.text().replace('Plugin: ', ''))
-            if self.parent.plugins.is_plugin_in_category(current_plugin, 'formatters'):
-                # Formatters alter data inplace, so we have to write the
-                # data that is currently displayed into the outfile.
-                file.write(bytearray(self.text_field.toPlainText(), 'utf8'))
-            else:
-                file.write(self._content)
-
-    def move_content_to_root(self):
-        """Moves the content of the current widget
-        to the root widget and removes all widgets
-        after the root widget."""
-        content = self._content
-        self.clear_content(self.parent.widgets[0])
-        self.parent.widgets[0].content = content
 
     def update_length_field(self, widget):
         widget.ui.content_length_label.setText('Length: ' + str(len(widget.content)))
