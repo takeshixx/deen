@@ -4,6 +4,7 @@ except ImportError:
     import urllib as urllibparse
 
 from PyQt5.QtWidgets import QPlainTextEdit
+from PyQt5.QtCore import Qt
 
 
 class TextViewWidget(QPlainTextEdit):
@@ -36,3 +37,13 @@ class TextViewWidget(QPlainTextEdit):
         cursor = self.textCursor()
         data = cursor.selectedText()
         return len(data)
+
+    def wheelEvent(self, QWheelEvent):
+        """Implementes zooming via CTRL+mouse wheel."""
+        print(dir(QWheelEvent))
+        print(QWheelEvent.modifiers())
+        if QWheelEvent.modifiers() & Qt.ControlModifier:
+            if QWheelEvent.angleDelta().y() > 0:
+                self.zoomIn(2)
+            else:
+                self.zoomOut(2)
