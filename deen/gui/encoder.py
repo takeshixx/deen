@@ -1,5 +1,10 @@
 import os
 import string
+
+try:
+    import qhexedit
+except ImportError:
+    qhexedit = None
 try:
     from OpenSSL import crypto
 except ImportError:
@@ -9,7 +14,7 @@ from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
 
-from deen.gui.widgets.hex import HexViewWidget, QHEXEDIT2_AVAILABLE
+from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget
 from deen.gui.widgets.ui_deenencoderwidget import Ui_DeenEncoderWidget
 from deen import logger
@@ -43,11 +48,16 @@ class DeenEncoderWidget(QWidget):
         self.text_field.textChanged.connect(self.field_content_changed)
         self.hex_field = HexViewWidget(read_only=self.readonly, parent=self)
         self.hex_field.setHidden(True)
+        # Add connection for selection field
+        self.text_field.selectionChanged.connect(self.update_selection_field)
+        self.ui.selection_length_label.setText('Selection: 0')
         # TODO: remove this queck after the old hex viewer will be removed
-        if QHEXEDIT2_AVAILABLE:
+        if qhexedit:
             self.hex_field.dataChanged.connect(self.field_content_changed)
+            self.hex_field.currentAddressChanged.connect(self.update_selection_field)
         else:
             self.hex_field.bytesChanged.connect(self.field_content_changed)
+            self.hex_field.itemSelectionChanged.connect(self.update_selection_field)
         self.ui.content_area_layout.addWidget(self.text_field)
         self.ui.content_area_layout.addWidget(self.hex_field)
         # Configure widget elements
@@ -451,6 +461,9 @@ class DeenEncoderWidget(QWidget):
 
     def update_length_field(self, widget):
         widget.ui.content_length_label.setText('Length: ' + str(len(widget.content)))
+
+    def update_selection_field(self):
+        self.ui.selection_length_label.setText('Selection: ' + str(self.field.selection_count))
 
     def update_vertical_scroll_range(self, minimum, maximum):
         """Update the scroll maximum of the main window scroll

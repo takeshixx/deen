@@ -7,13 +7,11 @@ from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QHeaderView)
 
 try:
     import qhexedit
-    QHEXEDIT2_AVAILABLE = True
 except ImportError:
     qhexedit = None
-    QHEXEDIT2_AVAILABLE = False
 
 
-if QHEXEDIT2_AVAILABLE:
+if qhexedit:
     class HexViewWidget(qhexedit.QHexEdit):
         def __init__(self, content=None, read_only=False,
                      parent=None):
@@ -47,6 +45,17 @@ if QHEXEDIT2_AVAILABLE:
                 data = self.selectionToReadableString()
                 data = bytearray(data, 'utf8')
             return data
+
+        @property
+        def selection_count(self):
+            if hasattr(self, 'selectedData'):
+                data = self.selectedData()
+                data = codecs.decode(data, 'hex')
+                length = len(data)
+            else:
+                # TODO: implement selection of bytes
+                length = 0
+            return length
 else:
     class HexViewWidget(QTableWidget):
         bytesChanged = pyqtSignal()
@@ -216,5 +225,13 @@ else:
 
         @property
         def selected_data(self):
-            # TODO: implement selection of bytes
-            return self.content
+            data = ''
+            for i in self.selectedItems():
+                data += i.text()
+            data = codecs.decode(data, 'hex')
+            data = bytearray(data)
+            return data
+
+        @property
+        def selection_count(self):
+            return len(self.selectedItems())

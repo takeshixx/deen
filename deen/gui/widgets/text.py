@@ -30,3 +30,9 @@ class TextViewWidget(QPlainTextEdit):
         data = cursor.selectedText()
         data = bytearray(data, 'utf8')
         return data
+
+    @property
+    def selection_count(self):
+        cursor = self.textCursor()
+        data = cursor.selectedText()
+        return len(data)
