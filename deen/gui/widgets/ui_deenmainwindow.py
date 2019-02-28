@@ -19,7 +19,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.DeenMainWindow = QtWidgets.QScrollArea(self.centralwidget)
         self.DeenMainWindow.setEnabled(True)
-        self.DeenMainWindow.setMinimumSize(QtCore.QSize(1000, 700))
+        self.DeenMainWindow.setMinimumSize(QtCore.QSize(0, 0))
         self.DeenMainWindow.setWidgetResizable(True)
         self.DeenMainWindow.setObjectName("DeenMainWindow")
         self.encoder_widget_scrollable = QtWidgets.QWidget()
