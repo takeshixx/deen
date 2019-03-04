@@ -192,6 +192,7 @@ class HexViewWidget(QTableWidget):
         return len(self.selectedItems())
 
     def selection_changed(self):
+        # TODO: implement synchronization with ASCII field
         for i in self.selectedItems():
             r = i.row()
             c = i.column()

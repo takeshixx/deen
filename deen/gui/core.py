@@ -65,8 +65,6 @@ class DeenGui(QMainWindow):
         with fuzzy search."""
         focussed_widget = QApplication.focusWidget()
         self.fuzzy_search_ui.ui.fuzzy_search_field.setFocus()
-
-        # TODO: maybe implement completer class and move it somewhere else?
         def get_data(model):
             plugins = [x[1].name for x in self.plugins.available_plugins]
             for p in self.plugins.codecs + \
@@ -77,13 +75,11 @@ class DeenGui(QMainWindow):
             for p in self.plugins.available_plugins:
                 plugins.extend(p[1].aliases)
             model.setStringList(plugins)
-
         completer = QCompleter()
         self.fuzzy_search_ui.ui.fuzzy_search_field.setCompleter(completer)
         model = QStringListModel()
         completer.setModel(model)
         get_data(model)
-
         if self.fuzzy_search_ui.exec_() == 0:
             return
         search_data = self.fuzzy_search_ui.ui.fuzzy_search_field.text()
