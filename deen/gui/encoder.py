@@ -2,10 +2,6 @@ import os
 import string
 
 try:
-    import qhexedit
-except ImportError:
-    qhexedit = None
-try:
     from OpenSSL import crypto
 except ImportError:
     crypto = None
@@ -51,13 +47,8 @@ class DeenEncoderWidget(QWidget):
         # Add connection for selection field
         self.text_field.selectionChanged.connect(self.update_selection_field)
         self.ui.selection_length_label.setText('Selection: 0')
-        # TODO: remove this queck after the old hex viewer will be removed
-        if qhexedit:
-            self.hex_field.dataChanged.connect(self.field_content_changed)
-            self.hex_field.currentAddressChanged.connect(self.update_selection_field)
-        else:
-            self.hex_field.bytesChanged.connect(self.field_content_changed)
-            self.hex_field.itemSelectionChanged.connect(self.update_selection_field)
+        self.hex_field.bytesChanged.connect(self.field_content_changed)
+        self.hex_field.itemSelectionChanged.connect(self.update_selection_field)
         self.ui.content_area_layout.addWidget(self.text_field)
         self.ui.content_area_layout.addWidget(self.hex_field)
         # Configure widget elements
