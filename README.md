@@ -19,12 +19,12 @@ After installation, just run:
 deen
 ```
 
-Further information is available in the [wiki](https://github.com/takeshixx/deen/wiki)
-
-## Usage
-
-See the [wiki](https://github.com/takeshixx/deen/wiki) for basic and more advanced usage examples.
+Further information is available in the [wiki](https://github.com/takeshixx/deen/wiki).
 
 ### Packages
 
 There is a [deen-git](https://aur.archlinux.org/packages/deen-git) package available in the Arch User Repository (AUR).
+
+## Usage
+
+See the [wiki](https://github.com/takeshixx/deen/wiki) for basic and more advanced usage examples.
