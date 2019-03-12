@@ -40,8 +40,6 @@ class TextViewWidget(QPlainTextEdit):
 
     def wheelEvent(self, QWheelEvent):
         """Implementes zooming via CTRL+mouse wheel."""
-        print(dir(QWheelEvent))
-        print(QWheelEvent.modifiers())
         if QWheelEvent.modifiers() & Qt.ControlModifier:
             if QWheelEvent.angleDelta().y() > 0:
                 self.zoomIn(2)
