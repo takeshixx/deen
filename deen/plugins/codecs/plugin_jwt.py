@@ -156,7 +156,7 @@ class DeenPluginJwt(DeenPlugin):
             self.error = e
             self.log.error(self.error)
             self.log.debug(self.error, exc_info=True)
-        else:
+        finally:
             data_decoded = json.dumps(data)
             data = b'{"header":' + _header + b', '
             data += b'"data":' + data_decoded.encode() + b','
