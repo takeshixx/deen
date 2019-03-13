@@ -6,17 +6,8 @@ An application that allows to apply encoding, compression and hashing to generic
 
 ## Installation
 
-Install via `pip`:
-
 ```bash
-pip3 install -r requirements3.txt
-pip3 install .
-```
-
-After installation, just run:
-    
-```bash
-deen
+pip3 install deen
 ```
 
 Further information is available in the [wiki](https://github.com/takeshixx/deen/wiki).
