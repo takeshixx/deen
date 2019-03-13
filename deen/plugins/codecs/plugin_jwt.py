@@ -87,10 +87,10 @@ class DeenPluginJwt(DeenPlugin):
             else:
                 header['alg'] = 'none'
             header = json.dumps(header)
-            data = base64.b64encode(header.encode())
+            data = base64.b64encode(header.encode()).replace(b'=', b'')
             data += b'.'
             data_dict = json.dumps(data_dict)
-            data += base64.b64encode(data_dict.encode())
+            data += base64.b64encode(data_dict.encode()).replace(b'=', b'')
             data += b'.'
         return data
 
