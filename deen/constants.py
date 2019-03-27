@@ -19,19 +19,15 @@ cli_epilog = """examples:
     $ cat /bin/ls | deen -
 
   base64 encode a string:
-    $ deen -b base64 -d admin:admin
+    $ deen base64 -d admin:admin
     YWRtaW46YWRtaW4=
 
-  base64 encode a string with subcommand:
-    $ deen base64 admin:admin
+  base64 encode a string with subcommand alias:
+    $ deen b64 admin:admin
     YWRtaW46YWRtaW4=
 
   decode Base64 string:
-    $ deen -b base64 -r -d YWRtaW46YWRtaW4=
-    admin:admin
-
-  decode Base64 string with subcommand:
-    $ deen base64 -r YWRtaW46YWRtaW4=
+    $ deen base64 -r -d YWRtaW46YWRtaW4=
     admin:admin
 
   calculate the SHA256 hash of file:
