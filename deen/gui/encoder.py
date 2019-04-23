@@ -55,11 +55,11 @@ class DeenEncoderWidget(QWidget):
         self.ui.content_area_layout.addWidget(self.hex_field)
         # Configure widget elements
         self.ui.toggle_text_view.setChecked(True)
-        self.ui.toggle_text_view.toggled.connect(self.view_text)
+        self.ui.toggle_text_view.clicked.connect(self.view_text)
         self.ui.toggle_hex_view.setChecked(False)
-        self.ui.toggle_hex_view.toggled.connect(self.view_hex)
+        self.ui.toggle_hex_view.clicked.connect(self.view_hex)
         # Update labels with proper values
-        self.update_length_field(self)
+        self.update_length_field()
         # The root widget will not have a plugin label and no "Move to root" button.
         self.ui.current_plugin_label.hide()
         # Disable the first element in all combo boxes.
@@ -167,18 +167,20 @@ class DeenEncoderWidget(QWidget):
             data = bytearray(data)
         self._content = data
         self.formatted_view = False
-        if self.hex_view:
-            self.hex_field.content = self._content
-        elif not all(chr(c) in string.printable for c in self._content):
+        if not all(chr(c) in string.printable for c in self._content):
             # If there are non-printable characters,
             # switch to hex view.
-            self.toggle_printable()
-            self.ui.toggle_hex_view.setChecked(True)
+            self.printable = False
+            self.ui.toggle_text_view.setEnabled(False)
+            self.ui.toggle_hex_view.click()
         else:
             # Prevent the field from overwriting itself with invalid
             # characters.
-            self.text_field.content = self._content
+            self.printable = True
+            self.ui.toggle_text_view.setEnabled(True)
+            self.ui.toggle_text_view.click()
             self.text_field.moveCursor(QTextCursor.End)
+        self.update_length_field()
 
     def has_previous(self):
         """Determine if the current widget is the root widget."""
@@ -237,18 +239,6 @@ class DeenEncoderWidget(QWidget):
         text or hex field."""
         return self.field.content
 
-    def toggle_printable(self):
-        """Toggle the printable flag, which
-        indicates if an encoder widget's
-        self._content contains non-printable
-        characters."""
-        if self.printable:
-            self.printable = False
-            self.hex_view = True
-            self.ui.toggle_text_view.setEnabled(False)
-        else:
-            self.printable = True
-
     def toggle_search_box_visibility(self):
         """Calling this function will either
         hide or show the search box. By default
@@ -268,22 +258,13 @@ class DeenEncoderWidget(QWidget):
         of the QTextEdit() will be changed. Whatever will be
         executed here will most likely differ if it will be
         applied on a root widget or any following widget."""
-        if self.has_next() and not self.formatted_view:
-            # If widget count is greater then two,
-            # remove all widgets after the second.
-            self.remove_next_widgets(offset=2)
-        elif self.has_next():
-            # If the current widget is not the root
-            # but there is at least one next widget.
-            # TODO: should be change the live data in the next widget?
-            self.next.content = self.content
-        if not self.formatted_view:
+        if not self.formatted_view:#
             if self.printable:
                 # TODO: is there another situation where this could fail?
                 self._content = self.get_field_content()
-            self.update_length_field(self)
-            if (self.hex_field.hasFocus() or self.text_field.hasFocus()):
-                self.action()
+        if self.plugin:
+            self._action(self.plugin.name, self.process)
+        self.update_length_field()
 
     def search_highlight(self):
         """The function that will be called whenever the
@@ -353,8 +334,7 @@ class DeenEncoderWidget(QWidget):
         self.hex_view = False
         self.text_field.setHidden(False)
         self.hex_field.setHidden(True)
-        if self._content:
-            self.text_field.content = self._content
+        self.text_field.content = self._content
 
     def view_hex(self):
         self.hex_view = True
@@ -374,11 +354,12 @@ class DeenEncoderWidget(QWidget):
             widget.text_field.clear()
             widget.hex_field.content = bytearray()
             widget._content = bytearray()
-            widget.update_length_field(self)
+            widget.update_length_field()
             widget.ui.current_plugin_label.clear()
             widget.ui.current_plugin_label.hide()
             widget.formatted_view = False
             widget.set_field_focus()
+            widget.plugin = None
         else:
             # Remove the current_combo of the previous
             # widget so that the last pick doesn't
@@ -386,9 +367,11 @@ class DeenEncoderWidget(QWidget):
             # one.
             self.previous.current_combo = None
             self.previous.set_field_focus()
+            self.previous.plugin = None
         self.remove_next_widgets(widget=widget)
 
-    def update_length_field(self, widget):
+    def update_length_field(self, widget=None):
+        widget = widget or self
         widget.ui.content_length_label.setText('Length: ' + str(len(widget.content)))
 
     def update_selection_field(self):
