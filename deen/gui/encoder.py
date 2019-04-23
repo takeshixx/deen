@@ -31,6 +31,8 @@ class DeenEncoderWidget(QWidget):
         self.ui.setupUi(self)
         self.parent = parent
         self.readonly = readonly
+        self.process = False
+        self.plugin = None
         self.current_combo = None
         self.search_matches = None
         self._content = bytearray()
@@ -467,35 +469,36 @@ class DeenEncoderWidget(QWidget):
                 self.parent.show_error_msg('Plugin {} not found'.format(plugin_name))
                 return
             else:
-                plugin = self.parent.plugins.get_plugin_instance(plugin_name)
+                self.plugin = self.parent.plugins.get_plugin_instance(plugin_name)
             data = None
-            category = self.parent.plugins.get_category_for_plugin(plugin)
+            category = self.parent.plugins.get_category_for_plugin(self.plugin)
             if not category:
-                LOGGER.error('Could not determine category for ' + plugin.name)
+                LOGGER.error('Could not determine category for ' + self.plugin.name)
                 return
+            self.process = process
             process_gui_func = None
             unprocess_gui_func = None
-            if process and 'process_gui' in vars(type(plugin)):
+            if process and 'process_gui' in vars(type(self.plugin)):
                 # Check if the plugin class implements
                 # process_gui() itself, and does not
                 # inherit it from DeenPlugin.
-                process_gui_func = getattr(plugin, 'process_gui', None)
-            if not process and 'unprocess_gui' in vars(type(plugin)):
+                process_gui_func = getattr(self.plugin, 'process_gui', None)
+            if not process and 'unprocess_gui' in vars(type(self.plugin)):
                 # Check if the plugin class implements
                 # unprocess_gui() itself, and does not
                 # inherit it from DeenPlugin.
-                unprocess_gui_func = getattr(plugin, 'unprocess_gui', None)
+                unprocess_gui_func = getattr(self.plugin, 'unprocess_gui', None)
             if process_gui_func or unprocess_gui_func:
                 if process and process_gui_func and \
                         callable(process_gui_func):
                     # For plugins that implement a process_gui() function
                     # that adds additional GUI elements.
-                    data = plugin.process_gui(self.parent, self._content)
+                    data = self.plugin.process_gui(self.parent, self._content)
                 elif not process and unprocess_gui_func and \
                         callable(unprocess_gui_func):
                     # For plugins that implement a unprocess_gui() function
                     # that adds additional GUI elements.
-                    data = plugin.unprocess_gui(self.parent, self._content)
+                    data = self.plugin.unprocess_gui(self.parent, self._content)
                 else:
                     LOGGER.error('Invalid path')
                 if not data:
@@ -503,22 +506,23 @@ class DeenEncoderWidget(QWidget):
                     # don't create a new widget.
                     if self.current_combo:
                         self.current_combo.setCurrentIndex(0)
-                    if plugin.error:
+                    if self.plugin.error:
                         self.set_error()
-                        self.set_error_message(str(plugin.error))
+                        self.set_error_message(str(self.plugin.error))
                     return
-                if plugin.error:
+                if self.plugin.error:
                     self.next.set_error()
-                    self.next.set_error_message(str(plugin.error))
+                    self.next.set_error_message(str(self.plugin.error))
                 self.next.content = data
-                self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
+                self.next.ui.current_plugin_label.setText('Plugin: ' + self.plugin.display_name)
                 self.next.ui.current_plugin_label.show()
-                self.next.set_field_focus()
-                if not plugin.error:
+                # TODO: decide when focus should be set to next widget
+                #self.next.set_field_focus()
+                if not self.plugin.error:
                     self.next.clear_error_message()
             elif category == 'formatters':
                 # Formatters format data in the current window (self)
-                data = plugin.process(self._content)
+                data = self.plugin.process(self._content)
                 self.formatted_view = True
                 self.text_field.setPlainText(
                     self.codec.toUnicode(data))
@@ -526,31 +530,32 @@ class DeenEncoderWidget(QWidget):
                 # After applying formatters the plugin
                 # should be displayed, even in the root
                 # widget.
-                self.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
+                self.ui.current_plugin_label.setText('Plugin: ' + self.plugin.display_name)
                 self.ui.current_plugin_label.show()
-                if plugin.error:
+                if self.plugin.error:
                     self.set_error()
-                    self.set_error_message(str(plugin.error))
+                    self.set_error_message(str(self.plugin.error))
                 else:
                     self.clear_error_message()
             else:
                 # All other plugins will write their output to a new
                 # window (self.next).
                 if process:
-                    data = plugin.process(self._content)
+                    data = self.plugin.process(self._content)
                 else:
-                    data = plugin.unprocess(self._content)
-                if plugin.error:
+                    data = self.plugin.unprocess(self._content)
+                if self.plugin.error:
                     self.next.set_error()
-                    self.next.set_error_message(str(plugin.error))
+                    self.next.set_error_message(str(self.plugin.error))
                 if data:
                     self.next.content = data
-                    self.next.ui.current_plugin_label.setText('Plugin: ' + plugin.display_name)
+                    self.next.ui.current_plugin_label.setText('Plugin: ' + self.plugin.display_name)
                     self.next.ui.current_plugin_label.show()
-                    if not plugin.error:
+                    if not self.plugin.error:
                         self.next.clear_error_message()
-                    self.next.set_field_focus()
+                    # TODO: decide when focus should be set to next widget
+                    #self.next.set_field_focus()
                 else:
-                    LOGGER.error('Plugin {} did not return any data'.format(plugin.name))
+                    LOGGER.error('Plugin {} did not return any data'.format(self.plugin.name))
         if self.current_combo:
             self.current_combo.setCurrentIndex(0)
