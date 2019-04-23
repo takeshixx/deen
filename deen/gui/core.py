@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog,\
                             QBoxLayout, QShortcut, QDialog, QCompleter
 from PyQt5.QtGui import QKeySequence
-from PyQt5.QtCore import QStringListModel
+from PyQt5.QtCore import QStringListModel, Qt
 
 import deen.constants
 from deen.gui.widgets.log import DeenLogger, DeenStatusConsole
@@ -58,6 +58,10 @@ class DeenGui(QMainWindow):
         self.clear_current_widget_shortcut.activated.connect(self.clear_current_widget)
         self.hide_search_box_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
         self.hide_search_box_shortcut.activated.connect(self.toggle_search_box_visibility)
+        self.next_encoder_widget_shortcut = QShortcut(QKeySequence(Qt.ALT | Qt.Key_Right), self)
+        self.next_encoder_widget_shortcut.activated.connect(self.toggle_next_encoder_focus)
+        self.prev_encoder_widget_shortcut = QShortcut(QKeySequence(Qt.ALT | Qt.Key_Left), self)
+        self.prev_encoder_widget_shortcut.activated.connect(self.toggle_prev_encoder_focus)
         self.show()
 
     def fuzzy_search_action(self):
@@ -117,6 +121,26 @@ class DeenGui(QMainWindow):
             if isinstance(widget, DeenGui):
                 return False
         return widget
+
+    def toggle_next_encoder_focus(self):
+        """Focus the next encoder widget."""
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if parent_encoder:
+            if parent_encoder.has_next():
+                parent_encoder.next.field.setFocus()
+        else:
+            LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
+
+    def toggle_prev_encoder_focus(self):
+        """Focus the previous encoder widget."""
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if parent_encoder:
+            if parent_encoder.has_previous():
+                parent_encoder.previous.field.setFocus()
+        else:
+            LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
 
     def clear_current_widget(self):
         """Clear and remove the current encoder widget."""
