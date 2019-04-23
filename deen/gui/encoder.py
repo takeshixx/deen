@@ -328,7 +328,7 @@ class DeenEncoderWidget(QWidget):
         self.ui.error_message_layout_widget.hide()
         widget.error_message.clear()
         widget.error_message.hide()
-        widget.text_field.setStyleSheet('border: 0;')
+        widget.text_field.setStyleSheet('')
 
     def view_text(self):
         self.hex_view = False
