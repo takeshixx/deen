@@ -119,6 +119,13 @@ class DeenEncoderWidget(QWidget):
         self.ui.plugin_tree_view.itemClicked.connect(self.action)
         self.ui.plugin_tree_view.currentItemChanged.connect(self.action)
         self.ui.plugin_tree_view.setMaximumWidth(self.ui.plugin_tree_view.columnWidth(0) * 2)
+        # Hide top level items without any loaded plugins
+        for i in range(self.ui.plugin_tree_view.topLevelItemCount()):
+            tl_item = self.ui.plugin_tree_view.topLevelItem(i)
+            if not tl_item:
+                continue
+            if tl_item.childCount() < 1:
+                tl_item.setHidden(True)
         # Configure search widget
         self.ui.search_area.returnPressed.connect(self.search_highlight)
         self.ui.search_button.clicked.connect(self.search_highlight)
