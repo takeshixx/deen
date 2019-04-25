@@ -129,6 +129,7 @@ class DeenGui(QMainWindow):
         if parent_encoder:
             if parent_encoder.has_next():
                 parent_encoder.next.field.setFocus()
+                self.ui.DeenMainWindow.ensureWidgetVisible(parent_encoder.next)
         else:
             LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
 
@@ -139,6 +140,7 @@ class DeenGui(QMainWindow):
         if parent_encoder:
             if parent_encoder.has_previous():
                 parent_encoder.previous.field.setFocus()
+                self.ui.DeenMainWindow.ensureWidgetVisible(parent_encoder.previous)
         else:
             LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
 
