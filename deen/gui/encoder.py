@@ -8,7 +8,7 @@ except ImportError:
 
 from PyQt5.QtCore import QTextCodec, QRegularExpression, Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QBrush, QColor, QIcon
-from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog
+from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QTreeWidgetItem
 
 from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget
@@ -33,7 +33,6 @@ class DeenEncoderWidget(QWidget):
         self.readonly = readonly
         self.process = False
         self.plugin = None
-        self.current_combo = None
         self.search_matches = None
         self._content = bytearray()
         self.formatted_view = False
@@ -60,87 +59,66 @@ class DeenEncoderWidget(QWidget):
         self.ui.toggle_hex_view.clicked.connect(self.view_hex)
         # Update labels with proper values
         self.update_length_field()
-        # The root widget will not have a plugin label and no "Move to root" button.
-        self.ui.current_plugin_label.hide()
-        # Disable the first element in all combo boxes.
-        for combo in [self.ui.encode_combo, self.ui.decode_combo, self.ui.uncompress_combo,
-                      self.ui.compress_combo, self.ui.hash_combo, self.ui.misc_combo,
-                      self.ui.format_combo, self.ui.assemble_combo, self.ui.disassemble_combo]:
-            combo.model().item(0).setEnabled(False)
-        # Add all alvailable plugins to the corresponding combo boxes.
+        # Create references for tree view items
+        self.plugin_tree_top_decode = self.ui.plugin_tree_view.topLevelItem(0)
+        self.plugin_tree_top_encode = self.ui.plugin_tree_view.topLevelItem(1)
+        self.plugin_tree_top_uncompress = self.ui.plugin_tree_view.topLevelItem(2)
+        self.plugin_tree_top_compress = self.ui.plugin_tree_view.topLevelItem(3)
+        self.plugin_tree_top_disassemble = self.ui.plugin_tree_view.topLevelItem(4)
+        self.plugin_tree_top_assemble = self.ui.plugin_tree_view.topLevelItem(5)
+        self.plugin_tree_top_hash = self.ui.plugin_tree_view.topLevelItem(6)
+        self.plugin_tree_top_misc = self.ui.plugin_tree_view.topLevelItem(7)
+        self.plugin_tree_top_format = self.ui.plugin_tree_view.topLevelItem(8)
+        # Add tree items for the plugin tree view
         for encoding in [p[1] for p in self.parent.plugins.codecs
                      if (not getattr(p[1], 'cmd_only', None) or
                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.encode_combo.addItem(encoding.display_name)
-            if getattr(encoding, 'cmd_help', None) and encoding.cmd_help:
-                index = self.ui.encode_combo.count()
-                self.ui.encode_combo.setItemData(index-1, encoding.cmd_help, Qt.ToolTipRole)
+            self.plugin_tree_top_encode.addChild(QTreeWidgetItem([encoding.display_name]))
+
         for encoding in [p[1] for p in self.parent.plugins.codecs
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.decode_combo.addItem(encoding.display_name)
-            if getattr(encoding, 'cmd_help', None) and encoding.cmd_help:
-                index = self.ui.decode_combo.count()
-                self.ui.decode_combo.setItemData(index-1, encoding.cmd_help, Qt.ToolTipRole)
+            self.plugin_tree_top_decode.addChild(QTreeWidgetItem([encoding.display_name]))
+
         for compression in [p[1] for p in self.parent.plugins.compressions
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.compress_combo.addItem(compression.display_name)
-            if getattr(compression, 'cmd_help', None) and compression.cmd_help:
-                index = self.ui.compress_combo.count()
-                self.ui.compress_combo.setItemData(index-1, compression.cmd_help, Qt.ToolTipRole)
+            self.plugin_tree_top_compress.addChild(QTreeWidgetItem([compression.display_name]))
+
         for compression in [p[1] for p in self.parent.plugins.compressions
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.uncompress_combo.addItem(compression.display_name)
-            if getattr(compression, 'cmd_help', None) and compression.cmd_help:
-                index = self.ui.uncompress_combo.count()
-                self.ui.uncompress_combo.setItemData(index-1, compression.cmd_help, Qt.ToolTipRole)
+            self.plugin_tree_top_uncompress.addChild(QTreeWidgetItem([compression.display_name]))
+
         for assembly in [p[1] for p in self.parent.plugins.assemblies
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.assemble_combo.addItem(assembly.display_name)
-            if getattr(assembly, 'cmd_help', None) and assembly.cmd_help:
-                index = self.ui.assemble_combo.count()
-                self.ui.assemble_combo.setItemData(index-1, assembly.cmd_help, Qt.ToolTipRole)
+            self.plugin_tree_top_assemble.addChild(QTreeWidgetItem([assembly.display_name]))
+
         for assembly in [p[1] for p in self.parent.plugins.assemblies
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.disassemble_combo.addItem(assembly.display_name)
-            if getattr(assembly, 'cmd_help', None) and assembly.cmd_help:
-                index = self.ui.disassemble_combo.count()
-                self.ui.disassemble_combo.setItemData(index-1, assembly.cmd_help, Qt.ToolTipRole)
-        for hash in [p[1] for p in self.parent.plugins.hashs
+            self.plugin_tree_top_disassemble.addChild(QTreeWidgetItem([assembly.display_name]))
+
+        for hashalg in [p[1] for p in self.parent.plugins.hashs
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.hash_combo.addItem(hash.display_name)
-            if getattr(hash, 'cmd_help', None) and hash.cmd_help:
-                index = self.ui.hash_combo.count()
-                self.ui.hash_combo.setItemData(index - 1, hash.cmd_help, Qt.ToolTipRole)
+            self.plugin_tree_top_hash.addChild(QTreeWidgetItem([hashalg.display_name]))
+
         for misc in [p[1] for p in self.parent.plugins.misc
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.misc_combo.addItem(misc.display_name)
-            if getattr(misc, 'cmd_help', None) and misc.cmd_help:
-                index = self.ui.misc_combo.count()
-                self.ui.misc_combo.setItemData(index - 1, misc.cmd_help, Qt.ToolTipRole)
+            self.plugin_tree_top_misc.addChild(QTreeWidgetItem([misc.display_name]))
+
         for formatter in [p[1] for p in self.parent.plugins.formatters
                      if (not getattr(p[1], 'cmd_only', None) or
                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
-            self.ui.format_combo.addItem(formatter.display_name)
-            if getattr(formatter, 'cmd_help', None) and formatter.cmd_help:
-                index = self.ui.format_combo.count()
-                self.ui.format_combo.setItemData(index - 1, formatter.cmd_help, Qt.ToolTipRole)
-        # Add connections for combo boxes
-        self.ui.encode_combo.currentIndexChanged.connect(lambda: self.action(self.ui.encode_combo))
-        self.ui.decode_combo.currentIndexChanged.connect(lambda: self.action(self.ui.decode_combo))
-        self.ui.compress_combo.currentIndexChanged.connect(lambda: self.action(self.ui.compress_combo))
-        self.ui.uncompress_combo.currentIndexChanged.connect(lambda: self.action(self.ui.uncompress_combo))
-        self.ui.assemble_combo.currentIndexChanged.connect(lambda: self.action(self.ui.assemble_combo))
-        self.ui.disassemble_combo.currentIndexChanged.connect(lambda: self.action(self.ui.disassemble_combo))
-        self.ui.hash_combo.currentIndexChanged.connect(lambda: self.action(self.ui.hash_combo))
-        self.ui.misc_combo.currentIndexChanged.connect(lambda: self.action(self.ui.misc_combo))
-        self.ui.format_combo.currentIndexChanged.connect(lambda: self.action(self.ui.format_combo))
+            self.plugin_tree_top_format.addChild(QTreeWidgetItem([formatter.display_name]))
+
+        # Connect signal to tree view
+        self.ui.plugin_tree_view.itemClicked.connect(self.action)
+        self.ui.plugin_tree_view.currentItemChanged.connect(self.action)
+        self.ui.plugin_tree_view.setMaximumWidth(self.ui.plugin_tree_view.columnWidth(0) * 2)
         # Configure search widget
         self.ui.search_area.returnPressed.connect(self.search_highlight)
         self.ui.search_button.clicked.connect(self.search_highlight)
@@ -355,11 +333,11 @@ class DeenEncoderWidget(QWidget):
             widget.hex_field.content = bytearray()
             widget._content = bytearray()
             widget.update_length_field()
-            widget.ui.current_plugin_label.clear()
-            widget.ui.current_plugin_label.hide()
             widget.formatted_view = False
             widget.set_field_focus()
             widget.plugin = None
+            # TODO: move to seperat wrapper function?
+            widget.ui.plugin_tree_view.selectionModel().clearSelection()
         else:
             # Remove the current_combo of the previous
             # widget so that the last pick doesn't
@@ -368,6 +346,8 @@ class DeenEncoderWidget(QWidget):
             self.previous.current_combo = None
             self.previous.set_field_focus()
             self.previous.plugin = None
+            # TODO: move to seperat wrapper function?
+            self.previous.ui.plugin_tree_view.selectionModel().clearSelection()
         self.remove_next_widgets(widget=widget)
 
     def update_length_field(self, widget=None):
@@ -417,20 +397,13 @@ class DeenEncoderWidget(QWidget):
         else:
             return False
 
-    def action(self, combo=None):
-        """The main function that is responsible for calling plugins
-        on input data. It will use self._content as source and puts
-        the result of each plugin into the next widget in line via
-        the self.set_content_next() function. (except for formatters,
-        which will write their output into the same window)"""
-        if combo:
-            if combo.currentIndex() == 0:
-                return
-            self.current_combo = combo
-            combo_head = self.current_combo.model().item(0).text()
-            process = self.is_action_process(combo_head)
-            self._action(self.current_combo.currentText(),
-                         process)
+    def action(self, tree_item, **args):
+        """The main function that will call plugins via the tree view."""
+        if not tree_item.parent():
+            # Top level item
+            return
+        process = self.is_action_process(tree_item.parent().text(0))
+        self._action(tree_item.text(0), process)
 
     def action_fuzzy(self, plugin_name):
         """The main entry point for triggering
@@ -487,8 +460,6 @@ class DeenEncoderWidget(QWidget):
                 if not data:
                     # plugin.process_gui() returned nothing, so
                     # don't create a new widget.
-                    if self.current_combo:
-                        self.current_combo.setCurrentIndex(0)
                     if self.plugin.error:
                         self.set_error()
                         self.set_error_message(str(self.plugin.error))
@@ -497,8 +468,6 @@ class DeenEncoderWidget(QWidget):
                     self.next.set_error()
                     self.next.set_error_message(str(self.plugin.error))
                 self.next.content = data
-                self.next.ui.current_plugin_label.setText('Plugin: ' + self.plugin.display_name)
-                self.next.ui.current_plugin_label.show()
                 # TODO: decide when focus should be set to next widget
                 #self.next.set_field_focus()
                 if not self.plugin.error:
@@ -510,11 +479,6 @@ class DeenEncoderWidget(QWidget):
                 self.text_field.setPlainText(
                     self.codec.toUnicode(data))
                 self.text_field.moveCursor(QTextCursor.End)
-                # After applying formatters the plugin
-                # should be displayed, even in the root
-                # widget.
-                self.ui.current_plugin_label.setText('Plugin: ' + self.plugin.display_name)
-                self.ui.current_plugin_label.show()
                 if self.plugin.error:
                     self.set_error()
                     self.set_error_message(str(self.plugin.error))
@@ -532,13 +496,9 @@ class DeenEncoderWidget(QWidget):
                     self.next.set_error_message(str(self.plugin.error))
                 if data:
                     self.next.content = data
-                    self.next.ui.current_plugin_label.setText('Plugin: ' + self.plugin.display_name)
-                    self.next.ui.current_plugin_label.show()
                     if not self.plugin.error:
                         self.next.clear_error_message()
                     # TODO: decide when focus should be set to next widget
                     #self.next.set_field_focus()
                 else:
                     LOGGER.error('Plugin {} did not return any data'.format(self.plugin.name))
-        if self.current_combo:
-            self.current_combo.setCurrentIndex(0)
