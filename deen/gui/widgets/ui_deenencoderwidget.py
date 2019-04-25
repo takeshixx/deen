@@ -80,7 +80,7 @@ class Ui_DeenEncoderWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.plugin_tree_view.sizePolicy().hasHeightForWidth())
         self.plugin_tree_view.setSizePolicy(sizePolicy)
-        self.plugin_tree_view.setMinimumSize(QtCore.QSize(0, 0))
+        self.plugin_tree_view.setMinimumSize(QtCore.QSize(0, 125))
         self.plugin_tree_view.setMaximumSize(QtCore.QSize(300, 16777215))
         self.plugin_tree_view.setObjectName("plugin_tree_view")
         item_0 = QtWidgets.QTreeWidgetItem(self.plugin_tree_view)
