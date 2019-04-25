@@ -588,7 +588,9 @@ class DeenEncoderWidget(QWidget):
                         self.next.clear_error_message()
                 else:
                     LOGGER.error('Plugin {} did not return any data'.format(self.plugin.name))
-        # Ensure that the selected plugin is visible
-        # in the plugin tree view.
-        tree_child = self.get_tree_item_for_plugin()
-        self.ui.plugin_tree_view.scrollToItem(tree_child)
+        # Ensure that the selected plugins are visible
+        # in all widget plugin tree views.
+        for w in self.parent.widgets:
+            selected = w.ui.plugin_tree_view.selectedItems()
+            if selected:
+                w.ui.plugin_tree_view.scrollToItem(selected[0])
