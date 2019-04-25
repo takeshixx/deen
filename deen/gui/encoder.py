@@ -410,7 +410,8 @@ class DeenEncoderWidget(QWidget):
             # Top level item
             return
         process = self.is_action_process(tree_item.parent().text(0))
-        self._action(tree_item.text(0), process)
+        self.plugin = self.parent.plugins.get_plugin_instance(tree_item.text(0))
+        self._action(process)
 
     def action_fuzzy(self, plugin_name):
         """The main entry point for triggering
@@ -419,20 +420,57 @@ class DeenEncoderWidget(QWidget):
         if plugin_name.startswith('-'):
             process = False
             plugin_name = plugin_name[1:]
-        self._action(plugin_name, process)
+        if not self._content:
+            return
+        if self.parent.plugins.plugin_available(plugin_name):
+            self.plugin = self.parent.plugins.get_plugin_instance(plugin_name)
+        else:
+            LOGGER.warning('Plugin {} not found'.format(plugin_name))
+            self.parent.show_error_msg('Plugin {} not found'.format(plugin_name))
+            return
+        category = self.parent.plugins.get_category_for_plugin(self.plugin)
+        if not category:
+            LOGGER.error('Could not determine category for ' + self.plugin.name)
+            return
+        if category == 'codecs':
+            tl_label = 'Encode' if process else 'Decode'
+        elif category == 'compressions':
+            tl_label = 'Compress' if process else 'Uncompress'
+        elif category == 'assemblies':
+            tl_label = 'Assemble' if process else 'Disassemble'
+        elif category == 'hashs':
+            tl_label = 'Hash'
+        elif category == 'misc':
+            tl_label = 'Miscellaneous'
+        elif category == 'formatters':
+            tl_label = 'Format'
+        else:
+            LOGGER.warning('Could not determine top level label')
+            return
+        for i in self.ui.plugin_tree_view.selectedItems():
+            i.setSelected(False)
+        for i in range(self.ui.plugin_tree_view.topLevelItemCount()):
+            tl_item = self.ui.plugin_tree_view.topLevelItem(i)
+            if not tl_item:
+                continue
+            if tl_item.text(0) == tl_label:
+                if not tl_item.isExpanded():
+                    tl_item.setExpanded(True)
+                for j in range(tl_item.childCount()):
+                    tl_child = tl_item.child(j)
+                    if self.plugin.display_name == tl_child.text(0):
+                        tl_child.setSelected(True)
+            else:
+                if tl_item.isExpanded():
+                    tl_item.setExpanded(False)
+        self._action(process)
 
-    def _action(self, plugin_name, process=True):
+    def _action(self, process=True):
         if not self._content:
             self._content = self.text_field.content
         if self.field.selected_data:
             self._content = self.field.selected_data
-        if self._content:
-            if not self.parent.plugins.plugin_available(plugin_name):
-                LOGGER.warning('Plugin {} not found'.format(plugin_name))
-                self.parent.show_error_msg('Plugin {} not found'.format(plugin_name))
-                return
-            else:
-                self.plugin = self.parent.plugins.get_plugin_instance(plugin_name)
+        if self._content and self.plugin:
             data = None
             category = self.parent.plugins.get_category_for_plugin(self.plugin)
             if not category:
