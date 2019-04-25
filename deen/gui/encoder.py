@@ -71,40 +71,40 @@ class DeenEncoderWidget(QWidget):
         self.plugin_tree_top_format = self.ui.plugin_tree_view.topLevelItem(8)
         # Add tree items for the plugin tree view
         for encoding in [p[1] for p in self.parent.plugins.codecs
-                     if (not getattr(p[1], 'cmd_only', None) or
-                        (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_encode.addChild(QTreeWidgetItem([encoding.display_name]))
         for encoding in [p[1] for p in self.parent.plugins.codecs
-                     if (not getattr(p[1], 'cmd_only', None) or
-                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_decode.addChild(QTreeWidgetItem([encoding.display_name]))
         for compression in [p[1] for p in self.parent.plugins.compressions
-                     if (not getattr(p[1], 'cmd_only', None) or
-                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_compress.addChild(QTreeWidgetItem([compression.display_name]))
         for compression in [p[1] for p in self.parent.plugins.compressions
-                     if (not getattr(p[1], 'cmd_only', None) or
-                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_uncompress.addChild(QTreeWidgetItem([compression.display_name]))
         for assembly in [p[1] for p in self.parent.plugins.assemblies
-                     if (not getattr(p[1], 'cmd_only', None) or
-                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_assemble.addChild(QTreeWidgetItem([assembly.display_name]))
         for assembly in [p[1] for p in self.parent.plugins.assemblies
-                     if (not getattr(p[1], 'cmd_only', None) or
-                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_disassemble.addChild(QTreeWidgetItem([assembly.display_name]))
         for hashalg in [p[1] for p in self.parent.plugins.hashs
-                     if (not getattr(p[1], 'cmd_only', None) or
-                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_hash.addChild(QTreeWidgetItem([hashalg.display_name]))
         for misc in [p[1] for p in self.parent.plugins.misc
-                     if (not getattr(p[1], 'cmd_only', None) or
-                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_misc.addChild(QTreeWidgetItem([misc.display_name]))
         for formatter in [p[1] for p in self.parent.plugins.formatters
-                     if (not getattr(p[1], 'cmd_only', None) or
-                        (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
+                if (not getattr(p[1], 'cmd_only', None) or
+                    (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_format.addChild(QTreeWidgetItem([formatter.display_name]))
         # Connect signal to tree view
         self.ui.plugin_tree_view.itemClicked.connect(self.action)
