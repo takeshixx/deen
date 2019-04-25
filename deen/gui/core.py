@@ -38,6 +38,8 @@ class DeenGui(QMainWindow):
         self.ui.actionStatus_console.triggered.connect(self.show_status_console)
         self.ui.actionTop_to_bottom.triggered.connect(self.set_widget_direction_toptobottom)
         self.ui.actionLeft_to_right.triggered.connect(self.set_widget_direction_lefttoright)
+        # Set default direction
+        self.set_widget_direction_toptobottom()
         self.ui.actionCopy_to_clipboard.triggered.connect(self.copy_content_to_clipboard)
         self.ui.actionSave_content_to_file.triggered.connect(self.save_widget_content_to_file)
         self.ui.actionSearch.triggered.connect(self.toggle_search_box_visibility)
@@ -47,8 +49,6 @@ class DeenGui(QMainWindow):
         self.load_from_file_dialog = QFileDialog(self)
         self.setWindowTitle('deen')
         self.log = DeenLogger(self)
-        # Start Deen GUI maximized with focus on the text field
-        self.showMaximized()
         self.widgets[0].set_field_focus()
         # Add action fuzzy search
         self.fuzzy_search_ui = FuzzySearchUi(self)
