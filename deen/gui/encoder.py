@@ -399,6 +399,48 @@ class DeenEncoderWidget(QWidget):
             self.parent.widgets[-1] = None
             self.parent.widgets.pop()
 
+    def get_tree_tl_label_for_plugin(self, plugin=None, process=None):
+        """Return the top level item label for a plugin."""
+        plugin = plugin or self.plugin
+        process = process or self.process
+        category = self.parent.plugins.get_category_for_plugin(plugin)
+        if not category:
+            LOGGER.error('Could not determine category for ' + plugin.name)
+            return
+        tl_label = ''
+        if category == 'codecs':
+            tl_label = 'Encode' if process else 'Decode'
+        elif category == 'compressions':
+            tl_label = 'Compress' if process else 'Uncompress'
+        elif category == 'assemblies':
+            tl_label = 'Assemble' if process else 'Disassemble'
+        elif category == 'hashs':
+            tl_label = 'Hash'
+        elif category == 'misc':
+            tl_label = 'Miscellaneous'
+        elif category == 'formatters':
+            tl_label = 'Format'
+        else:
+            LOGGER.warning('Could not determine top level label')
+            return
+        return tl_label
+
+    def get_tree_item_for_plugin(self, plugin=None, process=None):
+        """Return the tree view item of a plugin."""
+        plugin = plugin or self.plugin
+        process = process or self.process
+        tl_label = self.get_tree_tl_label_for_plugin(plugin, process)
+        for i in range(self.ui.plugin_tree_view.topLevelItemCount()):
+            tl_item = self.ui.plugin_tree_view.topLevelItem(i)
+            if not tl_item:
+                continue
+            # Find the top level item for the current label
+            if tl_item.text(0) == tl_label:
+                for j in range(tl_item.childCount()):
+                    tl_child = tl_item.child(j)
+                    if plugin.display_name == tl_child.text(0):
+                        return tl_child
+
     def is_action_process(self, choice):
         """Returns True if the action should call
         process(), False if unprocess() should be
@@ -438,25 +480,7 @@ class DeenEncoderWidget(QWidget):
             LOGGER.warning('Plugin {} not found'.format(plugin_name))
             self.parent.show_error_msg('Plugin {} not found'.format(plugin_name))
             return
-        category = self.parent.plugins.get_category_for_plugin(self.plugin)
-        if not category:
-            LOGGER.error('Could not determine category for ' + self.plugin.name)
-            return
-        if category == 'codecs':
-            tl_label = 'Encode' if self.process else 'Decode'
-        elif category == 'compressions':
-            tl_label = 'Compress' if self.process else 'Uncompress'
-        elif category == 'assemblies':
-            tl_label = 'Assemble' if self.process else 'Disassemble'
-        elif category == 'hashs':
-            tl_label = 'Hash'
-        elif category == 'misc':
-            tl_label = 'Miscellaneous'
-        elif category == 'formatters':
-            tl_label = 'Format'
-        else:
-            LOGGER.warning('Could not determine top level label')
-            return
+        tl_label = self.get_tree_tl_label_for_plugin()
         # Clear all selected items first
         for i in self.ui.plugin_tree_view.selectedItems():
             i.setSelected(False)
@@ -472,6 +496,7 @@ class DeenEncoderWidget(QWidget):
                     tl_child = tl_item.child(j)
                     if self.plugin.display_name == tl_child.text(0):
                         tl_child.setSelected(True)
+                        self.ui.plugin_tree_view.scrollToItem(tl_child)
             else:
                 # Collapse all other top level items
                 if tl_item.isExpanded():
@@ -561,7 +586,9 @@ class DeenEncoderWidget(QWidget):
                     self.next.content = data
                     if not self.plugin.error:
                         self.next.clear_error_message()
-                    # TODO: decide when focus should be set to next widget
-                    #self.next.set_field_focus()
                 else:
                     LOGGER.error('Plugin {} did not return any data'.format(self.plugin.name))
+        # Ensure that the selected plugin is visible
+        # in the plugin tree view.
+        tree_child = self.get_tree_item_for_plugin()
+        self.ui.plugin_tree_view.scrollToItem(tree_child)
