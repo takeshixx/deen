@@ -236,16 +236,14 @@ class DeenEncoderWidget(QWidget):
         of the QTextEdit() will be changed. Whatever will be
         executed here will most likely differ if it will be
         applied on a root widget or any following widget."""
-        if not self.formatted_view:#
+        if not self.formatted_view:
             if self.printable:
                 # TODO: is there another situation where this could fail?
                 self._content = self.get_field_content()
-        if self.plugin:
-            # Only proceed with live updates if self.plugin
-            # is not a formatter plugin.
-            category = self.parent.plugins.get_category_for_plugin(self.plugin)
-            if category and category != 'formatters':
-                self._action()
+        # Only proceed with live updates if self.plugin
+        # is not a formatter plugin.
+        if self.plugin and not self.formatted_view:
+            self._action()
         self.update_length_field()
 
     def search_highlight(self):
@@ -483,14 +481,14 @@ class DeenEncoderWidget(QWidget):
     def _action(self, process=None):
         if process != None:
             self.process = process
-        if not self._content:
-            self._content = self.text_field.content
+        # Update self._content with data from
+        # the current field.
+        self._content = self.field.content
         if self.field.selected_data:
             self._content = self.field.selected_data
         if self._content and self.plugin:
-            # Reset plugin errors and error messages
+            # Reset plugin errors
             self.plugin.error = None
-            self.next.clear_error_message()
             data = None
             category = self.parent.plugins.get_category_for_plugin(self.plugin)
             if not category:
@@ -540,9 +538,10 @@ class DeenEncoderWidget(QWidget):
                 # Formatters format data in the current window (self)
                 data = self.plugin.process(self._content)
                 self.formatted_view = True
-                self.text_field.setPlainText(
-                    self.codec.toUnicode(data))
-                self.text_field.moveCursor(QTextCursor.End)
+                if data:
+                    self.text_field.setPlainText(
+                        self.codec.toUnicode(data))
+                    self.text_field.moveCursor(QTextCursor.End)
                 if self.plugin.error:
                     self.set_error()
                     self.set_error_message(str(self.plugin.error))
