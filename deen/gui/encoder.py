@@ -241,7 +241,11 @@ class DeenEncoderWidget(QWidget):
                 # TODO: is there another situation where this could fail?
                 self._content = self.get_field_content()
         if self.plugin:
-            self._action(self.process)
+            # Only proceed with live updates if self.plugin
+            # is not a formatter plugin.
+            category = self.parent.plugins.get_category_for_plugin(self.plugin)
+            if category and category != 'formatters':
+                self._action()
         self.update_length_field()
 
     def search_highlight(self):
