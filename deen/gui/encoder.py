@@ -241,7 +241,7 @@ class DeenEncoderWidget(QWidget):
                 # TODO: is there another situation where this could fail?
                 self._content = self.get_field_content()
         if self.plugin:
-            self._action(self.plugin.name, self.process)
+            self._action(self.process)
         self.update_length_field()
 
     def search_highlight(self):
@@ -412,11 +412,10 @@ class DeenEncoderWidget(QWidget):
     def action(self, tree_item, **args):
         """The main function that will call plugins via the tree view."""
         if not tree_item.parent():
-            # Top level item
             return
-        process = self.is_action_process(tree_item.parent().text(0))
+        self.process = self.is_action_process(tree_item.parent().text(0))
         self.plugin = self.parent.plugins.get_plugin_instance(tree_item.text(0))
-        self._action(process)
+        self._action()
 
     def action_fuzzy(self, plugin_name):
         """The main entry point for triggering
@@ -425,9 +424,9 @@ class DeenEncoderWidget(QWidget):
         should process or unprocess data. It then
         tries to find appropriate plugin and select
         it in the plugin tree view."""
-        process = True
+        self.process = True
         if plugin_name.startswith('-'):
-            process = False
+            self.process = False
             plugin_name = plugin_name[1:]
         if not self._content:
             return
@@ -442,11 +441,11 @@ class DeenEncoderWidget(QWidget):
             LOGGER.error('Could not determine category for ' + self.plugin.name)
             return
         if category == 'codecs':
-            tl_label = 'Encode' if process else 'Decode'
+            tl_label = 'Encode' if self.process else 'Decode'
         elif category == 'compressions':
-            tl_label = 'Compress' if process else 'Uncompress'
+            tl_label = 'Compress' if self.process else 'Uncompress'
         elif category == 'assemblies':
-            tl_label = 'Assemble' if process else 'Disassemble'
+            tl_label = 'Assemble' if self.process else 'Disassemble'
         elif category == 'hashs':
             tl_label = 'Hash'
         elif category == 'misc':
@@ -475,9 +474,11 @@ class DeenEncoderWidget(QWidget):
                 # Collapse all other top level items
                 if tl_item.isExpanded():
                     tl_item.setExpanded(False)
-        self._action(process)
+        self._action()
 
-    def _action(self, process=True):
+    def _action(self, process=None):
+        if process != None:
+            self.process = process
         if not self._content:
             self._content = self.text_field.content
         if self.field.selected_data:
@@ -488,26 +489,25 @@ class DeenEncoderWidget(QWidget):
             if not category:
                 LOGGER.error('Could not determine category for ' + self.plugin.name)
                 return
-            self.process = process
             process_gui_func = None
             unprocess_gui_func = None
-            if process and 'process_gui' in vars(type(self.plugin)):
+            if self.process and 'process_gui' in vars(type(self.plugin)):
                 # Check if the plugin class implements
                 # process_gui() itself, and does not
                 # inherit it from DeenPlugin.
                 process_gui_func = getattr(self.plugin, 'process_gui', None)
-            if not process and 'unprocess_gui' in vars(type(self.plugin)):
+            if not self.process and 'unprocess_gui' in vars(type(self.plugin)):
                 # Check if the plugin class implements
                 # unprocess_gui() itself, and does not
                 # inherit it from DeenPlugin.
                 unprocess_gui_func = getattr(self.plugin, 'unprocess_gui', None)
             if process_gui_func or unprocess_gui_func:
-                if process and process_gui_func and \
+                if self.process and process_gui_func and \
                         callable(process_gui_func):
                     # For plugins that implement a process_gui() function
                     # that adds additional GUI elements.
                     data = self.plugin.process_gui(self.parent, self._content)
-                elif not process and unprocess_gui_func and \
+                elif not self.process and unprocess_gui_func and \
                         callable(unprocess_gui_func):
                     # For plugins that implement a unprocess_gui() function
                     # that adds additional GUI elements.
@@ -544,7 +544,7 @@ class DeenEncoderWidget(QWidget):
             else:
                 # All other plugins will write their output to a new
                 # window (self.next).
-                if process:
+                if self.process:
                     data = self.plugin.process(self._content)
                 else:
                     data = self.plugin.unprocess(self._content)
