@@ -484,6 +484,9 @@ class DeenEncoderWidget(QWidget):
         if self.field.selected_data:
             self._content = self.field.selected_data
         if self._content and self.plugin:
+            # Reset plugin errors and error messages
+            self.plugin.error = None
+            self.next.clear_error_message()
             data = None
             category = self.parent.plugins.get_category_for_plugin(self.plugin)
             if not category:
