@@ -74,47 +74,38 @@ class DeenEncoderWidget(QWidget):
                      if (not getattr(p[1], 'cmd_only', None) or
                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_encode.addChild(QTreeWidgetItem([encoding.display_name]))
-
         for encoding in [p[1] for p in self.parent.plugins.codecs
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_decode.addChild(QTreeWidgetItem([encoding.display_name]))
-
         for compression in [p[1] for p in self.parent.plugins.compressions
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_compress.addChild(QTreeWidgetItem([compression.display_name]))
-
         for compression in [p[1] for p in self.parent.plugins.compressions
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_uncompress.addChild(QTreeWidgetItem([compression.display_name]))
-
         for assembly in [p[1] for p in self.parent.plugins.assemblies
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_assemble.addChild(QTreeWidgetItem([assembly.display_name]))
-
         for assembly in [p[1] for p in self.parent.plugins.assemblies
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_disassemble.addChild(QTreeWidgetItem([assembly.display_name]))
-
         for hashalg in [p[1] for p in self.parent.plugins.hashs
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_hash.addChild(QTreeWidgetItem([hashalg.display_name]))
-
         for misc in [p[1] for p in self.parent.plugins.misc
                      if (not getattr(p[1], 'cmd_only', None) or
                          (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_misc.addChild(QTreeWidgetItem([misc.display_name]))
-
         for formatter in [p[1] for p in self.parent.plugins.formatters
                      if (not getattr(p[1], 'cmd_only', None) or
                         (getattr(p[1], 'cmd_only', None) and not p[1].cmd_only))]:
             self.plugin_tree_top_format.addChild(QTreeWidgetItem([formatter.display_name]))
-
         # Connect signal to tree view
         self.ui.plugin_tree_view.itemClicked.connect(self.action)
         self.ui.plugin_tree_view.currentItemChanged.connect(self.action)
@@ -208,6 +199,8 @@ class DeenEncoderWidget(QWidget):
 
     @property
     def field(self):
+        """A property that references
+        the currently active field."""
         if self.hex_view:
             return self.hex_field
         else:
@@ -284,6 +277,8 @@ class DeenEncoderWidget(QWidget):
         self.ui.search_progress_bar.hide()
 
     def clear_search_highlight(self, widget=None):
+        """Reset any highlights set by the search
+        function."""
         widget = widget or self
         cursor = self.text_field.textCursor()
         cursor.select(QTextCursor.Document)
@@ -316,12 +311,18 @@ class DeenEncoderWidget(QWidget):
         widget.text_field.setStyleSheet('')
 
     def view_text(self):
+        """A wrapper function that can be
+        called to change to the text view
+        widget."""
         self.hex_view = False
         self.text_field.setHidden(False)
         self.hex_field.setHidden(True)
         self.text_field.content = self._content
 
     def view_hex(self):
+        """A wrapper function that can be
+        called to change to the hex view
+        widget."""
         self.hex_view = True
         self.text_field.setHidden(True)
         self.hex_field.setHidden(False)
@@ -358,10 +359,14 @@ class DeenEncoderWidget(QWidget):
         self.remove_next_widgets(widget=widget)
 
     def update_length_field(self, widget=None):
+        """Update the length field in the encoder widget
+        with the count of bytes in the current widget."""
         widget = widget or self
         widget.ui.content_length_label.setText('Length: ' + str(len(widget.content)))
 
     def update_selection_field(self):
+        """Update the selection field in the encoder widget
+        with the count of selected bytes."""
         self.ui.selection_length_label.setText('Selection: ' + str(self.field.selection_count))
 
     def update_vertical_scroll_range(self, minimum, maximum):
@@ -415,7 +420,11 @@ class DeenEncoderWidget(QWidget):
 
     def action_fuzzy(self, plugin_name):
         """The main entry point for triggering
-        actions via the fuzzy search field."""
+        actions via the fuzzy search field. This
+        function determines if the current action
+        should process or unprocess data. It then
+        tries to find appropriate plugin and select
+        it in the plugin tree view."""
         process = True
         if plugin_name.startswith('-'):
             process = False
@@ -447,12 +456,14 @@ class DeenEncoderWidget(QWidget):
         else:
             LOGGER.warning('Could not determine top level label')
             return
+        # Clear all selected items first
         for i in self.ui.plugin_tree_view.selectedItems():
             i.setSelected(False)
         for i in range(self.ui.plugin_tree_view.topLevelItemCount()):
             tl_item = self.ui.plugin_tree_view.topLevelItem(i)
             if not tl_item:
                 continue
+            # Find the top level item for the current label
             if tl_item.text(0) == tl_label:
                 if not tl_item.isExpanded():
                     tl_item.setExpanded(True)
@@ -461,6 +472,7 @@ class DeenEncoderWidget(QWidget):
                     if self.plugin.display_name == tl_child.text(0):
                         tl_child.setSelected(True)
             else:
+                # Collapse all other top level items
                 if tl_item.isExpanded():
                     tl_item.setExpanded(False)
         self._action(process)
