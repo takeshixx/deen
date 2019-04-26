@@ -1,4 +1,4 @@
-__version__ = '2.0.0b2'
+__version__ = '2.0.0b3'
 
 about_text = ('deen (DEcoderENcoder) v%s\n\nA decoding/encoding application for arbitrary data.\n\n'
               'https://github.com/takeshixx/deen') % __version__
