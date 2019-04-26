@@ -2,7 +2,7 @@ import codecs
 import string
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QBrush, QColor
+from PyQt5.QtGui import QBrush, QColor, QFont
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
 
 
@@ -17,16 +17,19 @@ class HexViewWidget(QTableWidget):
         self._bytes_per_line = max_bytes_per_line
         self._width = width
         self._read_only = read_only
+        self.setShowGrid(False)
+        header = self.horizontalHeader()
+        header.setMinimumSectionSize(15)
+        header.setDefaultSectionSize(15)
+        self.selectionModel().selectionChanged.connect(self.selection_changed)
+        self.ascii_font = QFont()
+        self.ascii_font.setLetterSpacing(QFont.AbsoluteSpacing, 4)
+        self.bold_font = QFont()
+        self.bold_font.setBold(True)
         if content:
             self.content = content
         else:
             self.content = bytearray()
-        header = self.horizontalHeader()
-        self.setShowGrid(False)
-        header.setMinimumSectionSize(15)
-        header.setDefaultSectionSize(15)
-        header.setStretchLastSection(True)
-        self.selectionModel().selectionChanged.connect(self.selection_changed)
 
     def _reconstruct_table(self):
         try:
@@ -43,12 +46,14 @@ class HexViewWidget(QTableWidget):
         self._process_headers()
         for y, row in enumerate(rows):
             self._process_row(y, row)
-        self.resizeColumnsToContents()
         self.itemChanged.connect(self._item_changed)
 
     def _process_headers(self):
         cols = self.columnCount()
-        for i in range(cols):
+        self.setColumnWidth(cols - 1, 150)
+        self.horizontalHeader().setSectionResizeMode(cols - 1, QHeaderView.Stretch)
+        self.setStyleSheet('QTableView::item {padding: 0px 5px 0px 5px;}')
+        for i in range(cols - 1):
             self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
         header_labels = []
         for i in range(0, self._bytes_per_line, self._width):
@@ -65,10 +70,8 @@ class HexViewWidget(QTableWidget):
         for x, i in enumerate(range(0, len(row), self._width)):
             block = row[i:i+self._width]
             item = QTableWidgetItem(codecs.encode(block, 'hex').decode())
-            item.setBackground(QBrush(QColor('#232629')))
-            item.setForeground(QBrush(QColor('yellow')))
-            if not block in bytes(string.printable, 'ascii'):
-                item.setForeground(QBrush(QColor('white')))
+            if block in bytes(string.printable, 'ascii'):
+                item.setFont(self.bold_font)
             item.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
             item.setData(Qt.UserRole, block)  # store original data
             if self._read_only:
@@ -80,7 +83,6 @@ class HexViewWidget(QTableWidget):
         # process remaining, unfilled cells
         for j in range(x+1, cols):
             item = QTableWidgetItem()
-            item.setBackground(QBrush(QColor('#232629')))
             item.setFlags(Qt.NoItemFlags)
             item.setTextAlignment(Qt.AlignHCenter)
             self.setItem(y, j, item)
@@ -89,8 +91,7 @@ class HexViewWidget(QTableWidget):
         item = QTableWidgetItem(text)
         item.setData(Qt.UserRole, row)  # store original data
         item.setTextAlignment(Qt.AlignLeft| Qt.AlignVCenter)
-        item.setBackground(QBrush(QColor('#232629')))
-        item.setForeground(QBrush(QColor('white')))
+        item.setFont(self.ascii_font)
         if self._read_only:
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
         else:
