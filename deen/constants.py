@@ -13,13 +13,13 @@ cli_description = 'Apply encodings, compression, hashing and other types of tran
 
 cli_epilog = """examples:
   open a file in the deen GUI:
-    $ deen /bin/ls
+    $ deen -f /bin/ls
 
   open file from STDIN in deen GUI:
-    $ cat /bin/ls | deen -
+    $ cat /bin/ls | deen -f -
 
   base64 encode a string:
-    $ deen base64 -d admin:admin
+    $ deen base64 admin:admin
     YWRtaW46YWRtaW4=
 
   base64 encode a string with subcommand alias:
@@ -27,10 +27,22 @@ cli_epilog = """examples:
     YWRtaW46YWRtaW4=
 
   decode Base64 string:
-    $ deen base64 -r -d YWRtaW46YWRtaW4=
+    $ deen b64 -r YWRtaW46YWRtaW4=
     admin:admin
 
-  calculate the SHA256 hash of file:
-    $ deen sha256 /bin/ls
+  calculate SHA256 hash of a file:
+    $ deen sha256 -f /bin/ls
     df285ab34ad10d8b641e65f39fa11a7d5b44571a37f94314debbfe7233021755
+
+  decode JWT tokens and apply JSON formatting:
+    $ deen jwt -r eyJhb...ssw5c | deen json-format
+    {
+    "data": {
+        ...
+    },
+    "header": {
+        ...
+    },
+    "signature": "..."
+    }
 """
