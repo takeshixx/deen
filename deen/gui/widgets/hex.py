@@ -2,8 +2,9 @@ import codecs
 import string
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QBrush, QColor, QFont
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
+from PyQt5.QtGui import QBrush, QColor, QFont, QTextCursor, QTextCharFormat
+from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QHeaderView,
+                            QPlainTextEdit, QFrame)
 
 
 class HexViewWidget(QTableWidget):
@@ -26,6 +27,7 @@ class HexViewWidget(QTableWidget):
         self.ascii_font.setLetterSpacing(QFont.AbsoluteSpacing, 4)
         self.bold_font = QFont()
         self.bold_font.setBold(True)
+        self.current_selection = []
         if content:
             self.content = content
         else:
@@ -89,15 +91,22 @@ class HexViewWidget(QTableWidget):
 
         text = self._bytes_to_ascii(row)
         item = QTableWidgetItem(text)
-        item.setData(Qt.UserRole, row)  # store original data
-        item.setTextAlignment(Qt.AlignLeft| Qt.AlignVCenter)
-        item.setFont(self.ascii_font)
+        item.setFlags(Qt.NoItemFlags)
+        text_widget = QPlainTextEdit()
+        text_widget.setReadOnly(True)
+        text_widget.setFrameStyle(QFrame.NoFrame)
+        text_widget.setPlainText(text)
+        #item.setData(Qt.UserRole, row)  # store original data
+        #item.setTextAlignment(Qt.AlignLeft| Qt.AlignVCenter)
+        #item.setFont(self.ascii_font)
+        text_widget.setFont(self.ascii_font)
         if self._read_only:
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
         else:
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
         item.setFlags(Qt.NoItemFlags)
-        self.setItem(y, cols - 1, item)
+        #self.setItem(y, cols - 1, item)
+        self.setCellWidget(y, cols - 1, text_widget)
 
     def _bytes_to_ascii(self, data):
         if not isinstance(data, (bytes, bytearray)):
@@ -192,9 +201,30 @@ class HexViewWidget(QTableWidget):
     def selection_count(self):
         return len(self.selectedItems())
 
+    # TODO: implement synchronization with ASCII field
     def selection_changed(self):
-        # TODO: implement synchronization with ASCII field
+        # Check if items from the previous selection
+        # are still selected.
+        for sel in self.current_selection:
+            _widget = self.item(sel[0], sel[1])
+            if not _widget.isSelected() and not _widget in self.selectedItems():
+                self.current_selection.remove(sel)
+                ascii_widget = self.cellWidget(sel[0], self.columnCount() - 1)
+                cursor = ascii_widget.textCursor()
+                cursor.select(QTextCursor.Document)
+                cursor.setCharFormat(QTextCharFormat())
+                cursor.clearSelection()
+                ascii_widget.setTextCursor(cursor)
         for i in self.selectedItems():
-            r = i.row()
-            c = i.column()
-            li = self.item(r, 16)
+            if not (i.row(), i.column()) in self.current_selection:
+                self.current_selection.append((i.row(), i.column()))
+            ascii_widget = self.cellWidget(i.row(), self.columnCount() - 1)
+            cursor = ascii_widget.textCursor()
+            char_format = QTextCharFormat()
+            cursor.select(QTextCursor.Document)
+            cursor.mergeCharFormat(char_format)
+            cursor.clearSelection()
+            char_format.setBackground(QBrush(QColor('darkCyan')))
+            cursor.setPosition(i.column())
+            cursor.setPosition(i.column() + 1, QTextCursor.KeepAnchor)
+            cursor.mergeCharFormat(char_format)
