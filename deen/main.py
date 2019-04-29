@@ -67,6 +67,9 @@ def main():
         # We are in command line mode
         if args.plugin_cmd:
             # Run subcommands
+            if args.plugin_cmd.startswith('.'):
+                args.plugin_cmd = args.plugin_cmd[1:]
+                args.revert = True
             if not pl.get_plugin_cmd_available(args.plugin_cmd):
                 LOGGER.error('Plugin cmd not available')
                 sys.exit(1)
@@ -75,6 +78,9 @@ def main():
             processed = plugin.process_cli(args)
         else:
             # Use plugins via -p/--plugin
+            if args.plugin.startswith('.'):
+                args.plugin = args.plugin[1:]
+                args.revert = True
             if not pl.plugin_available(args.plugin):
                 LOGGER.error('Plugin not available')
                 sys.exit(1)

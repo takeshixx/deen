@@ -100,6 +100,13 @@ class DeenPlugin(object):
         """
         if not cmd_aliases:
             cmd_aliases = []
+        # Add convenience wrappers for reverting plugins
+        if revert:
+            _cmd_aliases = []
+            _cmd_aliases.extend(cmd_aliases)
+            for alias in _cmd_aliases:
+                cmd_aliases.append('.' + alias)
+            cmd_aliases.insert(0, '.' + cmd_name)
         # Note: Python 2 argparse does not support aliases.
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
