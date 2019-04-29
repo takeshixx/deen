@@ -469,7 +469,7 @@ class DeenEncoderWidget(QWidget):
         tries to find appropriate plugin and select
         it in the plugin tree view."""
         self.process = True
-        if plugin_name.startswith('-'):
+        if plugin_name.startswith('-') or plugin_name.startswith('.'):
             self.process = False
             plugin_name = plugin_name[1:]
         if not self._content:
