@@ -85,8 +85,7 @@ class DeenPlugin(object):
             'Invalid input type: ' + str(type(data))
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
-                      revert=True):
+    def add_argparser(argparser, plugin_class, revert=False):
         """This function allows plugins to add subcommands
         to argparse in order to be used via a seperate
         command/alias on the CLI.
@@ -98,6 +97,10 @@ class DeenPlugin(object):
         :param revert: True will add the -r/--revert argument
         :return: the newly created argparse object
         """
+        cmd_name = plugin_class.cmd_name
+        cmd_help = plugin_class.cmd_help
+        cmd_aliases = plugin_class.aliases
+        revert = True if 'unprocess' in vars(plugin_class) else False
         if not cmd_aliases:
             cmd_aliases = []
         # Add convenience wrappers for reverting plugins
