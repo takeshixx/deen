@@ -92,10 +92,17 @@ class AsmBase(DeenPlugin):
         return output.encode()
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
-                      *args, **kwargs):
+    def add_argparser(argparser, plugin_class, *args, **kwargs):
+        cmd_name = plugin_class.cmd_name
+        cmd_help = plugin_class.cmd_help
+        cmd_aliases = plugin_class.aliases
         if not cmd_aliases:
             cmd_aliases = []
+        _cmd_aliases = []
+        _cmd_aliases.extend(cmd_aliases)
+        for alias in _cmd_aliases:
+            cmd_aliases.append('.' + alias)
+        cmd_aliases.insert(0, '.' + cmd_name)
         # Python 2 argparse does not support aliases
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and

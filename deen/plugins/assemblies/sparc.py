@@ -27,11 +27,9 @@ class DeenPluginAsmSparc(AsmBase):
     capstone_mode = 0 # Add default mode
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
-                      *args, **kwargs):
+    def add_argparser(argparser, plugin_class, *args, **kwargs):
         # Add an additional argument for big endian mode.
-        parser = AsmBase.add_argparser(argparser, cmd_name,
-                                       cmd_help, cmd_aliases=cmd_aliases)
+        parser = AsmBase.add_argparser(argparser, plugin_class)
         parser.add_argument('-b', '--big-endian', dest='bigendian',
                             default=False, help='use big endian',
                             action='store_true')

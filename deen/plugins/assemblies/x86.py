@@ -48,11 +48,9 @@ class DeenPluginAsmX86(AsmBase):
             self.cs.syntax = capstone.CS_OPT_SYNTAX_INTEL
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
-                      *args, **kwargs):
+    def add_argparser(argparser, plugin_class, *args, **kwargs):
         # Add an additional argument for AT&T syntax.
-        parser = AsmBase.add_argparser(argparser, cmd_name,
-                                       cmd_help, cmd_aliases=cmd_aliases)
+        parser = AsmBase.add_argparser(argparser, plugin_class)
         parser.add_argument('-a', '--atandt', dest='atandt',
                             default=False, help='use AT&T syntax',
                             action='store_true')

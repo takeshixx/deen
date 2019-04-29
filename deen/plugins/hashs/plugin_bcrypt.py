@@ -60,8 +60,10 @@ class DeenPluginBcrypt(DeenPlugin):
         return data
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None,
-                      *args, **kwargs):
+    def add_argparser(argparser, plugin_class, *args, **kwargs):
+        cmd_name = plugin_class.cmd_name
+        cmd_help = plugin_class.cmd_help
+        cmd_aliases = plugin_class.aliases
         if not cmd_aliases:
             cmd_aliases = []
         # Python 2 argparse does not support aliases
