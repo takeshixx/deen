@@ -63,11 +63,19 @@ def main():
     levels = [logging.WARN, logging.DEBUG]
     LOGGER.setLevel(levels[min(args.level, len(levels) - 1)])
     if args.list:
-        print('Loaded plugins:')
-        print(pl.pprint_available_plugins())
-        if pl.invalid_plugins:
-            print('\nNot loaded plugins:')
-            print(pl.pprint_invalid_plugins())
+        if args.level > 0:
+            # Verbose list contains all available subcommands
+            subparser_actions = [action for action in ARGS._actions
+                if isinstance(action, argparse._SubParsersAction)]
+            for actions in subparser_actions:
+                    for cmd in actions.choices.keys():
+                        print(cmd)
+        else:
+            print('Loaded plugins:')
+            print(pl.pprint_available_plugins())
+            if pl.invalid_plugins:
+                print('\nNot loaded plugins:')
+                print(pl.pprint_invalid_plugins())
     elif args.version:
         print(constants.__version__)
     elif any([args.plugin_cmd, args.plugin]) and args.plugin_cmd != 'gui':
