@@ -19,3 +19,15 @@ There is a [deen-git](https://aur.archlinux.org/packages/deen-git) package avail
 ## Usage
 
 See the [wiki](https://github.com/takeshixx/deen/wiki) for basic and more advanced usage examples.
+
+### Bash Completion
+
+Bash completion can be enabled by adding the following line to your `~/.bash_profile` or `.bashrc`:
+
+    source ~/path/to/deen-completion.sh
+
+### ZSH Completion
+
+ZSH completion can be enabled by adding the following line to your `~/.zshrc`:
+
+    autoload bashcompinit && bashcompinit && source ~/path/to/deen-completion.sh
