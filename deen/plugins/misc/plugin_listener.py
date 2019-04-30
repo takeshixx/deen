@@ -5,6 +5,7 @@ import os.path
 import random
 import ssl
 import tempfile
+import argparse
 
 if sys.version_info.major == 3:
     import http.server
@@ -34,7 +35,16 @@ class DeenPluginListener(DeenPlugin):
                'tls',
                'ssl']
     cmd_name = 'listener'
-    cmd_help='Listen for HTTP/TCP/SSL/TLS connections.'
+    cmd_help = 'Listen for HTTP/TCP/SSL/TLS connections.'
+    cmd_desc = ('A generic listener plugin that supports '
+                'opening HTTP or raw TCP ports on a \ngiven TCP port. '
+                'It also supports HTTPS and raw SSL/TLS sockets '
+                'with either \nrandomly generated or user-supplied '
+                'certificates. For HTTP ports the current \ndirectory '
+                'will be served.\n\n'
+                'The different modes can be called via the shortcuts '
+                'http, https, tcp, ssl, \ntls without providing '
+                'additional options as well.')
     cmd_only = True
 
     def __init__(self):
@@ -65,9 +75,13 @@ class DeenPluginListener(DeenPlugin):
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 2):
             parser = argparser.add_parser(DeenPluginListener.cmd_name,
+                                          formatter_class=argparse.RawDescriptionHelpFormatter,
+                                          description=DeenPluginListener.cmd_desc,
                                           help=DeenPluginListener.cmd_help)
         else:
             parser = argparser.add_parser(DeenPluginListener.cmd_name,
+                                          formatter_class=argparse.RawDescriptionHelpFormatter,
+                                          description=DeenPluginListener.cmd_desc,
                                           help=DeenPluginListener.cmd_help,
                                           aliases=DeenPluginListener.aliases)
         parser.add_argument('port', nargs='?', type=int, default=8000,

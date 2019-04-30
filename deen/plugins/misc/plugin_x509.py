@@ -106,6 +106,11 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
     cmd_name = 'x509certificatecloner'
     cmd_help = ('Clone X.509 certificates with a '
                 'randomly generated RSA public key')
+    cmd_desc = ('Clones X.509 certificates with randomly '
+                'generated RSA key pairs or with a pre-generated '
+                'key pair that can be supplied via CLI arguments. '
+                'This plugin also supports signing cloned certs '
+                'with an existing CA certificate.')
 
     def __init__(self):
         super(DeenPluginX509CertificateCloner, self).__init__()
@@ -131,9 +136,11 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 2):
             parser = argparser.add_parser(DeenPluginX509CertificateCloner.cmd_name,
+                                          description=DeenPluginX509CertificateCloner.cmd_desc,
                                           help=DeenPluginX509CertificateCloner.cmd_help)
         else:
             parser = argparser.add_parser(DeenPluginX509CertificateCloner.cmd_name,
+                                          description=DeenPluginX509CertificateCloner.cmd_desc,
                                           help=DeenPluginX509CertificateCloner.cmd_help,
                                           aliases=DeenPluginX509CertificateCloner.aliases)
         parser.add_argument('CERT_TO_CLONE')

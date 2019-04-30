@@ -176,9 +176,14 @@ class DeenPluginJwt(DeenPlugin):
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 2):
-            parser = argparser.add_parser(cmd_name, help=cmd_help)
+            parser = argparser.add_parser(cmd_name,
+                                          description=cmd_help,
+                                          help=cmd_help)
         else:
-            parser = argparser.add_parser(cmd_name, help=cmd_help, aliases=cmd_aliases)
+            parser = argparser.add_parser(cmd_name,
+                                          description=cmd_help,
+                                          help=cmd_help,
+                                          aliases=cmd_aliases)
         algos = []
         algos.extend(constants.ALGORITHMS.HASHES.keys())
         algos.append('None')
