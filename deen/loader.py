@@ -207,19 +207,6 @@ class DeenPluginLoader(object):
         else:
             return None
 
-    def is_plugin_in_category(self, plugin, category):
-        """Check if plugin is in a category. Can be used
-        to i.e. check if a given plugin is a formatter
-        or a codec plugin."""
-        category = getattr(self, category, None)
-        if not category:
-            LOGGER.error('Invalid category: ' + category)
-            return False
-        for p in category:
-            if p[1] == plugin:
-                return True
-        return False
-
     def get_category_for_plugin(self, plugin):
         """Return the category for a plugin instance."""
         for k, v in self.categories.items():

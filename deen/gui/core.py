@@ -237,9 +237,8 @@ class DeenGui(QMainWindow):
         if isinstance(name, tuple):
             name = name[0]
         with open(name, 'wb') as file:
-            current_plugin = self.plugins.get_plugin_by_display_name(
-                    parent_encoder.ui.current_plugin_label.text().replace('Plugin: ', ''))
-            if self.plugins.is_plugin_in_category(current_plugin, 'formatters'):
+            current_plugin = parent_encoder.plugin
+            if self.plugins.get_category_for_plugin(current_plugin) == 'formatters':
                 # Formatters alter data inplace, so we have to write the
                 # data that is currently displayed into the outfile.
                 file.write(bytearray(parent_encoder.text_field.toPlainText(), 'utf8'))
