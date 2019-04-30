@@ -113,11 +113,6 @@ class DeenPluginLoader(object):
                                 if not self._subargparser and self._argparser:
                                     self._subargparser = self._argparser.add_subparsers(dest='plugin_cmd')
                                 add_argparser_func(self._subargparser, c[1])
-                            # Add a custom gui subcommand for Python < v3.2
-                            if sys.version_info.major < 3 or \
-                                    (sys.version_info.major == 3 and
-                                     sys.version_info.minor < 2):
-                                self._subargparser.add_parser('gui', help='Start GUI in Python < v3.2')
                         output.append(c)
         else:
             return output

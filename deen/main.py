@@ -53,6 +53,11 @@ ARGS.add_argument('-v', '--verbose', action='count', dest='level',
 
 def main():
     pl = DeenPluginLoader(argparser=ARGS)
+    # Add a custom gui subcommand for Python < v3.2
+    if sys.version_info.major < 3 or \
+            (sys.version_info.major == 3 and
+                sys.version_info.minor < 2):
+        pl._subargparser.add_parser('gui', help='Start GUI in Python < v3.2')
     args = ARGS.parse_args()
     content = pl.read_content_from_args()
     levels = [logging.WARN, logging.DEBUG]
