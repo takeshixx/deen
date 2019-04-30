@@ -52,7 +52,13 @@ ARGS.add_argument('-v', '--verbose', action='count', dest='level',
 
 
 def main():
-    pl = DeenPluginLoader(argparser=ARGS)
+    try:
+        # In case we want to abort they plugin
+        # loading process. Potentially required
+        # in CLI mode.
+        pl = DeenPluginLoader(argparser=ARGS)
+    except KeyboardInterrupt:
+        sys.exit(1)
     # Add a custom gui subcommand for Python < v3.2
     if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
