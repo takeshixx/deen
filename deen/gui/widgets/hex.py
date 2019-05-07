@@ -28,6 +28,7 @@ class HexViewWidget(QTableWidget):
         self.bold_font = QFont()
         self.bold_font.setBold(True)
         self.current_selection = []
+        self.horizontalHeader().setStretchLastSection(True)
         if content:
             self.content = content
         else:
@@ -96,16 +97,15 @@ class HexViewWidget(QTableWidget):
         text_widget.setReadOnly(True)
         text_widget.setFrameStyle(QFrame.NoFrame)
         text_widget.setPlainText(text)
-        #item.setData(Qt.UserRole, row)  # store original data
-        #item.setTextAlignment(Qt.AlignLeft| Qt.AlignVCenter)
-        #item.setFont(self.ascii_font)
         text_widget.setFont(self.ascii_font)
+        text_widget.setLineWrapMode(QPlainTextEdit.NoWrap)
+        text_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setColumnWidth(cols - 1, 250)
         if self._read_only:
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
         else:
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
         item.setFlags(Qt.NoItemFlags)
-        #self.setItem(y, cols - 1, item)
         self.setCellWidget(y, cols - 1, text_widget)
 
     def _bytes_to_ascii(self, data):
