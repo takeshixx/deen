@@ -20,6 +20,8 @@ class DeenPlugin(object):
     # be empty if there is no aliases to the
     # plugin name.
     aliases = []
+    # Indicates of the output is formatted.
+    formatted = False
 
     def __init__(self):
         self.parent = None

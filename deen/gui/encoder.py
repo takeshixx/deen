@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QWidget, QLabel, QApplication, QFileDialog, QTreeWid
 
 from deen.gui.widgets.hex import HexViewWidget
 from deen.gui.widgets.text import TextViewWidget
+from deen.gui.widgets.formatted import FormattedViewWidget
 from deen.gui.widgets.ui_deenencoderwidget import Ui_DeenEncoderWidget
 from deen import logger
 
@@ -37,6 +38,7 @@ class DeenEncoderWidget(QWidget):
         self._content = bytearray()
         self.codec = QTextCodec.codecForName('UTF-8')
         self.hex_view = False
+        self.formatted_view = False
         # TODO: check if printable is enforced
         self.printable = True
         # Assign custom widgets for text_field and hex_field.
@@ -44,18 +46,25 @@ class DeenEncoderWidget(QWidget):
         self.text_field.textChanged.connect(self.field_content_changed)
         self.hex_field = HexViewWidget(read_only=self.readonly, parent=self)
         self.hex_field.setHidden(True)
+        self.formatted_field = FormattedViewWidget(self, readonly=self.readonly)
+        self.formatted_field.setHidden(True)
+        self.formatted_field.textChanged.connect(self.field_content_changed)
         # Add connection for selection field
         self.text_field.selectionChanged.connect(self.update_selection_field)
-        self.ui.selection_length_label.setText('Selection: 0')
+        self.formatted_field.selectionChanged.connect(self.update_selection_field)
         self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.hex_field.itemSelectionChanged.connect(self.update_selection_field)
+        self.ui.selection_length_label.setText('Selection: 0')
         self.ui.content_area_layout.addWidget(self.text_field)
         self.ui.content_area_layout.addWidget(self.hex_field)
+        self.ui.content_area_layout.addWidget(self.formatted_field)
         # Configure widget elements
         self.ui.toggle_text_view.setChecked(True)
         self.ui.toggle_text_view.clicked.connect(self.view_text)
         self.ui.toggle_hex_view.setChecked(False)
         self.ui.toggle_hex_view.clicked.connect(self.view_hex)
+        self.ui.toggle_formatted_view.setChecked(False)
+        self.ui.toggle_formatted_view.clicked.connect(self.view_formatted)
         # Update labels with proper values
         self.update_length_field()
         # Create references for tree view items
@@ -141,7 +150,10 @@ class DeenEncoderWidget(QWidget):
         if isinstance(data, bytes):
             data = bytearray(data)
         self._content = data
-        if not all(chr(c) in string.printable for c in self._content):
+        if self.previous.formatted_view:
+            self.printable = True
+            self.ui.toggle_formatted_view.click()
+        elif not all(chr(c) in string.printable for c in self._content):
             # If there are non-printable characters,
             # switch to hex view.
             self.printable = False
@@ -201,6 +213,8 @@ class DeenEncoderWidget(QWidget):
         the currently active field."""
         if self.hex_view:
             return self.hex_field
+        elif self.formatted_view:
+            return self.formatted_field
         else:
             return self.text_field
 
@@ -316,6 +330,7 @@ class DeenEncoderWidget(QWidget):
         self.hex_view = False
         self.text_field.setHidden(False)
         self.hex_field.setHidden(True)
+        self.formatted_field.setHidden(True)
         self.text_field.content = self._content
 
     def view_hex(self):
@@ -324,8 +339,19 @@ class DeenEncoderWidget(QWidget):
         widget."""
         self.hex_view = True
         self.text_field.setHidden(True)
+        self.formatted_field.setHidden(True)
         self.hex_field.setHidden(False)
         self.hex_field.content = self._content
+
+    def view_formatted(self):
+        """A wrapper function that can be
+        called to change to the formatted
+        view widget."""
+        self.formatted_view = True
+        self.text_field.setHidden(True)
+        self.hex_field.setHidden(True)
+        self.formatted_field.setHidden(False)
+        self.formatted_field.content = self._content
 
     def clear_content(self, widget=None):
         """Clear the content of widget. If widget
@@ -515,6 +541,11 @@ class DeenEncoderWidget(QWidget):
             if self.has_next() and self.next.plugin:
                 self.next.plugin.error = None
                 self.next.clear_error_message()
+            # Set formatted view if plugin requires it
+            if self.plugin.formatted:
+                self.formatted_view = True
+            else:
+                self.formatted_view = False
             data = None
             category = self.parent.plugins.get_category_for_plugin(self.plugin)
             if not category:
