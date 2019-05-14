@@ -164,6 +164,8 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
             self.log.error('CA_CERT and CA_KEY required')
             sys.exit(1)
         original_cert = self._load_cert(args.CERT_TO_CLONE)
+        if not original_cert:
+            return
         if args.signature_algorithm:
             signature_algo = args.signature_algorithm
         else:
