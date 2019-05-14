@@ -94,6 +94,11 @@ class HexViewWidget(QTableWidget):
         item = QTableWidgetItem(text)
         item.setFlags(Qt.NoItemFlags)
         text_widget = QPlainTextEdit()
+        # Prevent vertical scrollbars in ASCII view
+        def _fix_widget_size():
+            if text_widget.verticalScrollBar():
+                text_widget.setMinimumWidth(text_widget.width() + 25)
+        text_widget.textChanged.connect(_fix_widget_size)
         text_widget.setReadOnly(True)
         text_widget.setFrameStyle(QFrame.NoFrame)
         text_widget.setPlainText(text)
