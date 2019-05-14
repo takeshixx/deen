@@ -52,6 +52,9 @@ ARGS.add_argument('-v', '--verbose', action='count', dest='level',
 
 
 def main():
+    args = ARGS.parse_args()
+    levels = [logging.WARN, logging.DEBUG]
+    LOGGER.setLevel(levels[min(args.level, len(levels) - 1)])
     try:
         # In case we want to abort they plugin
         # loading process. Potentially required
@@ -64,10 +67,9 @@ def main():
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 2):
         pl._subargparser.add_parser('gui', help='Start GUI in Python < v3.2')
+    # Call parse_args() again for the subcommands
     args = ARGS.parse_args()
     content = pl.read_content_from_args()
-    levels = [logging.WARN, logging.DEBUG]
-    LOGGER.setLevel(levels[min(args.level, len(levels) - 1)])
     if args.list:
         if args.level > 0:
             # Verbose list contains all available subcommands
