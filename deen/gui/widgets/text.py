@@ -1,8 +1,3 @@
-try:
-    import urllib.parse as urllibparse
-except ImportError:
-    import urllib as urllibparse
-
 from PyQt5.QtWidgets import QPlainTextEdit
 from PyQt5.QtCore import Qt
 
