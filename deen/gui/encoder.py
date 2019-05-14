@@ -35,7 +35,6 @@ class DeenEncoderWidget(QWidget):
         self.plugin = None
         self.search_matches = None
         self._content = bytearray()
-        self.formatted_view = False
         self.codec = QTextCodec.codecForName('UTF-8')
         self.hex_view = False
         # TODO: check if printable is enforced
@@ -142,7 +141,6 @@ class DeenEncoderWidget(QWidget):
         if isinstance(data, bytes):
             data = bytearray(data)
         self._content = data
-        self.formatted_view = False
         if not all(chr(c) in string.printable for c in self._content):
             # If there are non-printable characters,
             # switch to hex view.
@@ -236,13 +234,12 @@ class DeenEncoderWidget(QWidget):
         of the QTextEdit() will be changed. Whatever will be
         executed here will most likely differ if it will be
         applied on a root widget or any following widget."""
-        if not self.formatted_view:
-            if self.printable:
-                # TODO: is there another situation where this could fail?
-                self._content = self.get_field_content()
+        if self.printable:
+            # TODO: is there another situation where this could fail?
+            self._content = self.get_field_content()
         # Only proceed with live updates if self.plugin
         # is not a formatter plugin.
-        if self.plugin and not self.formatted_view:
+        if self.plugin:
             self._action()
         self.update_length_field()
 
@@ -343,7 +340,6 @@ class DeenEncoderWidget(QWidget):
             widget.hex_field.content = bytearray()
             widget._content = bytearray()
             widget.update_length_field()
-            widget.formatted_view = False
             widget.set_field_focus()
             widget.plugin = None
             # TODO: move to seperat wrapper function?
@@ -515,6 +511,10 @@ class DeenEncoderWidget(QWidget):
             # Reset plugin errors
             self.plugin.error = None
             self.clear_error_message()
+            # Clear error message on the next widget as well
+            if self.has_next() and self.next.plugin:
+                self.next.plugin.error = None
+                self.next.clear_error_message()
             data = None
             category = self.parent.plugins.get_category_for_plugin(self.plugin)
             if not category:
@@ -560,23 +560,10 @@ class DeenEncoderWidget(QWidget):
                 #self.next.set_field_focus()
                 if not self.plugin.error:
                     self.next.clear_error_message()
-            elif category == 'formatters':
-                # Formatters format data in the current window (self)
-                data = self.plugin.process(self._content)
-                self.formatted_view = True
-                if data:
-                    self.text_field.setPlainText(
-                        self.codec.toUnicode(data))
-                    self.text_field.moveCursor(QTextCursor.End)
-                if self.plugin.error:
-                    self.set_error()
-                    self.set_error_message(str(self.plugin.error))
-                else:
-                    self.clear_error_message()
             else:
                 # All other plugins will write their output to a new
                 # window (self.next).
-                if self.process:
+                if self.process or category == 'formatters':
                     data = self.plugin.process(self._content)
                 else:
                     data = self.plugin.unprocess(self._content)

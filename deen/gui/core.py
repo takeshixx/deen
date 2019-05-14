@@ -238,12 +238,7 @@ class DeenGui(QMainWindow):
             name = name[0]
         with open(name, 'wb') as file:
             current_plugin = parent_encoder.plugin
-            if self.plugins.get_category_for_plugin(current_plugin) == 'formatters':
-                # Formatters alter data inplace, so we have to write the
-                # data that is currently displayed into the outfile.
-                file.write(bytearray(parent_encoder.text_field.toPlainText(), 'utf8'))
-            else:
-                file.write(parent_encoder._content)
+            file.write(parent_encoder._content)
 
     def copy_content_to_clipboard(self):
         focussed_widget = QApplication.focusWidget()
