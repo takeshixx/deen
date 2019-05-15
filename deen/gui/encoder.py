@@ -157,7 +157,6 @@ class DeenEncoderWidget(QWidget):
             # If there are non-printable characters,
             # switch to hex view.
             self.printable = False
-            self.ui.toggle_text_view.setEnabled(False)
             self.ui.toggle_hex_view.click()
         else:
             # Prevent the field from overwriting itself with invalid
