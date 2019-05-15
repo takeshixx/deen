@@ -65,6 +65,19 @@ class DeenEncoderWidget(QWidget):
         self.ui.toggle_hex_view.clicked.connect(self.view_hex)
         self.ui.toggle_formatted_view.setChecked(False)
         self.ui.toggle_formatted_view.clicked.connect(self.view_formatted)
+        # Add icons to buttons
+        icon_path = MEDIA_PATH
+        if self.palette().color(self.backgroundRole()).value() < 128:
+            icon_path += 'dark/'
+        if all([os.path.exists(icon_path + 'view-text.svg'),
+                os.path.exists(icon_path + 'view-hex.svg'),
+                os.path.exists(icon_path + 'view-formatted.svg')]):
+            self.ui.toggle_text_view.setIcon(QIcon(icon_path + 'view-text.svg'))
+            self.ui.toggle_text_view.setText('')
+            self.ui.toggle_hex_view.setIcon(QIcon(icon_path + 'view-hex.svg'))
+            self.ui.toggle_hex_view.setText('')
+            self.ui.toggle_formatted_view.setIcon(QIcon(icon_path + 'view-formatted.svg'))
+            self.ui.toggle_formatted_view.setText('')
         # Update labels with proper values
         self.update_length_field()
         # Create references for tree view items
