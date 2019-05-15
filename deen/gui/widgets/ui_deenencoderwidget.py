@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'encoder-widget2.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -120,6 +120,9 @@ class Ui_DeenEncoderWidget(object):
         self.toggle_hex_view.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.toggle_hex_view.setObjectName("toggle_hex_view")
         self.verticalLayout_6.addWidget(self.toggle_hex_view)
+        self.toggle_formatted_view = QtWidgets.QPushButton(DeenEncoderWidget)
+        self.toggle_formatted_view.setObjectName("toggle_formatted_view")
+        self.verticalLayout_6.addWidget(self.toggle_formatted_view)
         self.gridLayout.addLayout(self.verticalLayout_6, 1, 0, 1, 1)
 
         self.retranslateUi(DeenEncoderWidget)
@@ -149,5 +152,6 @@ class Ui_DeenEncoderWidget(object):
         self.plugin_tree_view.setSortingEnabled(__sortingEnabled)
         self.toggle_text_view.setText(_translate("DeenEncoderWidget", "Te&xt view"))
         self.toggle_hex_view.setText(_translate("DeenEncoderWidget", "He&x view"))
+        self.toggle_formatted_view.setText(_translate("DeenEncoderWidget", "Formatted View"))
 
 
