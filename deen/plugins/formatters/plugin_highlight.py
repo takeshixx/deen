@@ -30,6 +30,7 @@ class DeenPluginSyntaxHighlighter(DeenPlugin):
                'syntax']
     cmd_name = 'syntax-highlight'
     cmd_help = 'Reformat HTML data'
+    formatted = True
 
     def __init__(self):
         super(DeenPluginSyntaxHighlighter, self).__init__()
@@ -55,7 +56,6 @@ class DeenPluginSyntaxHighlighter(DeenPlugin):
         if not isinstance(data, (bytes, bytearray)):
             data = data.encode()
         return data
-
 
     @staticmethod
     def add_argparser(argparser, *args, **kwargs):
@@ -149,7 +149,10 @@ class DeenPluginSyntaxHighlighter(DeenPlugin):
         else:
             self.log.error('Could not find formatter alias for ' + str(formatter))
             return
-        formatter = pygments.formatters.get_formatter_by_name(formatter)
+        if formatter == 'html':
+            formatter = pygments.formatters.get_formatter_by_name(formatter, full=True)
+        else:
+            formatter = pygments.formatters.get_formatter_by_name(formatter)
         if not formatter:
             self.log.error('Formatter not found: ' + str(formatter))
             return
