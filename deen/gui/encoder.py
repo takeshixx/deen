@@ -343,6 +343,7 @@ class DeenEncoderWidget(QWidget):
         self.hex_field.setHidden(True)
         self.formatted_field.setHidden(True)
         self.text_field.content = self._content
+        self.update_length_field()
 
     def view_hex(self):
         """A wrapper function that can be
@@ -354,6 +355,7 @@ class DeenEncoderWidget(QWidget):
         self.formatted_field.setHidden(True)
         self.hex_field.setHidden(False)
         self.hex_field.content = self._content
+        self.update_length_field()
 
     def view_formatted(self):
         """A wrapper function that can be
@@ -364,6 +366,7 @@ class DeenEncoderWidget(QWidget):
         self.hex_field.setHidden(True)
         self.formatted_field.setHidden(False)
         self.formatted_field.content = self._content
+        self.update_length_field()
 
     def clear_content(self, widget=None):
         """Clear the content of widget. If widget
@@ -398,7 +401,7 @@ class DeenEncoderWidget(QWidget):
         """Update the length field in the encoder widget
         with the count of bytes in the current widget."""
         widget = widget or self
-        widget.ui.content_length_label.setText('Length: ' + str(len(widget.content)))
+        widget.ui.content_length_label.setText('Length: ' + str(len(widget.field.content)))
 
     def update_selection_field(self):
         """Update the selection field in the encoder widget
