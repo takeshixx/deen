@@ -340,6 +340,7 @@ class DeenEncoderWidget(QWidget):
         called to change to the text view
         widget."""
         self.hex_view = False
+        self.formatted_view = False
         self.text_field.setHidden(False)
         self.hex_field.setHidden(True)
         self.formatted_field.setHidden(True)
@@ -350,6 +351,7 @@ class DeenEncoderWidget(QWidget):
         called to change to the hex view
         widget."""
         self.hex_view = True
+        self.formatted_view = False
         self.text_field.setHidden(True)
         self.formatted_field.setHidden(True)
         self.hex_field.setHidden(False)
