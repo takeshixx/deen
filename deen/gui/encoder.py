@@ -257,9 +257,7 @@ class DeenEncoderWidget(QWidget):
     def field_content_changed(self):
         """The event handler for the textChanged event of the
         current widget. This will be called whenever the text
-        of the QTextEdit() will be changed. Whatever will be
-        executed here will most likely differ if it will be
-        applied on a root widget or any following widget."""
+        of the QTextEdit() will be changed by the user."""
         if self.printable:
             # TODO: is there another situation where this could fail?
             self._content = self.get_field_content()

@@ -1,8 +1,10 @@
 from PyQt5.QtWidgets import QPlainTextEdit
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 
 
 class TextViewWidget(QPlainTextEdit):
+    internallyEdited = pyqtSignal()
+
     def __init__(self, parent, readonly=False):
         super(TextViewWidget, self).__init__(parent)
         self.parent = parent
@@ -18,7 +20,10 @@ class TextViewWidget(QPlainTextEdit):
         ctype = type(content).__name__
         assert isinstance(content, bytearray),\
             TypeError('bytearray required. Got ' + ctype)
+        self.blockSignals(True)
         self.setPlainText(self.codec.toUnicode(content))
+        self.blockSignals(False)
+        self.internallyEdited.emit()
 
     @property
     def selected_data(self):

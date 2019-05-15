@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QSyntaxHighlighter, QColor
 
 
 class FormattedViewWidget(QTextEdit):
+    internallyEdited = pyqtSignal()
+
     def __init__(self, parent, readonly=False):
         super(FormattedViewWidget, self).__init__(parent)
         self.parent = parent
@@ -12,14 +14,17 @@ class FormattedViewWidget(QTextEdit):
 
     @property
     def content(self):
-        return bytearray(self.codec.fromUnicode(self.toHtml()))
+        return bytearray(self.codec.fromUnicode(self.toPlainText()))
 
     @content.setter
     def content(self, content):
         ctype = type(content).__name__
         assert isinstance(content, bytearray),\
             TypeError('bytearray required. Got ' + ctype)
+        self.blockSignals(True)
         self.setHtml(self.codec.toUnicode(content))
+        self.blockSignals(False)
+        self.internallyEdited.emit()
 
     @property
     def selected_data(self):
