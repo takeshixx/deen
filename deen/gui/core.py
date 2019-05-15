@@ -116,6 +116,8 @@ class DeenGui(QMainWindow):
             # Builin clases may implement
             # parent() to retrieve the
             # parent object.
+            if not widget:
+                break
             if callable(widget.parent):
                 widget = widget.parent()
             else:
