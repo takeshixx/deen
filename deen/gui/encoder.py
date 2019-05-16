@@ -61,6 +61,7 @@ class DeenEncoderWidget(QWidget):
         # Configure widget elements
         self.ui.toggle_text_view.setChecked(True)
         self.ui.toggle_text_view.clicked.connect(self.view_text)
+        self.toggle_button_border(self.ui.toggle_text_view)
         self.ui.toggle_hex_view.setChecked(False)
         self.ui.toggle_hex_view.clicked.connect(self.view_hex)
         self.ui.toggle_formatted_view.setChecked(False)
@@ -344,6 +345,7 @@ class DeenEncoderWidget(QWidget):
         self.formatted_field.setHidden(True)
         self.text_field.content = self._content
         self.update_length_field()
+        self.toggle_button_border(self.ui.toggle_text_view)
 
     def view_hex(self):
         """A wrapper function that can be
@@ -356,6 +358,7 @@ class DeenEncoderWidget(QWidget):
         self.hex_field.setHidden(False)
         self.hex_field.content = self._content
         self.update_length_field()
+        self.toggle_button_border(self.ui.toggle_hex_view)
 
     def view_formatted(self):
         """A wrapper function that can be
@@ -367,6 +370,17 @@ class DeenEncoderWidget(QWidget):
         self.formatted_field.setHidden(False)
         self.formatted_field.content = self._content
         self.update_length_field()
+        self.toggle_button_border(self.ui.toggle_formatted_view)
+
+    def toggle_button_border(self, button):
+        buttons = [self.ui.toggle_formatted_view,
+                   self.ui.toggle_text_view,
+                   self.ui.toggle_hex_view]
+        for b in buttons:
+            if b == button:
+                b.setStyleSheet('background-color: grey;')
+            else:
+                b.setStyleSheet('background-color: 0;')
 
     def clear_content(self, widget=None):
         """Clear the content of widget. If widget
