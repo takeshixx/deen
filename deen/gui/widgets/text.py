@@ -28,14 +28,14 @@ class TextViewWidget(QPlainTextEdit):
     @property
     def selected_data(self):
         cursor = self.textCursor()
-        data = cursor.selectedText()
-        data = bytearray(data, 'utf8')
+        data = cursor.selection().toPlainText()
+        data = bytearray(self.codec.fromUnicode(data))
         return data
 
     @property
     def selection_count(self):
         cursor = self.textCursor()
-        data = cursor.selectedText()
+        data = cursor.selection().toPlainText()
         return len(data)
 
     def wheelEvent(self, QWheelEvent):
