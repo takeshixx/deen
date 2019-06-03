@@ -18,6 +18,15 @@ class DeenPluginEbcdic(DeenPlugin):
     def __init__(self):
         super(DeenPluginEbcdic, self).__init__()
 
+    def prerequisites(self):
+        try:
+            import ebcdic
+        except ImportError:
+            self.log_missing_depdendencies('ebcdic')
+            return False
+        else:
+            return True
+
     def process(self, data):
         super(DeenPluginEbcdic, self).process(data)
         try:
