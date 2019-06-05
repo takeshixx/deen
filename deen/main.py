@@ -52,7 +52,7 @@ ARGS.add_argument('-v', '--verbose', action='count', dest='level',
 
 
 def main():
-    args = ARGS.parse_args()
+    args, _ = ARGS.parse_known_args()
     levels = [logging.WARN, logging.DEBUG]
     LOGGER.setLevel(levels[min(args.level, len(levels) - 1)])
     try:
