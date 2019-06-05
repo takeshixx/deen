@@ -378,17 +378,37 @@ class DeenPluginListener(DeenPlugin):
 
 
 class DeenHTTPRequestHandler(http_server.SimpleHTTPRequestHandler):
-    """Extend SimpleHTTPRequestHandler to handle PUT requests"""
+    """Extend SimpleHTTPRequestHandler to handle PUT requests.
+    
+    upload file with Bash:
+    curl -X PUT --upload-file test.pdf localhost:80000/test.pdf
+
+    upload file with PowerShell:
+    irm -uri localhost:8000/test.pdf -method PUT -infile test.pdf"""
     def do_PUT(self):
         """Save a file following a HTTP PUT request"""
         filename = os.path.basename(self.path)
+        if not filename:
+            self.send_response(400, 'Bad Request')
+            self.end_headers()
+            response = 'Please provide a filename via the path'
+            self.wfile.write(response.encode())
+            return
         if os.path.exists(filename):
             self.send_response(409, 'Conflict')
             self.end_headers()
             response = 'File already exists'
             self.wfile.write(response.encode())
             return
-        file_length = int(self.headers['Content-Length'])
+        try:
+            file_length = int(self.headers['Content-Length'])
+        except TypeError as e:
+            self.log.error('Invalid content-length header: ' + str(e))
+            response = 'Invalid content-length header'
+            self.send_response(400, 'Bad Request')
+            self.end_headers()
+            self.wfile.write(response.encode())
+            return
         with open(filename, 'wb') as output_file:
             output_file.write(self.rfile.read(file_length))
         self.send_response(201, 'Created')
