@@ -340,7 +340,7 @@ class DeenPluginListener(DeenPlugin):
                 sys.stdout.flush()
                 server.handle_request()
         except KeyboardInterrupt:
-            pass
+            server.socket.close()
 
     def _http_python3(self, listen_ssl=False):
         """Listen for HTTP connections with Python 3."""
@@ -370,7 +370,7 @@ class DeenPluginListener(DeenPlugin):
                 try:
                     httpd.serve_forever()
                 except KeyboardInterrupt:
-                    pass
+                    httpd.socket.close()
         except OSError as e:
             self.error = e
             self.log.error(self.error)
