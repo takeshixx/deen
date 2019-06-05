@@ -30,7 +30,8 @@ class DeenHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
 ARGS = argparse.ArgumentParser(formatter_class=DeenHelpFormatter,
                                description=constants.cli_description,
-                               epilog=constants.cli_epilog)
+                               epilog=constants.cli_epilog,
+                               add_help=False)
 ARGS.add_argument('-f', '--file', dest='infile', default=None, metavar='filename',
                   help='file name or - for STDIN')
 ARGS.add_argument('-l', '--list', action='store_true', dest='list',
@@ -68,6 +69,8 @@ def main():
                 sys.version_info.minor < 2):
         pl._subargparser.add_parser('gui', help='Start GUI in Python < v3.2')
     # Call parse_args() again for the subcommands
+    ARGS.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                      help='show this help message and exit')
     args = ARGS.parse_args()
     content = pl.read_content_from_args()
     if args.list:
