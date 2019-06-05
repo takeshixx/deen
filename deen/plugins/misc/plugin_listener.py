@@ -10,10 +10,12 @@ import argparse
 if sys.version_info.major == 3:
     import http.server
     import socketserver
+    http_server = http.server
 elif sys.version_info.major < 3:
     import SocketServer
     import BaseHTTPServer
     import SimpleHTTPServer
+    http_server = SimpleHTTPServer
 
 try:
     import OpenSSL.crypto
@@ -327,7 +329,7 @@ class DeenPluginListener(DeenPlugin):
                                     BaseHTTPServer.HTTPServer):
             pass
         server = ThreadingSimpleServer(self.listen_socket,
-                                       SimpleHTTPServer.SimpleHTTPRequestHandler)
+                                       DeenHTTPRequestHandler)
         os.chdir(self.serving_directory)
         message = 'Serving HTTP at port ' + str(self.listen_port)
         if listen_ssl:
@@ -342,10 +344,10 @@ class DeenPluginListener(DeenPlugin):
 
     def _http_python3(self, listen_ssl=False):
         """Listen for HTTP connections with Python 3."""
-        Handler = http.server.SimpleHTTPRequestHandler
+        handler = DeenHTTPRequestHandler
         os.chdir(self.serving_directory)
         try:
-            with socketserver.TCPServer(self.listen_socket, Handler) as httpd:
+            with socketserver.TCPServer(self.listen_socket, handler) as httpd:
                 if listen_ssl:
                     # The certificate chain and private key need to
                     # be available as actual files that can be opened
@@ -373,3 +375,23 @@ class DeenPluginListener(DeenPlugin):
             self.error = e
             self.log.error(self.error)
             self.log.debug(self.error, exc_info=True)
+
+
+class DeenHTTPRequestHandler(http_server.SimpleHTTPRequestHandler):
+    """Extend SimpleHTTPRequestHandler to handle PUT requests"""
+    def do_PUT(self):
+        """Save a file following a HTTP PUT request"""
+        filename = os.path.basename(self.path)
+        if os.path.exists(filename):
+            self.send_response(409, 'Conflict')
+            self.end_headers()
+            response = 'File already exists'
+            self.wfile.write(response.encode())
+            return
+        file_length = int(self.headers['Content-Length'])
+        with open(filename, 'wb') as output_file:
+            output_file.write(self.rfile.read(file_length))
+        self.send_response(201, 'Created')
+        self.end_headers()
+        response = 'File successfully uploaded'
+        self.wfile.write(response.encode())
