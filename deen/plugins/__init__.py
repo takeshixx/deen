@@ -1,5 +1,7 @@
 import sys
 
+import deen.logger
+
 
 class DeenPlugin(object):
     """The core plugin class that should be subclassed
@@ -18,9 +20,15 @@ class DeenPlugin(object):
     # be empty if there is no aliases to the
     # plugin name.
     aliases = []
+    # Indicates of the output is formatted.
+    formatted = False
 
     def __init__(self):
+        self.parent = None
+        self.content = None
+        self.log = None
         self._content = bytearray()
+        self._create_log_handler()
 
     @property
     def content(self):
@@ -34,22 +42,32 @@ class DeenPlugin(object):
             data = bytearray(data)
         self._content = data
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         """A function that should return True if all
         prerequisites for this plugin are met or False
         if not. Here a plugin can e.g. check if the
         current Python version is suitable for the
         functionality or if required third party modules
-        are installed."""
+        are installed.
+
+        :return: True if all prerequisites are met,
+                 False if not.
+        """
         return True
 
     def process(self, data):
         """Every plugin must have a process method
         that e.g. encodes, compresses, hashs, formats,
-        whatsoever."""
-        assert data is not None
-        assert isinstance(data, (bytes, bytearray))
+        whatsoever.
+
+        :param data: the input data that should be
+                     processed
+        :return: the processed data
+        """
+        assert data is not None,\
+            'Input data is None'
+        assert isinstance(data, (bytes, bytearray)),\
+            'Invalid input type: ' + str(type(data))
 
     def unprocess(self, data):
         """Depending of the category of a plugin, it
@@ -57,12 +75,19 @@ class DeenPlugin(object):
         applies to e.g. codecs and compressions.
         However, e.g. hash functions will not require
         an unprocess function as they are not (easily)
-        reversible."""
-        assert data is not None
-        assert isinstance(data, (bytes, bytearray))
+        reversible.
+
+        :param data: the input data that should be
+                     processed
+        :return: the processed data
+        """
+        assert data is not None,\
+            'Input data is None'
+        assert isinstance(data, (bytes, bytearray)),\
+            'Invalid input type: ' + str(type(data))
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+    def add_argparser(argparser, plugin_class, revert=False):
         """This function allows plugins to add subcommands
         to argparse in order to be used via a seperate
         command/alias on the CLI.
@@ -71,22 +96,37 @@ class DeenPlugin(object):
         :param cmd_name: a plugin's cmd_name class variable
         :param cmd_help: a plugin's cmd_help class variable
         :param cmd_aliases: a plugin's cmd_aliases class variable
+        :param revert: True will add the -r/--revert argument
+        :return: the newly created argparse object
         """
+        cmd_name = plugin_class.cmd_name
+        cmd_help = plugin_class.cmd_help
+        cmd_aliases = plugin_class.aliases
+        revert = True if 'unprocess' in vars(plugin_class) else False
         if not cmd_aliases:
             cmd_aliases = []
+        # Add convenience wrappers for reverting plugins
+        if revert:
+            _cmd_aliases = []
+            _cmd_aliases.extend(cmd_aliases)
+            for alias in _cmd_aliases:
+                cmd_aliases.append('.' + alias)
+            cmd_aliases.insert(0, '.' + cmd_name)
         # Note: Python 2 argparse does not support aliases.
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
                 sys.version_info.minor < 2):
-            parser = argparser.add_parser(cmd_name, help=cmd_help)
+            parser = argparser.add_parser(cmd_name, help=cmd_help, description=cmd_help)
         else:
-            parser = argparser.add_parser(cmd_name, help=cmd_help, aliases=cmd_aliases)
+            parser = argparser.add_parser(cmd_name, help=cmd_help, aliases=cmd_aliases,
+                                          description=cmd_help)
         parser.add_argument('plugindata', action='store',
                             help='input data', nargs='?')
-        parser.add_argument('-r', '--revert', action='store_true', dest='revert',
-                            default=False, help='revert plugin process')
         parser.add_argument('-f', '--file', dest='plugininfile', default=None,
                             help='file name or - for STDIN', metavar='filename')
+        if revert:
+            parser.add_argument('-r', '--revert', action='store_true', dest='revert',
+                                default=False, help='revert plugin process')
 
     def process_cli(self, args):
         """Do whatever the CLI cmd should do. The args
@@ -110,6 +150,31 @@ class DeenPlugin(object):
             return self.process(self.content)
         else:
             return self.unprocess(self.content)
+
+    def process_gui(self, parent, content):
+        """Plugins that need additional GUI elements
+        i.e. to accept multiple inputs, they can
+        override this function. The parent argument
+        can be used to add widgets to the main window.
+
+        :param parent: the parent object
+        :param content: the input data that will be processed
+        :return: the return value of process()
+        """
+        self.parent = parent
+
+    def unprocess_gui(self, parent, content):
+        """Plugins that need additional GUI elements
+        i.e. to accept multiple inputs, they can
+        override this function. The parent argument
+        can be used to add widgets to the main window.
+
+        :param parent: the parent object
+        :param content: the input data that will be processed
+        :return: the return value of unprocess()
+        """
+        self.parent = parent
+        self.content = content
 
     def read_content_from_file(self, file):
         """If file is a filename, it will read and
@@ -154,3 +219,41 @@ class DeenPlugin(object):
         stdout.write(data)
         if not nonewline:
             stdout.write(b'\n')
+
+    def _create_log_handler(self):
+        """Create a log handler for each plugin instance.
+        Plugins are supposed to log via self.log, i.e.
+        self.log.info()."""
+        logger = 'plugins.' + self.__class__.__name__
+        self.log = deen.logger.DEEN_LOG.getChild(logger)
+
+    def log_missing_depdendencies(self, dep):
+        """A helper function for plugins
+        to log missing dependencies in the
+        self.prerequisites() function.
+
+        :param dep: a str or list of module names"""
+        if isinstance(dep, list):
+            dep = ','.join(dep)
+            msg = dep
+            msg += ' modules '
+        else:
+            msg = dep
+            msg += ' module '
+        msg += 'not found, '
+        msg += self.display_name
+        msg += ' plugin disabled.'
+        self.log.debug(msg)
+
+    def log_incompatible_version(self, version=''):
+        """A helper function for plugins to log
+        missing features in current Python version.
+
+        :param version: a str with a Python version (optional)"""
+        msg = 'Python version ' + str(sys.version_info.major)
+        msg += '.' + str(sys.version_info.minor)
+        msg += ' does not support ' + self.display_name
+        if version:
+            msg += ' (v' + version
+            msg += ' required)'
+        self.log.debug(msg)

@@ -396,7 +396,8 @@ class TestTransformers(unittest.TestCase):
     def test_compress_deflate(self):
         data_bytes = self._random_bytes()
         zlib_compress = zlib.compressobj(-1, zlib.DEFLATED, -15)
-        encoded_bytes = zlib_compress.compress(data_bytes)
+        zlib_compress.compress(data_bytes)
+        encoded_bytes = zlib_compress.flush()
         plugin = self._plugins.get_plugin_instance('deflate')
         result_bytes = plugin.process(data_bytes)
         self.assertIsNone(plugin.error), 'An error occurred during deflate compression'
@@ -411,7 +412,8 @@ class TestTransformers(unittest.TestCase):
     def test_uncompress_deflate(self):
         data_bytes = self._random_bytes()
         zlib_compress = zlib.compressobj(-1, zlib.DEFLATED, -15)
-        encoded_bytes = zlib_compress.compress(data_bytes)
+        zlib_compress.compress(data_bytes)
+        encoded_bytes = zlib_compress.flush()
         plugin = self._plugins.get_plugin_instance('deflate')
         result = plugin.unprocess(encoded_bytes)
         self.assertIsNone(plugin.error), 'An error occurred during deflate uncompression'
@@ -454,7 +456,8 @@ class TestTransformers(unittest.TestCase):
     def test_hashs(self):
         data_bytes = self._random_bytes()
         for hash in self._plugins.hashs:
-            if hash[1].name == 'ntlm' or hash[1].name == 'mysql':
+            if hash[1].name == 'ntlm' or hash[1].name == 'mysql' or \
+                    hash[1].name == 'bcrypt':
                 # Skip some hash formats that are not part
                 # of the hashlib module.
                 continue
@@ -537,16 +540,13 @@ class TestTransformers(unittest.TestCase):
         plugin = self._plugins.get_plugin_instance('x509certificate')
         try:
             formatted = plugin.process(certificate)
-        except crypto.Error:
-            pass
+        except Exception as e:
+            self.fail('Unhandled exception in x509certificate: ' + str(e))
         else:
-            try:
-                formatted = plugin.process(certificate)
-            except TransformException:
-                pass
-            else:
-                self.fail('Invalid certificate does not raise TransformException!')
-        self.assertIsNone(plugin.error)
+            msg = 'x509certificate failed without setting plugin.error'
+            self.assertIsNotNone(plugin.error, msg)
+            msg = 'x509certificate invalid certificate did not return TransformException'
+            self.assertIsInstance(plugin.error, TransformException, msg)
 
     def test_format_xml(self):
         doc = (b'<?xml version="1.0" encoding="UTF-8"?><note>'

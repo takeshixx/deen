@@ -1,9 +1,0 @@
-PyQt5
-pyOpenSSL
-jsbeautifier
-dicttoxml
-xmltodict
-pyjwt
-bcrypt
-keystone
-capstone

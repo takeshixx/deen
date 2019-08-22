@@ -1,10 +1,22 @@
 from setuptools import setup
 import deen.constants
 
+with open('README.md', 'r') as fh:
+    long_description = fh.read()
+
 setup(name='deen',
       version=deen.constants.__version__,
-      extras_require={'X509': 'pyOpenSSL',
-                      'JS-Beautifier': 'jsbeautifier'},
+      install_requires=[
+            'PyQt5',
+            'jsbeautifier',
+            'dicttoxml',
+            'xmltodict',
+            'bcrypt',
+            'python-jose',
+            'pyOpenSSL',
+            'jsbeautifier'],
+      extras_require={'Assembling': 'keystone-engine',
+                      'Disassembling': 'capstone'},
       packages=['deen',
                 'deen.gui',
                 'deen.gui.widgets',
@@ -15,7 +27,7 @@ setup(name='deen',
                 'deen.plugins.hashs',
                 'deen.plugins.formatters',
                 'deen.plugins.misc'],
-      entry_points = {
+      entry_points={
             'console_scripts': ['deen=deen.main:main']},
       url='https://github.com/takeshixx/deen',
       package_data={
@@ -27,7 +39,20 @@ setup(name='deen',
                    'media/dark/edit-clear.svg',
                    'media/dark/edit-copy.svg',
                    'media/dark/go-up.svg',
-                   'media/dark/document-save-as.svg']},
+                   'media/dark/document-save-as.svg',
+                   'media/dark/view-text.svg',
+                   'media/dark/view-hex.svg',
+                   'media/dark/view-formatted.svg',
+                   'media/view-text.svg',
+                   'media/view-hex.svg',
+                   'media/view-formatted.svg']},
       license='Apache 2.0',
       author='takeshix',
-      description='Generic decoding/encoding application')
+      description='Generic data DEcoding/ENcoding application built with PyQt5',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
+      classifiers=[
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: OS Independent',
+      ])

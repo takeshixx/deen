@@ -1,0 +1,2 @@
+-r requirements2.txt
+PyQt5

@@ -7,10 +7,12 @@ import sys
 import codecs
 try:
     import keystone
-    import capstone
-    KEYSTONE = True
 except ImportError:
-    KEYSTONE = False
+    keystone = None
+try:
+    import capstone
+except ImportError:
+    capstone = None
 
 from .. import DeenPlugin
 
@@ -31,7 +33,11 @@ class AsmBase(DeenPlugin):
         super(AsmBase, self).__init__()
         # Initialize keystone and capstone as soon as an instance
         # of this plugin will be created.
-        if not KEYSTONE:
+        if not keystone:
+            self.log.debug('Keystone is required for ' + self.__class__.__name__)
+            return
+        if not capstone:
+            self.log.debug('Capstone is required for ' + self.__class__.__name__)
             return
         if getattr(self, 'args', None) and self.args and getattr(self.args, 'bigendian', None) \
                 and self.args.bigendian:
@@ -45,15 +51,18 @@ class AsmBase(DeenPlugin):
             self.cs = capstone.Cs(self.capstone_arch,
                                   capstone.CS_MODE_LITTLE_ENDIAN)
 
-    @staticmethod
-    def prerequisites():
+    def prerequisites(self):
         try:
             import keystone
+        except ImportError:
+            self.log_missing_depdendencies('keystone')
+            return False
+        try:
             import capstone
         except ImportError:
+            self.log_missing_depdendencies('capstone')
             return False
-        else:
-            return True
+        return True
 
     def process(self, data):
         super(AsmBase, self).process(data)
@@ -61,6 +70,8 @@ class AsmBase(DeenPlugin):
             encoding, count = self.ks.asm(data.decode())
         except keystone.KsError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return b''
         return bytearray(encoding)
 
@@ -75,13 +86,23 @@ class AsmBase(DeenPlugin):
                 output += '%s\t%s' % (mnemonic, op_str)
         except capstone.CsError as e:
             self.error = e
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
             return b''
         return output.encode()
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+    def add_argparser(argparser, plugin_class, *args, **kwargs):
+        cmd_name = plugin_class.cmd_name
+        cmd_help = plugin_class.cmd_help
+        cmd_aliases = plugin_class.aliases
         if not cmd_aliases:
             cmd_aliases = []
+        _cmd_aliases = []
+        _cmd_aliases.extend(cmd_aliases)
+        for alias in _cmd_aliases:
+            cmd_aliases.append('.' + alias)
+        cmd_aliases.insert(0, '.' + cmd_name)
         # Python 2 argparse does not support aliases
         if sys.version_info.major < 3 or \
             (sys.version_info.major == 3 and
@@ -121,7 +142,10 @@ class AsmBase(DeenPlugin):
                 if args.revert:
                     try:
                         data = codecs.decode(data, 'hex')
-                    except Exception:
+                    except Exception as e:
+                        self.error = e
+                        self.log.error(self.error)
+                        self.log.debug(self.error, exc_info=True)
                         self.write_to_stdout(b'Invalid hex encoding')
                         return
                 self.content = data
@@ -152,9 +176,14 @@ class AsmBase(DeenPlugin):
         # and command history work in the interactive
         # mode.
         import readline
+        prompt = self.display_name + ' > '
+        if self.args.revert:
+            prompt = 'dsm:' + prompt
+        else:
+            prompt = 'asm:' + prompt
         while True:
             try:
-                data = input('> ')
+                data = input(prompt)
                 if not data:
                     continue
                 try:
@@ -176,6 +205,8 @@ class AsmBase(DeenPlugin):
                             output = codecs.encode(bytearray(encoding), 'hex')
                         self.write_to_stdout(output)
                 except keystone.KsError as e:
+                    self.log.error(e)
+                    self.log.debug(e, exc_info=True)
                     self.write_to_stdout(str(e).encode())
             except (KeyboardInterrupt, EOFError):
                 return b''

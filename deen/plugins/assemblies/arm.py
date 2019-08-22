@@ -1,9 +1,11 @@
 try:
     import keystone
-    import capstone
-    KEYSTONE = True
 except ImportError:
-    KEYSTONE = False
+    keystone = None
+try:
+    import capstone
+except ImportError:
+    capstone = None
 
 from .__base__ import AsmBase
 
@@ -18,16 +20,19 @@ class DeenPluginAsmArm(AsmBase):
                'arm']
     cmd_name = 'assembly_arm'
     cmd_help='Assemble/Disassemble for the ARM architecture'
-    keystone_arch = keystone.KS_ARCH_ARM if KEYSTONE else None
-    keystone_mode = keystone.KS_MODE_ARM if KEYSTONE else None
-    capstone_arch = capstone.CS_ARCH_ARM if KEYSTONE else None
-    capstone_mode = capstone.CS_MODE_ARM if KEYSTONE else None
+    keystone_arch = keystone.KS_ARCH_ARM \
+        if (keystone and hasattr(keystone, 'KS_ARCH_ARM')) else None
+    keystone_mode = keystone.KS_MODE_ARM \
+        if (keystone and hasattr(keystone, 'KS_MODE_ARM')) else None
+    capstone_arch = capstone.CS_ARCH_ARM \
+        if (capstone and hasattr(capstone, 'CS_ARCH_ARM')) else None
+    capstone_mode = capstone.CS_MODE_ARM \
+        if (capstone and hasattr(capstone, 'CS_MODE_ARM')) else None
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+    def add_argparser(argparser, plugin_class, *args, **kwargs):
         # Add an additional argument for big endian mode.
-        parser = AsmBase.add_argparser(argparser, cmd_name,
-                                       cmd_help, cmd_aliases=cmd_aliases)
+        parser = AsmBase.add_argparser(argparser, plugin_class)
         parser.add_argument('-b', '--big-endian', dest='bigendian',
                             default=False, help='use big endian',
                             action='store_true')
@@ -64,7 +69,11 @@ class DeenPluginAsmArmThumb(DeenPluginAsmArm):
                'thumb']
     cmd_name = 'assembly_armthumb'
     cmd_help='Assemble/Disassemble for the ARM architecture with Thumb instructions'
-    keystone_arch = keystone.KS_ARCH_ARM if KEYSTONE else None
-    keystone_mode = keystone.KS_MODE_THUMB if KEYSTONE else None
-    capstone_arch = capstone.CS_ARCH_ARM if KEYSTONE else None
-    capstone_mode = capstone.CS_MODE_THUMB if KEYSTONE else None
+    keystone_arch = keystone.KS_ARCH_ARM \
+        if (keystone and hasattr(keystone, 'KS_ARCH_ARM')) else None
+    keystone_mode = keystone.KS_MODE_THUMB \
+        if (keystone and hasattr(keystone, 'KS_MODE_THUMB')) else None
+    capstone_arch = capstone.CS_ARCH_ARM \
+        if (capstone and hasattr(capstone, 'CS_ARCH_ARM')) else None
+    capstone_mode = capstone.CS_MODE_THUMB \
+        if (capstone and hasattr(capstone, 'CS_MODE_THUMB')) else None

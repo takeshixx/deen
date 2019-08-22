@@ -1,13 +1,24 @@
-import logging
-
-from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog, QBoxLayout, QErrorMessage
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QFileDialog,\
+                            QBoxLayout, QShortcut, QDialog, QCompleter
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtCore import QStringListModel, Qt
 
 import deen.constants
 from deen.gui.widgets.log import DeenLogger, DeenStatusConsole
 from deen.gui.widgets.ui_deenmainwindow import Ui_MainWindow
 from deen.gui.encoder import DeenEncoderWidget
+from deen.gui.widgets.ui_deenfuzzysearch import Ui_DeenFuzzySearchWidget
+from deen import logger
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logger.DEEN_LOG.getChild('gui.widgets.core')
+
+
+class FuzzySearchUi(QDialog):
+    def __init__(self, parent):
+        super(FuzzySearchUi, self).__init__(parent)
+        self.ui = Ui_DeenFuzzySearchWidget()
+        self.ui.setupUi(self)
+        self.parent = parent
 
 
 class DeenGui(QMainWindow):
@@ -15,7 +26,7 @@ class DeenGui(QMainWindow):
     the Deen GUI. If is basically just the main
     window with a central element that includes
     one or more DeenEncoderWidget."""
-    def __init__(self, parent=None, plugins=None):
+    def __init__(self, parent=None, plugins=None, fullscreen=False):
         super(DeenGui, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -27,16 +38,129 @@ class DeenGui(QMainWindow):
         self.ui.actionStatus_console.triggered.connect(self.show_status_console)
         self.ui.actionTop_to_bottom.triggered.connect(self.set_widget_direction_toptobottom)
         self.ui.actionLeft_to_right.triggered.connect(self.set_widget_direction_lefttoright)
+        # Set default direction
+        self.set_widget_direction_toptobottom()
+        self.ui.actionCopy_to_clipboard.triggered.connect(self.copy_content_to_clipboard)
+        self.ui.actionSave_content_to_file.triggered.connect(self.save_widget_content_to_file)
+        self.ui.actionSearch.triggered.connect(self.toggle_search_box_visibility)
         self.widgets.append(DeenEncoderWidget(self))
         for widget in self.widgets:
             self.ui.encoder_widget_layout.addWidget(widget)
         self.load_from_file_dialog = QFileDialog(self)
         self.setWindowTitle('deen')
         self.log = DeenLogger(self)
-        # Start Deen GUI maximized with focus on the text field
-        self.showMaximized()
-        self.widgets[0].text_field.setFocus(True)
+        self.widgets[0].set_field_focus()
+        # Add action fuzzy search
+        self.fuzzy_search_ui = FuzzySearchUi(self)
+        self.fuzzy_search_action_shortcut = QShortcut(QKeySequence(Qt.CTRL | Qt.Key_R), self)
+        self.fuzzy_search_action_shortcut.activated.connect(self.fuzzy_search_action)
+        self.clear_current_widget_shortcut = QShortcut(QKeySequence(Qt.CTRL | Qt.Key_Q), self)
+        self.clear_current_widget_shortcut.activated.connect(self.clear_current_widget)
+        self.hide_search_box_shortcut = QShortcut(QKeySequence(Qt.CTRL | Qt.Key_F), self)
+        self.hide_search_box_shortcut.activated.connect(self.toggle_search_box_visibility)
+        self.next_encoder_widget_shortcut = QShortcut(QKeySequence(Qt.ALT | Qt.Key_Right), self)
+        self.next_encoder_widget_shortcut.activated.connect(self.toggle_next_encoder_focus)
+        self.prev_encoder_widget_shortcut = QShortcut(QKeySequence(Qt.ALT | Qt.Key_Left), self)
+        self.prev_encoder_widget_shortcut.activated.connect(self.toggle_prev_encoder_focus)
+        if fullscreen:
+            self.showMaximized()
         self.show()
+
+    def fuzzy_search_action(self):
+        """Open a dialog for quick access to actions
+        with fuzzy search."""
+        focussed_widget = QApplication.focusWidget()
+        self.fuzzy_search_ui.ui.fuzzy_search_field.setFocus()
+        def get_data(model):
+            plugins = [x[1].name for x in self.plugins.available_plugins]
+            for p in self.plugins.codecs + \
+                     self.plugins.compressions +\
+                     self.plugins.assemblies:
+                plugins.append('-' + p[1].name)
+                plugins.extend(['-' + x for x in p[1].aliases])
+            for p in self.plugins.available_plugins:
+                plugins.extend(p[1].aliases)
+            model.setStringList(plugins)
+        completer = QCompleter()
+        self.fuzzy_search_ui.ui.fuzzy_search_field.setCompleter(completer)
+        model = QStringListModel()
+        completer.setModel(model)
+        get_data(model)
+        if self.fuzzy_search_ui.exec_() == 0:
+            return
+        search_data = self.fuzzy_search_ui.ui.fuzzy_search_field.text()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if parent_encoder:
+            parent_encoder.action_fuzzy(search_data)
+        else:
+            LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
+
+    def toggle_search_box_visibility(self):
+        """Toggle the search box visibility
+        via a shortcut for the current encoder
+        widget."""
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if parent_encoder:
+            parent_encoder.toggle_search_box_visibility()
+        else:
+            LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
+
+    def get_parent_encoder(self, widget):
+        """A wrapper function that returns the
+        parent encoder widget for a given widget
+        retrieved via QApplication.focusWidget().
+        Can be used on signal receivers to
+        reference the current encoder widget."""
+        while not isinstance(widget, DeenEncoderWidget):
+            # Builin clases may implement
+            # parent() to retrieve the
+            # parent object.
+            if not widget:
+                break
+            if callable(widget.parent):
+                widget = widget.parent()
+            else:
+                widget = widget.parent
+            if isinstance(widget, DeenGui):
+                return False
+        return widget
+
+    def toggle_next_encoder_focus(self):
+        """Focus the next encoder widget."""
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if parent_encoder:
+            if parent_encoder.has_next():
+                parent_encoder.next.field.setFocus()
+                self.ui.DeenMainWindow.ensureWidgetVisible(parent_encoder.next)
+        else:
+            LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
+
+    def toggle_prev_encoder_focus(self):
+        """Focus the previous encoder widget."""
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if parent_encoder:
+            if parent_encoder.has_previous():
+                parent_encoder.previous.field.setFocus()
+                self.ui.DeenMainWindow.ensureWidgetVisible(parent_encoder.previous)
+        else:
+            LOGGER.error('Unable to find parent encoder for ' + str(focussed_widget))
+
+    def clear_current_widget(self):
+        """Clear and remove the current encoder widget."""
+        focussed_widget = QApplication.focusWidget()
+        if not hasattr(focussed_widget, 'parent') or \
+                not focussed_widget.parent:
+            LOGGER.warning('NO parent for widget found: ' + str(focussed_widget))
+            return
+        if callable(focussed_widget.parent):
+            widget = focussed_widget.parent()
+        else:
+            widget = focussed_widget.parent
+        if isinstance(widget, DeenEncoderWidget):
+            widget.clear_content()
 
     def set_root_content(self, data):
         if data:
@@ -88,13 +212,46 @@ class DeenGui(QMainWindow):
             content = file.read()
         if content:
             self.widgets[0].clear_content()
-            self.widgets[0].content =  bytearray(content)
+            self.widgets[0].content = bytearray(content)
             try:
                 content = content.decode('utf8')
             except UnicodeDecodeError:
                 content = content.decode('utf8', errors='replace')
-                self.widgets[0].text_field.setReadOnly(True)
-                LOGGER.warning('Failed to decode file content, root widget will be read only')
+                LOGGER.warning('Failed to decode file content')
             self.widgets[0].text_field.setPlainText(content)
         self.widgets[0].hex_field.setHidden(True)
         self.widgets[0].text_field.setHidden(False)
+
+    def save_widget_content_to_file(self, file_name=None):
+        """Save the content of the current widget
+        to a file."""
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if not parent_encoder._content:
+            return
+        fd = QFileDialog(parent_encoder)
+        if file_name:
+            name = file_name
+        else:
+            name = fd.getSaveFileName(fd, 'Save File')
+        if not name or not name[0]:
+            return
+        if isinstance(name, tuple):
+            name = name[0]
+        with open(name, 'wb') as file:
+            current_plugin = parent_encoder.plugin
+            file.write(parent_encoder._content)
+
+    def copy_content_to_clipboard(self):
+        focussed_widget = QApplication.focusWidget()
+        parent_encoder = self.get_parent_encoder(focussed_widget)
+        if not parent_encoder._content:
+            return
+        try:
+            content = parent_encoder._content.decode('utf8')
+        except UnicodeDecodeError as e:
+            parent_encoder.log.error('Cannot copy non-ASCII content to clipboard')
+            parent_encoder.log.debug(e, exc_info=True)
+            return
+        clipboard = QApplication.clipboard()
+        clipboard.setText(content)

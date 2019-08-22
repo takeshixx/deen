@@ -1,9 +1,11 @@
 try:
     import keystone
-    import capstone
-    KEYSTONE = True
 except ImportError:
-    KEYSTONE = False
+    keystone = None
+try:
+    import capstone
+except ImportError:
+    capstone = None
 
 from .__base__ import AsmBase
 
@@ -18,14 +20,19 @@ class DeenPluginAsmX86(AsmBase):
                'x86']
     cmd_name = 'assembly_x86'
     cmd_help='Assemble/Disassemble for the x86 architecture'
-    keystone_arch = keystone.KS_ARCH_X86 if KEYSTONE else None
-    keystone_mode = keystone.KS_MODE_32 if KEYSTONE else None
-    capstone_arch = capstone.CS_ARCH_X86 if KEYSTONE else None
-    capstone_mode = capstone.CS_MODE_32 if KEYSTONE else None
+    keystone_arch = keystone.KS_ARCH_X86 \
+        if (keystone and hasattr(keystone, 'KS_ARCH_X86')) else None
+    keystone_mode = keystone.KS_MODE_32 \
+        if (keystone and hasattr(keystone, 'KS_MODE_32')) else None
+    capstone_arch = capstone.CS_ARCH_X86 \
+        if (capstone and hasattr(capstone, 'CS_ARCH_X86')) else None
+    capstone_mode = capstone.CS_MODE_32 \
+        if (capstone and hasattr(capstone, 'CS_MODE_32')) else None
 
     def __init__(self, atandt=False):
         super(DeenPluginAsmX86, self).__init__()
-        self.set_syntax(atandt)
+        if keystone and capstone:
+            self.set_syntax(atandt)
 
     def reinitialize(self):
         if self.args and getattr(self.args, 'atandt', None) \
@@ -41,10 +48,9 @@ class DeenPluginAsmX86(AsmBase):
             self.cs.syntax = capstone.CS_OPT_SYNTAX_INTEL
 
     @staticmethod
-    def add_argparser(argparser, cmd_name, cmd_help, cmd_aliases=None):
+    def add_argparser(argparser, plugin_class, *args, **kwargs):
         # Add an additional argument for AT&T syntax.
-        parser = AsmBase.add_argparser(argparser, cmd_name,
-                                       cmd_help, cmd_aliases=cmd_aliases)
+        parser = AsmBase.add_argparser(argparser, plugin_class)
         parser.add_argument('-a', '--atandt', dest='atandt',
                             default=False, help='use AT&T syntax',
                             action='store_true')
@@ -87,7 +93,11 @@ class DeenPluginAsmX86_64(DeenPluginAsmX86):
                'x64']
     cmd_name = 'assembly_x86_64'
     cmd_help='Assemble/Disassemble for the x86_64 architecture'
-    keystone_arch = keystone.KS_ARCH_X86 if KEYSTONE else None
-    keystone_mode = keystone.KS_MODE_64 if KEYSTONE else None
-    capstone_arch = capstone.CS_ARCH_X86 if KEYSTONE else None
-    capstone_mode = capstone.CS_MODE_64 if KEYSTONE else None
+    keystone_arch = keystone.KS_ARCH_X86 \
+        if (keystone and hasattr(keystone, 'KS_ARCH_X86')) else None
+    keystone_mode = keystone.KS_MODE_64 \
+        if (keystone and hasattr(keystone, 'KS_MODE_64')) else None
+    capstone_arch = capstone.CS_ARCH_X86 \
+        if (capstone and hasattr(capstone, 'CS_ARCH_X86')) else None
+    capstone_mode = capstone.CS_MODE_64 \
+        if (capstone and hasattr(capstone, 'CS_MODE_64')) else None

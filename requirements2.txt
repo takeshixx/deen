@@ -1,0 +1,6 @@
+pyOpenSSL
+jsbeautifier
+dicttoxml
+xmltodict
+python-jose
+bcrypt

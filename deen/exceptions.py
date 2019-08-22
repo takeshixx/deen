@@ -4,3 +4,11 @@ class TransformException(Exception):
 
 class MissingDependencyException(Exception):
     pass
+
+
+class InvalidFormatException(Exception):
+    pass
+
+
+class InvalidInputFile(Exception):
+    pass

@@ -2,8 +2,9 @@ import codecs
 import string
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import (QBrush, QColor)
-from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QHeaderView)
+from PyQt5.QtGui import QBrush, QColor, QFont, QTextCursor, QTextCharFormat
+from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QHeaderView,
+                            QPlainTextEdit, QFrame)
 
 
 class HexViewWidget(QTableWidget):
@@ -17,11 +18,21 @@ class HexViewWidget(QTableWidget):
         self._bytes_per_line = max_bytes_per_line
         self._width = width
         self._read_only = read_only
+        self.setShowGrid(False)
+        header = self.horizontalHeader()
+        header.setMinimumSectionSize(15)
+        header.setDefaultSectionSize(15)
+        self.selectionModel().selectionChanged.connect(self.selection_changed)
+        self.ascii_font = QFont()
+        self.ascii_font.setLetterSpacing(QFont.AbsoluteSpacing, 4)
+        self.bold_font = QFont()
+        self.bold_font.setBold(True)
+        self.current_selection = []
+        self.horizontalHeader().setStretchLastSection(True)
         if content:
             self.content = content
         else:
             self.content = bytearray()
-        self.horizontalHeader().setStretchLastSection(True)
 
     def _reconstruct_table(self):
         try:
@@ -38,12 +49,14 @@ class HexViewWidget(QTableWidget):
         self._process_headers()
         for y, row in enumerate(rows):
             self._process_row(y, row)
-        self.resizeColumnsToContents()
         self.itemChanged.connect(self._item_changed)
 
     def _process_headers(self):
         cols = self.columnCount()
-        for i in range(cols):
+        self.setColumnWidth(cols - 1, 150)
+        self.horizontalHeader().setSectionResizeMode(cols - 1, QHeaderView.Stretch)
+        self.setStyleSheet('QTableView::item {padding: 0px 5px 0px 5px;}')
+        for i in range(cols - 1):
             self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
         header_labels = []
         for i in range(0, self._bytes_per_line, self._width):
@@ -60,8 +73,8 @@ class HexViewWidget(QTableWidget):
         for x, i in enumerate(range(0, len(row), self._width)):
             block = row[i:i+self._width]
             item = QTableWidgetItem(codecs.encode(block, 'hex').decode())
-            item.setBackground(QBrush(QColor('lightgray')))
-            item.setForeground(QBrush(QColor('black')))
+            if block in bytes(string.printable, 'ascii'):
+                item.setFont(self.bold_font)
             item.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
             item.setData(Qt.UserRole, block)  # store original data
             if self._read_only:
@@ -73,22 +86,32 @@ class HexViewWidget(QTableWidget):
         # process remaining, unfilled cells
         for j in range(x+1, cols):
             item = QTableWidgetItem()
-            item.setBackground(QBrush(QColor('white')))
             item.setFlags(Qt.NoItemFlags)
             item.setTextAlignment(Qt.AlignHCenter)
             self.setItem(y, j, item)
 
         text = self._bytes_to_ascii(row)
         item = QTableWidgetItem(text)
-        item.setData(Qt.UserRole, row)  # store original data
-        item.setTextAlignment(Qt.AlignLeft| Qt.AlignVCenter)
-        item.setBackground(QBrush(QColor('lightblue')))
-        item.setForeground(QBrush(QColor('black')))
+        item.setFlags(Qt.NoItemFlags)
+        text_widget = QPlainTextEdit()
+        # Prevent vertical scrollbars in ASCII view
+        def _fix_widget_size():
+            if text_widget.verticalScrollBar():
+                text_widget.setMinimumWidth(text_widget.width() + 25)
+        text_widget.textChanged.connect(_fix_widget_size)
+        text_widget.setReadOnly(True)
+        text_widget.setFrameStyle(QFrame.NoFrame)
+        text_widget.setPlainText(text)
+        text_widget.setFont(self.ascii_font)
+        text_widget.setLineWrapMode(QPlainTextEdit.NoWrap)
+        text_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setColumnWidth(cols - 1, 250)
         if self._read_only:
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
         else:
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
-        self.setItem(y, cols - 1, item)
+        item.setFlags(Qt.NoItemFlags)
+        self.setCellWidget(y, cols - 1, text_widget)
 
     def _bytes_to_ascii(self, data):
         if not isinstance(data, (bytes, bytearray)):
@@ -169,3 +192,44 @@ class HexViewWidget(QTableWidget):
 
     def to_bytes(self):
         return self.content
+
+    @property
+    def selected_data(self):
+        data = ''
+        for i in self.selectedItems():
+            data += i.text()
+        data = codecs.decode(data, 'hex')
+        data = bytearray(data)
+        return data
+
+    @property
+    def selection_count(self):
+        return len(self.selectedItems())
+
+    # TODO: implement synchronization with ASCII field
+    def selection_changed(self):
+        # Check if items from the previous selection
+        # are still selected.
+        for sel in self.current_selection:
+            _widget = self.item(sel[0], sel[1])
+            if not _widget.isSelected() and not _widget in self.selectedItems():
+                self.current_selection.remove(sel)
+                ascii_widget = self.cellWidget(sel[0], self.columnCount() - 1)
+                cursor = ascii_widget.textCursor()
+                cursor.select(QTextCursor.Document)
+                cursor.setCharFormat(QTextCharFormat())
+                cursor.clearSelection()
+                ascii_widget.setTextCursor(cursor)
+        for i in self.selectedItems():
+            if not (i.row(), i.column()) in self.current_selection:
+                self.current_selection.append((i.row(), i.column()))
+            ascii_widget = self.cellWidget(i.row(), self.columnCount() - 1)
+            cursor = ascii_widget.textCursor()
+            char_format = QTextCharFormat()
+            cursor.select(QTextCursor.Document)
+            cursor.mergeCharFormat(char_format)
+            cursor.clearSelection()
+            char_format.setBackground(QBrush(QColor('darkCyan')))
+            cursor.setPosition(i.column())
+            cursor.setPosition(i.column() + 1, QTextCursor.KeepAnchor)
+            cursor.mergeCharFormat(char_format)
