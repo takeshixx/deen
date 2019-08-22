@@ -40,9 +40,6 @@ class DeenEncoderWidget(QWidget):
         self.formatted_view = False
         # TODO: check if printable is enforced
         self.printable = True
-
-        # setupUi() access the field self._content, thus it must be initialized first:
-        self.ui.setupUi(self)
         
         # Assign custom widgets for text_field and hex_field.
         self.text_field = TextViewWidget(self, readonly=self.readonly)
@@ -57,6 +54,10 @@ class DeenEncoderWidget(QWidget):
         self.formatted_field.selectionChanged.connect(self.update_selection_field)
         self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.hex_field.itemSelectionChanged.connect(self.update_selection_field)
+
+        # setupUi() access the field self._content, thus it must be initialized first:
+        self.ui.setupUi(self)
+        
         self.ui.selection_length_label.setText('Selection: 0')
         self.ui.content_area_layout.addWidget(self.text_field)
         self.ui.content_area_layout.addWidget(self.hex_field)
@@ -156,6 +157,7 @@ class DeenEncoderWidget(QWidget):
         # After adding new widgets, we have to update the max scroll range.
         self.parent.ui.DeenMainWindow.verticalScrollBar().rangeChanged.connect(self.update_vertical_scroll_range)
         self.parent.ui.DeenMainWindow.horizontalScrollBar().rangeChanged.connect(self.update_horizontal_scroll_range)
+
 
     @property
     def content(self):
