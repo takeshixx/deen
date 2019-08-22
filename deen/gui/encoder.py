@@ -27,7 +27,6 @@ class DeenEncoderWidget(QWidget):
     def __init__(self, parent, readonly=False, enable_actions=True):
         super(DeenEncoderWidget, self).__init__(parent)
         self.ui = Ui_DeenEncoderWidget()
-        self.ui.setupUi(self)
         self.parent = parent
         self.readonly = readonly
         self.current_pick = None
@@ -36,6 +35,8 @@ class DeenEncoderWidget(QWidget):
         self.formatted_view = False
         self.codec = QTextCodec.codecForName('UTF-8')
         self.hex_view = False
+        # setupUi() access the field self._content, thus it must be initialized first:
+        self.ui.setupUi(self)
         # Assign custom widgets for text_field and hex_field.
         # TODO: create proper widgets for text and hex widget.
         self.text_field = TextViewWidget(self, readonly=self.readonly)
@@ -210,6 +211,11 @@ class DeenEncoderWidget(QWidget):
         """Return the previous widget. If the current widget
         is the root widget, this function returns the root
         widget (self)."""
+
+        # during setupUI() this property is being called but the widget list is empty and thus, has_previous would fail:
+        if len(self.parent.widgets) == 0:
+            return None
+        
         if not self.has_previous():
             return self
         for i, w in enumerate(self.parent.widgets):
@@ -221,6 +227,10 @@ class DeenEncoderWidget(QWidget):
         """Return the next widget. This is most likely the one
         that is supposed to hold the output of action()'s of
         the current widget."""
+        # during setupUI() this property is being called but the widget list is empty and thus, has_next would fail:
+        if len(self.parent.widgets) == 0:
+            return None
+        
         if not self.has_next():
             w = DeenEncoderWidget(self.parent, readonly=True, enable_actions=False)
             self.parent.widgets.append(w)
