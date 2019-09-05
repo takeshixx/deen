@@ -29,7 +29,6 @@ class DeenEncoderWidget(QWidget):
     def __init__(self, parent, readonly=False):
         super(DeenEncoderWidget, self).__init__(parent)
         self.ui = Ui_DeenEncoderWidget()
-        self.ui.setupUi(self)
         self.parent = parent
         self.readonly = readonly
         self.process = False
@@ -41,6 +40,7 @@ class DeenEncoderWidget(QWidget):
         self.formatted_view = False
         # TODO: check if printable is enforced
         self.printable = True
+        
         # Assign custom widgets for text_field and hex_field.
         self.text_field = TextViewWidget(self, readonly=self.readonly)
         self.text_field.textChanged.connect(self.field_content_changed)
@@ -54,6 +54,10 @@ class DeenEncoderWidget(QWidget):
         self.formatted_field.selectionChanged.connect(self.update_selection_field)
         self.hex_field.bytesChanged.connect(self.field_content_changed)
         self.hex_field.itemSelectionChanged.connect(self.update_selection_field)
+
+        # setupUi() access the field self._content, thus it must be initialized first:
+        self.ui.setupUi(self)
+        
         self.ui.selection_length_label.setText('Selection: 0')
         self.ui.content_area_layout.addWidget(self.text_field)
         self.ui.content_area_layout.addWidget(self.hex_field)
@@ -154,6 +158,7 @@ class DeenEncoderWidget(QWidget):
         self.parent.ui.DeenMainWindow.verticalScrollBar().rangeChanged.connect(self.update_vertical_scroll_range)
         self.parent.ui.DeenMainWindow.horizontalScrollBar().rangeChanged.connect(self.update_horizontal_scroll_range)
 
+
     @property
     def content(self):
         return self._content
@@ -200,6 +205,11 @@ class DeenEncoderWidget(QWidget):
         """Return the previous widget. If the current widget
         is the root widget, this function returns the root
         widget (self)."""
+
+        # during setupUI() this property is being called but the widget list is empty and thus, has_previous would fail:
+        if len(self.parent.widgets) == 0:
+            return None
+        
         if not self.has_previous():
             return self
         for i, w in enumerate(self.parent.widgets):
@@ -211,6 +221,10 @@ class DeenEncoderWidget(QWidget):
         """Return the next widget. This is most likely the one
         that is supposed to hold the output of action()'s of
         the current widget."""
+        # during setupUI() this property is being called but the widget list is empty and thus, has_next would fail:
+        if len(self.parent.widgets) == 0:
+            return None
+        
         if not self.has_next():
             w = DeenEncoderWidget(self.parent)
             self.parent.widgets.append(w)
