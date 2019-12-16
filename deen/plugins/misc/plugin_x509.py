@@ -272,7 +272,6 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
             # "SHA256" from "ecdsa-with-SHA256".
             if '-' in signature_algo:
                 signature_algo = signature_algo.split('-')[-1]
-            print(signature_algo)
             cert.sign(pkey, signature_algo)
         return cert, pkey
 
