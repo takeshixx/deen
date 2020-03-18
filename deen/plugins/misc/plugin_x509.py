@@ -4,6 +4,9 @@ import binascii
 
 try:
     import OpenSSL.crypto
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives.asymmetric import rsa, ec
+    from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, NoEncryption
     OPENSSL = True
 except ImportError:
     OPENSSL = False
@@ -239,8 +242,20 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         cert.set_notBefore(original_cert.get_notBefore())
         cert.set_notAfter(original_cert.get_notAfter())
         pkey = OpenSSL.crypto.PKey()
-        pkey.generate_key(OpenSSL.crypto.TYPE_RSA,
-                          original_cert.get_pubkey().bits())
+        if original_cert.get_pubkey().type() == OpenSSL.crypto.TYPE_RSA:
+            pkey.generate_key(OpenSSL.crypto.TYPE_RSA,
+                              original_cert.get_pubkey().bits())
+        elif original_cert.get_pubkey().type() == OpenSSL.crypto.TYPE_EC:
+            ec_key = original_cert.get_pubkey().to_cryptography_key()
+            curve = ec_key.curve
+            key = ec.generate_private_key(curve, default_backend())
+            key_pem = key.private_bytes(encoding=Encoding.PEM, format=PrivateFormat.TraditionalOpenSSL, encryption_algorithm=NoEncryption())
+            pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, key_pem)
+        else:
+            self.error = Exception('Unsupported certificate type ' + str(original_cert.get_pubkey().type()))
+            self.log.error(self.error)
+            self.log.debug(self.error, exc_info=True)
+            return
         cert.set_pubkey(pkey)
         cert.set_issuer(original_cert.get_issuer())
         cert.set_subject(original_cert.get_subject())
@@ -251,6 +266,12 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         if self_sign:
             if not signature_algo:
                 signature_algo = original_cert.get_signature_algorithm().decode()
+            # evp_get_digestbyname_ex() might fail for signature
+            # definition in ECDSA certs. Just take the actual
+            # signature algorithm from the string. E. g. extract
+            # "SHA256" from "ecdsa-with-SHA256".
+            if '-' in signature_algo:
+                signature_algo = signature_algo.split('-')[-1]
             cert.sign(pkey, signature_algo)
         return cert, pkey
 
