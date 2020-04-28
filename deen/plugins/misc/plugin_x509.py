@@ -7,6 +7,7 @@ try:
     from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives.asymmetric import rsa, ec
     from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, NoEncryption
+    from OpenSSL._util import lib as _lib
     OPENSSL = True
 except ImportError:
     OPENSSL = False
@@ -239,7 +240,24 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         cert = OpenSSL.crypto.X509()
         cert.set_version(original_cert.get_version())
         cert.set_serial_number(original_cert.get_serial_number())
-        cert.set_notBefore(original_cert.get_notBefore())
+
+        # A fix for making sure we use the proper ASN.1 Time formats
+        if 'ASN1_TIME_set_string_X509' in dir(_lib):
+            def _wrap_set_asn1_time(boundary, when):
+                if not isinstance(when, bytes):
+                    raise TypeError("when must be a byte string")
+                set_result = _lib.ASN1_TIME_set_string_X509(boundary, when)
+                if set_result == 0:
+                    raise ValueError("Invalid string")
+            original_func = OpenSSL.crypto._set_asn1_time
+            # Override the pyOpenSSL library function
+            OpenSSL.crypto._set_asn1_time = _wrap_set_asn1_time
+            cert.set_notBefore(original_cert.get_notBefore())
+            # Revert the change
+            OpenSSL.crypto._set_asn1_time = original_func
+        else:
+            cert.set_notBefore(original_cert.get_notBefore())
+
         cert.set_notAfter(original_cert.get_notAfter())
         pkey = OpenSSL.crypto.PKey()
         if original_cert.get_pubkey().type() == OpenSSL.crypto.TYPE_RSA:
