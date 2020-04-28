@@ -253,12 +253,13 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
             # Override the pyOpenSSL library function
             OpenSSL.crypto._set_asn1_time = _wrap_set_asn1_time
             cert.set_notBefore(original_cert.get_notBefore())
+            cert.set_notAfter(original_cert.get_notAfter())
             # Revert the change
             OpenSSL.crypto._set_asn1_time = original_func
         else:
             cert.set_notBefore(original_cert.get_notBefore())
+            cert.set_notAfter(original_cert.get_notAfter())
 
-        cert.set_notAfter(original_cert.get_notAfter())
         pkey = OpenSSL.crypto.PKey()
         if original_cert.get_pubkey().type() == OpenSSL.crypto.TYPE_RSA:
             pkey.generate_key(OpenSSL.crypto.TYPE_RSA,
