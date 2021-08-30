@@ -324,9 +324,9 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
     def _save_to_file(self, cert, pkey, out_file):
         priv_pem = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, pkey)
         cert_pem = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
-        with open(out_file, 'wb') as f:
+        with open(out_file + '.key', 'wb') as f:
             f.write(priv_pem)
-        with open(out_file + '.cert', 'wb') as f:
+        with open(out_file + '.crt', 'wb') as f:
             f.write(cert_pem)
         with open(out_file + '.pem', 'wb') as f:
             f.write(priv_pem)
