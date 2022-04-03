@@ -177,7 +177,7 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
         new_cert, new_key = self._clone(original_cert, args.self_signed, signature_algo)
         if args.CA_CERT:
             ca_cert = self._load_cert(args.CA_CERT)
-            new_cert.set_issuer(ca_cert.get_issuer())
+            new_cert.set_issuer(ca_cert.get_subject())
             ca_pkey = self._load_private_key(args.CA_KEY)
             new_cert.sign(ca_pkey, signature_algo)
         self._save_to_file(new_cert, new_key, args.out)
@@ -223,7 +223,7 @@ class DeenPluginX509CertificateCloner(DeenPlugin):
                 self.log.debug(self.error, exc_info=True)
                 return
             new_cert, new_key = self._clone(original_cert, False, signature_algo)
-            new_cert.set_issuer(self.ca_cert.get_issuer())
+            new_cert.set_issuer(self.ca_cert.get_subject())
             new_cert.sign(self.ca_key, signature_algo)
         else:
             self.error = Exception('No action selected')
